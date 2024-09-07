@@ -1,3 +1,4 @@
+
 erDiagram
     USER {
         Simple id "int"  
@@ -16,8 +17,11 @@ erDiagram
         Simple gender "string"  
         Multivalued ethnicity "{Mixed ethn.}" 
         Multivalued insurance "{Health, Dental, ...}"  
-        composite address "(Apt#, House#, Addr,...)" 
+        Composite address "(Apt#, House#, Addr,...)" 
         Multivalued emergencyContact "{Primary, Secondary,...}"
+        Simple PrimaryDoctor "doctorId"
+        Multivalued(Composite) specializedDoctor "{doctorID(specialization, licenseNumber)}"
+
     }
     DOCTOR {
         Simple doctorId "int"
@@ -71,7 +75,7 @@ erDiagram
         Simple paymentStatus "string"
         Composite insuranceDetails "(?,?)"
     }
-    LOG {
+    AUDIT_LOG {
         Simple logId "int"
         Simple actionType "string"
         Simple timestamp "DateTime"
@@ -80,6 +84,7 @@ erDiagram
     USER ||--o{ PATIENT : "is a"
     USER ||--o{ DOCTOR : "is a"
     PATIENT ||--o{ APPOINTMENT : "has"
+    PATIENT ||--o{ DOCTOR: "has" 
     DOCTOR ||--o{ APPOINTMENT : "conducts"
     OFFICE ||--o{ APPOINTMENT : "hosts"
     PATIENT ||--o{ MEDICAL_RECORD : "has"
@@ -89,5 +94,5 @@ erDiagram
     DOCTOR ||--o{ SPECIALIST_APPROVAL : "approves"
     PATIENT ||--o{ BILLING : "receives"
     APPOINTMENT ||--|| BILLING : "generates"
-    USER ||--o{ LOG : "generates"
+    USER ||--o{ AUDIT_LOG : "generates"
     DOCTOR }|--|| OFFICE : "works at"
