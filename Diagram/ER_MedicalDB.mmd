@@ -1,0 +1,93 @@
+erDiagram
+    USER {
+        Simple id "int"  
+        Simple username "string" 
+        Simple password "string"
+        Simple email "string"
+        Composite phone "(Area-code,number)" 
+        Simple createdDate "Date"
+        Simple lastLogin "Date"   
+        MultiValued role "{Patient, Doctor, Admin}"
+    }
+    PATIENT {
+        Simple patientId "int" 
+        Composite name "(First, Mid., Last)" 
+        Simple dateOfBirth "Date" 
+        Simple gender "string"  
+        Multivalued ethnicity "{Mixed ethn.}" 
+        Multivalued insurance "{Health, Dental, ...}"  
+        composite address "(Apt#, House#, Addr,...)" 
+        Multivalued emergencyContact "{Primary, Secondary,...}"
+    }
+    DOCTOR {
+        Simple doctorId "int"
+        Composite name "(First, Mid., Last)"
+        Simple licenseNumber "string"
+        Simple yearsOfExperience "int"
+        Multivalued specialization "{Cardiology, Neurology, ...}"
+        Multivalued officeLocations "{Uptown, Downtown, ...}"
+    }
+    OFFICE {
+        Simple officeId "int"
+        Simple name "string"
+        Composite phone "(Area-code, number)"
+        Simple email "string"
+        Composite address "(Street, City, State, Zip)"
+        Multivalued servicesOffered "{General, Specialized, ...}"
+    }
+    APPOINTMENT {
+        Simple appointmentId "int"
+        Simple appointmentDate "Date"
+        Simple createdDate "Date"
+        Simple reasonForVisit "string"
+        Simple specialistApproval "boolean"
+        Simple status "string"
+    }
+    MEDICAL_RECORD {
+        Simple recordId "int"
+        Simple visitDate "Date"
+        Simple notes "string"
+        Simple diagnosis "string"
+        Multivalued testResults "{Blood test, ...}"
+    }
+    PRESCRIPTION {
+        Simple prescriptionId "int"
+        Simple medication "string"
+        Composite dosage "(Amount, Frequency)"
+        Simple dateIssued "Date"
+        Composite pharmacyDetails "(Name, Address, Phone)"
+    }
+    SPECIALIST_APPROVAL {
+        Simple approvalId "int"
+        Simple status "string"
+        Simple requestDate "Date"
+        Simple responseDate "Date"
+        Simple notes "string"
+    }
+    BILLING {
+        Simple billingId "int"
+        Simple amountDue "float"
+        Simple amountPaid "float"
+        Simple paymentStatus "string"
+        Composite insuranceDetails "(?,?)"
+    }
+    LOG {
+        Simple logId "int"
+        Simple actionType "string"
+        Simple timestamp "DateTime"
+    }
+
+    USER ||--o{ PATIENT : "is a"
+    USER ||--o{ DOCTOR : "is a"
+    PATIENT ||--o{ APPOINTMENT : "has"
+    DOCTOR ||--o{ APPOINTMENT : "conducts"
+    OFFICE ||--o{ APPOINTMENT : "hosts"
+    PATIENT ||--o{ MEDICAL_RECORD : "has"
+    DOCTOR ||--o{ MEDICAL_RECORD : "creates"
+    MEDICAL_RECORD ||--o{ PRESCRIPTION : "includes"
+    PATIENT ||--o{ SPECIALIST_APPROVAL : "requests"
+    DOCTOR ||--o{ SPECIALIST_APPROVAL : "approves"
+    PATIENT ||--o{ BILLING : "receives"
+    APPOINTMENT ||--|| BILLING : "generates"
+    USER ||--o{ LOG : "generates"
+    DOCTOR }|--|| OFFICE : "works at"

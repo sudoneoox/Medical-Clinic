@@ -1,0 +1,1 @@
+![ER_DIAGRAM](Diagram/ER_MedicalDB.png)
