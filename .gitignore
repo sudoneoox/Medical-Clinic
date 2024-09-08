@@ -1,8 +1,9 @@
 
-# frontend 
+#@frontend dependencies
 frontend/node_modules
 frontend/.pnp
 frontend.pnp.js
+
 #@frontend misc
 frontend/.DS_Store
 frontend/.env.local
