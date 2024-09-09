@@ -1,15 +1,17 @@
 #!/bin/bash
 
-USER=$1
+DBNAME=$1
+USER=$2
 
-# Database connection 
-DB_NAME="medical_clinic"
-DB_USER=$1
+# Database connection
+DB_NAME=$1
+DB_USER=$2
 DB_HOST="localhost"
 DB_PORT="5432"
 
 # Directory holding migration sql files
 MIGRATIONS_DIR="database/migrations"
+COMBINED_SQL_FILE="combined_migrations.sql"
 
 execute_sql_file() {
     local file=$1
@@ -21,24 +23,29 @@ execute_sql_file() {
     fi
 }
 
-# Check if migrations directory exists
+# Check if migrations directory is there
 if [ ! -d "$MIGRATIONS_DIR" ]; then
     echo "Migrations directory not found: $MIGRATIONS_DIR"
     exit 1
 fi
 
-# sort migration files 
-migration_files=($(ls -v $MIGRATIONS_DIR/*.sql))
+# sort migration files matching pattern XXXX_.sql
+migration_files=($(ls -v $MIGRATIONS_DIR/[0-9][0-9][0-9][0-9]_*.sql))
 
-# check if theres migration files
+# Check if migrations directory is empty
 if [ ${#migration_files[@]} -eq 0 ]; then
     echo "No migration files found in $MIGRATIONS_DIR"
     exit 0
 fi
 
-# Execute migration files in order
-for file in "${migration_files[@]}"; do
-    execute_sql_file "$file"
-done
+# Concatenate all migration files into one
+echo "Concatenating migration files into $COMBINED_SQL_FILE..."
+cat "${migration_files[@]}" > $COMBINED_SQL_FILE
+
+# Execute combined SQL file
+execute_sql_file "$COMBINED_SQL_FILE"
+
+# Cleanup the combined SQL file after execution
+rm $COMBINED_SQL_FILE
 
 echo "All migrations completed successfully."
