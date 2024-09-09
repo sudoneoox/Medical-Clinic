@@ -1,45 +1,55 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import reportWebVitals from './reportWebVitals.js';
-import './styles/tailwindbase.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import reportWebVitals from "./reportWebVitals.js";
+import "./styles/tailwindbase.css";
 
-import Homepage from './routes/Homepage.jsx'
-import ErrorPage from './components/Error-Page.jsx';
-import AboutPage from './routes/About.jsx';
-import LoginPage from './routes/LoginPage.jsx';
-import ServicesPage from './routes/Services.jsx';
-import ContactPage from './routes/Contact.jsx';
+import Homepage from "./routes/Homepage.jsx";
+import ErrorPage from "./components/Error-Page.jsx";
+import AboutPage from "./routes/About.jsx";
+import LoginPage from "./routes/LoginPage.jsx";
+import ServicesPage from "./routes/Services.jsx";
+import ContactPage from "./routes/Contact.jsx";
+import Portal from "./routes/Portal.jsx";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element:<Homepage/>,
-    errorElement: <ErrorPage/>
-  },{
-    path:"About",
-    element: <AboutPage/>,
+    path: "/",
+    element: <Homepage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "About",
+    element: <AboutPage />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "Login",
     element: <LoginPage />,
-  },{
+    errorElement: <ErrorPage />,
+  },
+  {
     path: "Services",
-    element: <ServicesPage/>,
-  }, {
-    path:"Contact",
-    element: <ContactPage/>,
-  }
+    element: <ServicesPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "Contact",
+    element: <ContactPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "Portal/:userID",
+    element: <Portal />,
+    errorElement: <ErrorPage />,
+  },
 ]);
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router}/>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
