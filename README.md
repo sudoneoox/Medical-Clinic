@@ -2,47 +2,6 @@
 
 
 ## Project Directory Structure
-Medical-Clinic/
-├── backend/
-│   ├── node_modules/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── testDbConnection.js
-│   ├── tests/
-│   ├── package.json
-│   ├── package-lock.json
-│   └── server.js
-├── frontend/
-│   ├── node_modules/
-│   ├── public/
-│   │   ├── index.html
-│   │   ├── manifest.json
-│   │   └── robots.txt
-│   ├── src/
-│   │   ├── components/
-│   │   ├── routes/
-│   │   ├── styles/
-│   │   ├── utils/
-│   │   ├── index.jsx
-│   │   └── reportWebVitals.js
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tailwind.config.js
-├── database/
-│   ├── migrations/
-│   │   └── 0001_create_users_table.sql
-│   └── scripts/
-│       ├── create_dump.sh
-│       ├── maketable.sh
-│       ├── restore_from_dump.sh
-│       └── syncdb.sh
-├── docs/
-│   └── ER_MedicalDB.png
-├── scripts/
-└── README.md
-
 ### Backend
 contains the server-side code for handling API requests and responses using Node.js and a REST API
 - /src: 
