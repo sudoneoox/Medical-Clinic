@@ -1,3 +1,4 @@
 #!/bin/bash
 FILENAME=$1
-psql -U $USER -d medical_clinic < $FILENAME.sql
+DB_NAME=$2
+psql -U $USER -d $DB_NAME < $FILENAME.sql

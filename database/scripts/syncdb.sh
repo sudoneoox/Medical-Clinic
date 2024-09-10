@@ -10,7 +10,7 @@ DB_HOST="localhost"
 DB_PORT="5432"
 
 # Directory holding migration sql files
-MIGRATIONS_DIR="database/migrations"
+MIGRATIONS_DIR="../migrations"
 COMBINED_SQL_FILE="combined_migrations.sql"
 
 execute_sql_file() {
@@ -46,6 +46,6 @@ cat "${migration_files[@]}" > $COMBINED_SQL_FILE
 execute_sql_file "$COMBINED_SQL_FILE"
 
 # Cleanup the combined SQL file after execution
-rm $COMBINED_SQL_FILE
+# rm $COMBINED_SQL_FILE
 
 echo "All migrations completed successfully."
