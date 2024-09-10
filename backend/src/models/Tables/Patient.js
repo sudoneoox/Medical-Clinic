@@ -16,7 +16,14 @@ const Patient = sequelize.define(
     },
     patient_name: {
       type: DataTypes.JSON,
-      allowNull: false,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("patient_name");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("patient_name", JSON.stringify(value));
+      },
     },
     dob: {
       type: DataTypes.DATEONLY,
@@ -30,6 +37,14 @@ const Patient = sequelize.define(
     },
     address: {
       type: DataTypes.JSON,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("address");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("address", JSON.stringify(value));
+      },
     },
     emergency_contacts: {
       type: DataTypes.ARRAY(DataTypes.JSON),

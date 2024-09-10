@@ -26,7 +26,7 @@ const Billing = sequelize.define(
       allowNull: false,
       defaultValue: 0,
     },
-    payment_status: {
+    billing_status: {
       type: DataTypes.ENUM(
         "PAID",
         "NOT PAID",

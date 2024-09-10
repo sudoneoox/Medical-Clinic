@@ -16,6 +16,14 @@ const Doctor = sequelize.define(
     },
     doctor_name: {
       type: DataTypes.JSON,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("doctor_name");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("doctor_name", JSON.stringify(value));
+      },
     },
     license_number: {
       type: DataTypes.STRING(50),

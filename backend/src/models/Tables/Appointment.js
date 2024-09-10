@@ -26,14 +26,14 @@ const Appointment = sequelize.define(
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER, // Storing duration in minutes
+      type: DataTypes.INTEGER, // Storing duration in minutes maybe need to change in sql? migrations
       allowNull: false,
     },
     reason: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    status: {
+    appointment_status: {
       type: DataTypes.ENUM("CONFIRMED", "CANCELLED", "COMPLETED", "NO SHOW"),
       allowNull: false,
     },

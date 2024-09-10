@@ -15,7 +15,14 @@ const Insurance = sequelize.define(
     },
     insurance_info: {
       type: DataTypes.JSON,
-      allowNull: false,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("insurance");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("insurance", JSON.stringify(value));
+      },
     },
     is_active: {
       type: DataTypes.BOOLEAN,

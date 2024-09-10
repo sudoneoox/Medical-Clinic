@@ -28,7 +28,7 @@ const SpecialistApproval = sequelize.define(
     approved_at: {
       type: DataTypes.DATE,
     },
-    status: {
+    specialist_request_status: {
       type: DataTypes.ENUM("PENDING", "APPROVED", "REJECTED"),
       allowNull: false,
     },

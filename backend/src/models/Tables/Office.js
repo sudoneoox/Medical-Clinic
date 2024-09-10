@@ -15,10 +15,25 @@ const Office = sequelize.define(
     },
     address: {
       type: DataTypes.JSON,
-      allowNull: false,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("address");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("address", JSON.stringify(value));
+      },
     },
     phone: {
       type: DataTypes.JSON,
+      unique: true,
+      get() {
+        const rawValue = this.getDataValue("phone");
+        return rawValue ? JSON.parse(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("phone", JSON.stringify(value));
+      },
     },
     email: {
       type: DataTypes.TEXT,
