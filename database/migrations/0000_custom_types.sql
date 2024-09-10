@@ -2,7 +2,7 @@
 CREATE TYPE phone_num AS (
     country_code VARCHAR(5),
     area_code VARCHAR(5),
-    number VARCHAR(15)
+    phone_number VARCHAR(15)
 );
 
 CREATE TYPE name AS(
