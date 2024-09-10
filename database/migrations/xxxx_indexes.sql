@@ -1,5 +1,5 @@
 -- data structure? for faster queries but slower inserts and updates
--- run after loading some data
+-- run after loading some data 
 CREATE INDEX idx_appointments_patient_id ON appointments(patient_id);
 CREATE INDEX idx_appointments_doctor_id ON appointments(doctor_id);
 CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);

@@ -107,14 +107,6 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     FOREIGN KEY (patient_id) REFERENCES patient(patient_id),
     FOREIGN KEY (requesting_doctor_id) REFERENCES doctor(doctor_id),
     FOREIGN KEY (specialist_id) REFERENCES doctor(doctor_id)
-);-- prescription information linked to a medical record
-CREATE TABLE IF NOT EXISTS prescription (
-    prescription_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    record_id INTEGER NOT NULL,
-    medication_info medication NOT NULL,
-    date_issued TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    pharmacy_details JSONB,
-    FOREIGN KEY (record_id) REFERENCES medical_records(record_id)
 );-- Billing table to keep track of payments for appointments
 CREATE TABLE IF NOT EXISTS billing (
     billing_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -148,24 +140,7 @@ CREATE TABLE IF NOT EXISTS doctor_offices (
     PRIMARY KEY (doctor_id, office_id),
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
     FOREIGN KEY (office_id) REFERENCES office(office_id)
-);-- appointments linking patients, doctors, and offices
-CREATE TABLE IF NOT EXISTS appointments (
-    appointment_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    patient_id INTEGER NOT NULL,
-    doctor_id INTEGER NOT NULL,
-    office_id INTEGER NOT NULL,
-    appointment_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
-    duration INTERVAL NOT NULL,
-    reason TEXT NOT NULL,
-    status appointment_status NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (patient_id) REFERENCES patient(patient_id),
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
-    FOREIGN KEY (office_id) REFERENCES office(office_id),
-    CHECK (appointment_datetime > created_at)
-);
--- patient insurance information linked with patient id to identify
+);-- patient insurance information linked with patient id to identify
 CREATE TABLE IF NOT EXISTS insurances (
     insurance_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     patient_id INTEGER NOT NULL,
@@ -204,4 +179,29 @@ CREATE TABLE IF NOT EXISTS medical_records (
     FOREIGN KEY (patient_id) REFERENCES patient(patient_id),
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
     FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);-- appointments linking patients, doctors, and offices
+CREATE TABLE IF NOT EXISTS appointments (
+    appointment_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    patient_id INTEGER NOT NULL,
+    doctor_id INTEGER NOT NULL,
+    office_id INTEGER NOT NULL,
+    appointment_datetime TIMESTAMP WITH TIME ZONE NOT NULL,
+    duration INTERVAL NOT NULL,
+    reason TEXT NOT NULL,
+    status appointment_status NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
+    FOREIGN KEY (office_id) REFERENCES office(office_id),
+    CHECK (appointment_datetime > created_at)
+);
+-- prescription information linked to a medical record
+CREATE TABLE IF NOT EXISTS prescription (
+    prescription_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    record_id INTEGER NOT NULL,
+    medication_info medication NOT NULL,
+    date_issued TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    pharmacy_details JSONB,
+    FOREIGN KEY (record_id) REFERENCES medical_records(record_id)
 );

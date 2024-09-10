@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR="."
+DIR="../migrations"
 
 # Get all files matching the pattern NNNN_*.sql
 files=($(ls $DIR/[0-9][0-9][0-9][0-9]_*.sql | sort))
