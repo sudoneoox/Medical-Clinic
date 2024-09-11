@@ -1,4 +1,6 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+
+
 const sequelize = require("../../config/database");
 
 const Insurance = sequelize.define(
@@ -14,15 +16,8 @@ const Insurance = sequelize.define(
       allowNull: false,
     },
     insurance_info: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("insurance");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("insurance", JSON.stringify(value));
-      },
+      type: DataTypes.INSURANCE,
+      unique: false,
     },
     is_active: {
       type: DataTypes.BOOLEAN,

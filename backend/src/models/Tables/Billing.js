@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
 const sequelize = require("../../config/database");
 
 const Billing = sequelize.define(
@@ -27,13 +27,7 @@ const Billing = sequelize.define(
       defaultValue: 0,
     },
     billing_status: {
-      type: DataTypes.ENUM(
-        "PAID",
-        "NOT PAID",
-        "IN PROGRESS",
-        "CANCELLED",
-        "REFUNDED"
-      ),
+      type: DataTypes.BILLING_STATUS,
       allowNull: false,
     },
     created_at: {

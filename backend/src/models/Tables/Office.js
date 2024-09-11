@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require("../CompositeTypes/attributes");
 const sequelize = require("../../config/database");
 
 const Office = sequelize.define(
@@ -14,26 +14,13 @@ const Office = sequelize.define(
       allowNull: false,
     },
     address: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("address");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("address", JSON.stringify(value));
-      },
+      type: DataTypes.ADDRESS,
+      unique: false,
     },
-    phone: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("phone");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("phone", JSON.stringify(value));
-      },
+    phone_num: {
+      type: DataTypes.PHONE_NUM,
+      unique: false,
+    
     },
     email: {
       type: DataTypes.TEXT,

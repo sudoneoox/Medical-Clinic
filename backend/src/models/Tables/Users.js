@@ -1,5 +1,6 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
 const sequelize = require("../../config/database");
+
 
 const User = sequelize.define(
   "User",
@@ -17,23 +18,21 @@ const User = sequelize.define(
     passwd: {
       type: DataTypes.STRING(255),
       allowNull: false,
+
     },
     email: {
       type: DataTypes.STRING(100),
       allowNull: false,
       unique: true,
+      validate: {
+        isEmail: true,
+      },
     },
     // maybe have to make my our own function have to test but this is how people did it online?
-    phone: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("phone");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("phone", JSON.stringify(value));
-      },
+    phone_num: {
+      type:DataTypes.PHONE_NUM,
+      unique: false,
+
     },
     created_at: {
       type: DataTypes.DATE,
@@ -44,7 +43,7 @@ const User = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     user_role: {
-      type: DataTypes.ENUM("admin", "doctor", "patient"),
+      type: DataTypes.USER_ROLE,
       allowNull: false,
     },
     is_active: {

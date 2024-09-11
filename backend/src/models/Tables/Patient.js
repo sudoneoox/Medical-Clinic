@@ -1,4 +1,9 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+const { ADDRESS, NAME, EMERGENCY_CONTACT } = require("../CompositeTypes/attributes");
+
+
+
+
 const sequelize = require("../../config/database");
 
 const Patient = sequelize.define(
@@ -12,18 +17,11 @@ const Patient = sequelize.define(
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true,
     },
     patient_name: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("patient_name");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("patient_name", JSON.stringify(value));
-      },
+      type: DataTypes.NAME,
+      unique: false,
+
     },
     dob: {
       type: DataTypes.DATEONLY,
@@ -36,18 +34,12 @@ const Patient = sequelize.define(
       type: DataTypes.ARRAY(DataTypes.STRING(50)),
     },
     address: {
-      type: DataTypes.JSON,
-      unique: true,
-      get() {
-        const rawValue = this.getDataValue("address");
-        return rawValue ? JSON.parse(rawValue) : null;
-      },
-      set(value) {
-        this.setDataValue("address", JSON.stringify(value));
-      },
+      type: DataTypes.ADDRESS,
+      unique: false,
+
     },
     emergency_contacts: {
-      type: DataTypes.ARRAY(DataTypes.JSON),
+      type: DataTypes.ARRAY(DataTypes.EMERGENCY_CONTACT),
     },
     primary_doctor_id: {
       type: DataTypes.INTEGER,

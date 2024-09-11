@@ -1,3 +1,4 @@
+// https://dev.to/projectescape/the-comprehensive-sequelize-cheatsheet-3m1m#relations
 // defines all the relations btween the models
 const User = require("./Tables/Users");
 const Doctor = require("./Tables/Doctor");
@@ -96,5 +97,5 @@ module.exports = function initAssociations() {
   // ! billing associations
   Billing.belongsTo(Patient, { foreignKey: "patient_id" });
   Billing.belongsTo(Appointment, { foreignKey: "appointment_id" });
-  
+
 };

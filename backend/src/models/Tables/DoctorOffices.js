@@ -1,4 +1,8 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+
+
+
+
 const sequelize = require("../../config/database");
 
 const DoctorOffices = sequelize.define(

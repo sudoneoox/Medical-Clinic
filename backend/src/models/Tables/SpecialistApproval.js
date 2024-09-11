@@ -1,4 +1,8 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+
+
+
+
 const sequelize = require("../../config/database");
 
 const SpecialistApproval = sequelize.define(
@@ -29,7 +33,7 @@ const SpecialistApproval = sequelize.define(
       type: DataTypes.DATE,
     },
     specialist_request_status: {
-      type: DataTypes.ENUM("PENDING", "APPROVED", "REJECTED"),
+      type:DataTypes.SPECIALIST_REQUEST_STATUS,
       allowNull: false,
     },
   },

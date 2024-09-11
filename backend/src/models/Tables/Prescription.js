@@ -1,4 +1,8 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+
+
+
+
 const sequelize = require("../../config/database");
 
 const Prescription = sequelize.define(
@@ -14,7 +18,7 @@ const Prescription = sequelize.define(
       allowNull: false,
     },
     medication_info: {
-      type: DataTypes.JSON,
+      type: DataTypes.MEDICATION,
       allowNull: false,
     },
     date_issued: {

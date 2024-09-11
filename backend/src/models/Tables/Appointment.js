@@ -1,4 +1,5 @@
-const { DataTypes } = require("sequelize");
+const DataTypes = require('../CompositeTypes/attributes')
+
 const sequelize = require("../../config/database");
 
 const Appointment = sequelize.define(
@@ -34,7 +35,7 @@ const Appointment = sequelize.define(
       allowNull: false,
     },
     appointment_status: {
-      type: DataTypes.ENUM("CONFIRMED", "CANCELLED", "COMPLETED", "NO SHOW"),
+      type: DataTypes.APPOINTMENT_STATUS,
       allowNull: false,
     },
     created_at: {
