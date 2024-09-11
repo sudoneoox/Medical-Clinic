@@ -1,98 +1,145 @@
-
 erDiagram
-    USER {
-        Simple id "int"  
-        Simple username "string" 
-        Simple password "string"
-        Simple email "string"
-        Composite phone "(Area-code,number)" 
-        Simple createdDate "Date"
-        Simple lastLogin "Date"   
-        MultiValued role "{Patient, Doctor, Admin}"
-    }
-    PATIENT {
-        Simple patientId "int" 
-        Composite name "(First, Mid., Last)" 
-        Simple dateOfBirth "Date" 
-        Simple gender "string"  
-        Multivalued ethnicity "{Mixed ethn.}" 
-        Multivalued insurance "{Health, Dental, ...}"  
-        Composite address "(Apt#, House#, Addr,...)" 
-        Multivalued emergencyContact "{Primary, Secondary,...}"
-        Simple PrimaryDoctor "doctorId"
-        Multivalued(Composite) specializedDoctor "{doctorID(specialization, licenseNumber)}"
-
+    USERS {
+        simple_int user_id PK
+        simple_string username UK
+        simple_string passwd
+        simple_string email UK
+        composite phone_num
+        TIME created_at
+        TIME last_login
+        simple_enum user_role
+        simple_bool is_active
     }
     DOCTOR {
-        Simple doctorId "int"
-        Composite name "(First, Mid., Last)"
-        Simple licenseNumber "string"
-        Simple yearsOfExperience "int"
-        Multivalued specialization "{Cardiology, Neurology, ...}"
-        Multivalued officeLocations "{Uptown, Downtown, ...}"
+        simple_int doctor_id PK
+        simple_int user_id UK, FK
+        composite doctor_name
+        simple_string license_number
+        multivalued specialties
+        simple_int years_of_experience
+    }
+    PATIENT {
+        simple_int patient_id PK
+        simple_int user_id UK, FK
+        composite patient_name
+        date dob
+        simple_string gender
+        multivalued ethnicities
+        composite address
+        multivalued emergency_contacts
+        simple_int primary_doctor_id FK
+    }
+    PATIENT_SPECIALIZED_DOCTORS {
+        simple_int patient_id PK, FK
+        simple_int doctor_id PK, FK
     }
     OFFICE {
-        Simple officeId "int"
-        Simple name "string"
-        Composite phone "(Area-code, number)"
-        Simple email "string"
-        Composite address "(Street, City, State, Zip)"
-        Multivalued servicesOffered "{General, Specialized, ...}"
+        simple_int office_id PK
+        simple_string name
+        composite address
+        composite phone
+        simple_string email
+        multivalued services
     }
-    APPOINTMENT {
-        Simple appointmentId "int"
-        Simple appointmentDate "Date"
-        Simple createdDate "Date"
-        Simple reasonForVisit "string"
-        Simple specialistApproval "boolean"
-        Simple status "string"
+    DOCTOR_OFFICES {
+        simple_int doctor_id PK, FK
+        simple_int office_id PK, FK
     }
-    MEDICAL_RECORD {
-        Simple recordId "int"
-        Simple visitDate "Date"
-        Simple notes "string"
-        Simple diagnosis "string"
-        Multivalued testResults "{Blood test, ...}"
+    APPOINTMENTS {
+        simple_int appointment_id PK
+        simple_int patient_id FK
+        simple_int doctor_id FK
+        simple_int office_id FK
+        TIME appointment_datetime
+        interval duration
+        simple_string reason
+        simple_enum status
+        TIME created_at
+        TIME updated_at
+    }
+    MEDICAL_RECORDS {
+        simple_int record_id PK
+        simple_int patient_id FK
+        simple_int doctor_id FK
+        simple_int appointment_id FK
+        TIME created_at
+        TIME updated_at
+        simple_string diagnosis
+        simple_string notes
+        json test_results
     }
     PRESCRIPTION {
-        Simple prescriptionId "int"
-        Simple medication "string"
-        Composite dosage "(Amount, Frequency)"
-        Simple dateIssued "Date"
-        Composite pharmacyDetails "(Name, Address, Phone)"
+        simple_int prescription_id PK
+        simple_int record_id FK
+        composite medication_info
+        TIME date_issued
+        json pharmacy_details
     }
-    SPECIALIST_APPROVAL {
-        Simple approvalId "int"
-        Simple status "string"
-        Simple requestDate "Date"
-        Simple responseDate "Date"
-        Simple notes "string"
+    SPECIALIST_APPROVALS {
+        simple_int approval_id PK
+        simple_int patient_id FK
+        simple_int requesting_doctor_id FK
+        simple_int specialist_id FK
+        TIME requested_at
+        TIME approved_at
+        simple_enum status
     }
     BILLING {
-        Simple billingId "int"
-        Simple amountDue "float"
-        Simple amountPaid "float"
-        Simple paymentStatus "string"
-        Composite insuranceDetails "(?,?)"
+        simple_int billing_id PK
+        simple_int patient_id FK
+        simple_int appointment_id FK
+        decimal amount_due
+        decimal amount_paid
+        simple_enum payment_status
+        TIME created_at
+        TIME updated_at
+    }
+    INSURANCES {
+        simple_int insurance_id PK
+        simple_int patient_id FK
+        composite insurance_info
+        simple_bool is_active
     }
     AUDIT_LOG {
-        Simple logId "int"
-        Simple actionType "string"
-        Simple timestamp "DateTime"
+        simple_int log_id PK
+        simple_string table_name
+        simple_int record_id
+        simple_string action
+        simple_int changed_by FK
+        TIME changed_at
+        json old_values
+        json new_values
+    }
+    NOTIFICATIONS {
+        simple_int notification_id PK
+        simple_int user_id FK
+        simple_enum type_notif
+        simple_string message
+        TIME created_at
+        TIME read_at
+        simple_bool is_read
+        simple_string related_entity_type
+        simple_int related_entity_id
     }
 
-    USER ||--o{ PATIENT : "is a"
-    USER ||--o{ DOCTOR : "is a"
-    PATIENT ||--o{ APPOINTMENT : "has"
-    PATIENT ||--o{ DOCTOR: "has" 
-    DOCTOR ||--o{ APPOINTMENT : "conducts"
-    OFFICE ||--o{ APPOINTMENT : "hosts"
-    PATIENT ||--o{ MEDICAL_RECORD : "has"
-    DOCTOR ||--o{ MEDICAL_RECORD : "creates"
-    MEDICAL_RECORD ||--o{ PRESCRIPTION : "includes"
-    PATIENT ||--o{ SPECIALIST_APPROVAL : "requests"
-    DOCTOR ||--o{ SPECIALIST_APPROVAL : "approves"
+    USERS ||--o{ DOCTOR : "is a"
+    USERS ||--o{ PATIENT : "is a"
+    DOCTOR ||--o{ PATIENT : "is primary doctor for"
+    PATIENT ||--o{ PATIENT_SPECIALIZED_DOCTORS : "has"
+    DOCTOR ||--o{ PATIENT_SPECIALIZED_DOCTORS : "is specialized for"
+    DOCTOR ||--o{ DOCTOR_OFFICES : "works at"
+    OFFICE ||--o{ DOCTOR_OFFICES : "hosts"
+    PATIENT ||--o{ APPOINTMENTS : "has"
+    DOCTOR ||--o{ APPOINTMENTS : "conducts"
+    OFFICE ||--o{ APPOINTMENTS : "hosts"
+    PATIENT ||--o{ MEDICAL_RECORDS : "has"
+    DOCTOR ||--o{ MEDICAL_RECORDS : "creates"
+    APPOINTMENTS ||--o{ MEDICAL_RECORDS : "results in"
+    MEDICAL_RECORDS ||--o{ PRESCRIPTION : "includes"
+    PATIENT ||--o{ SPECIALIST_APPROVALS : "requests"
+    DOCTOR ||--o{ SPECIALIST_APPROVALS : "requests/approves"
     PATIENT ||--o{ BILLING : "receives"
-    APPOINTMENT ||--|| BILLING : "generates"
-    USER ||--o{ AUDIT_LOG : "generates"
-    DOCTOR }|--|| OFFICE : "works at"
+    APPOINTMENTS ||--|| BILLING : "generates"
+    PATIENT ||--o{ INSURANCES : "has"
+    USERS ||--o{ AUDIT_LOG : "generates"
+    USERS ||--o{ NOTIFICATIONS : "receives"
