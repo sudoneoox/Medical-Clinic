@@ -1,4 +1,4 @@
-![ER_DIAGRAM](docs/ER_MedicalDB.png)
+![ER_DIAGRAM](docs/UML_MedicalDB.png)
 
 
 ## Project Directory Structure
