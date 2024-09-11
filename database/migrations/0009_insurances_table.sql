@@ -4,5 +4,9 @@ CREATE TABLE IF NOT EXISTS insurances (
     patient_id INTEGER NOT NULL,
     insurance_info insurance NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (patient_id) REFERENCES patient(patient_id)
+
+    CONSTRAINT fk_insurance_patient
+        FOREIGN KEY (patient_id) 
+        REFERENCES patient(patient_id)
+        ON DELETE CASCADE
 );

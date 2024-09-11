@@ -11,7 +11,18 @@ CREATE TABLE IF NOT EXISTS medical_records (
     test_results JSONB,
 
     -- ptr to the patient and doctor
-    FOREIGN KEY (patient_id) REFERENCES patient(patient_id),
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
-    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+    CONSTRAINT fk_medical_record_patient
+        FOREIGN KEY (patient_id) 
+        REFERENCES patient(patient_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_medical_record_doctor
+        FOREIGN KEY (doctor_id) 
+        REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_medical_record_appointment
+        FOREIGN KEY (appointment_id) 
+        REFERENCES appointments(appointment_id)
+        ON DELETE SET NULL
 );

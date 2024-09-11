@@ -13,6 +13,14 @@ CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER,
     office_id INTEGER,
     PRIMARY KEY (doctor_id, office_id),
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
-    FOREIGN KEY (office_id) REFERENCES office(office_id)
+
+    CONSTRAINT fk_doctor_office_doctor
+        FOREIGN KEY (doctor_id) 
+        REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+        
+    CONSTRAINT fk_doctor_office_office
+        FOREIGN KEY (office_id)
+        REFERENCES office(office_id)
+        ON DELETE CASCADE
 );

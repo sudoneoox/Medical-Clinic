@@ -14,14 +14,14 @@ async function testDBInsertion_Retrieval() {
         middle_name: "Doe",
         last_name: "Smith",
       },
-      phone: {
+      phone_num: {
         country_code: "1",
         area_code: "555",
         phone_number: "12345617",
       },
-      email: "john.sdfd11mith@example.com",
+      email: "john.sdddddfddd11mith@example.com",
       role: "patient",
-      username: "JOHNDdfdOESMITH1",
+      username: "JOHNddDdfdddOddESMITH1",
       user_role: "doctor",
       passwd: "abc123",
     });
@@ -48,7 +48,7 @@ async function testDBInsertion_Retrieval() {
         phone_number: "9876543",
       },
     });
-    
+
     console.log("Office created:", office.toJSON());
 
     // Test Appointment creation

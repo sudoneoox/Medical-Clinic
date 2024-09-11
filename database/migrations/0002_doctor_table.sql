@@ -6,4 +6,8 @@ CREATE TABLE IF NOT EXISTS doctor (
     license_number VARCHAR(50) NOT NULL,
     specialties VARCHAR(50) [],
     years_of_experience INTEGER,
-    FOREIGN KEY (user_id) REFERENCES users(user_id));
+    CONSTRAINT fk_doctor_user 
+        FOREIGN KEY (user_id) 
+        REFERENCES users(user_id) -- on delete delete the referenced row as well
+        ON DELETE CASCADE
+);

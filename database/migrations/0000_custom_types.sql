@@ -13,7 +13,7 @@ CREATE TYPE name AS(
 
 CREATE TYPE address AS (
     -- extra refers to house #, apt #, etc.
-    extra INTEGER,
+    extra VARCHAR(20),
     street VARCHAR(50),
     city VARCHAR(40),
     state VARCHAR(25),
@@ -56,6 +56,14 @@ CREATE TYPE billing_status AS ENUM (
     'REFUNDED'
 );
 
-CREATE TYPE user_role AS ENUM ('admin', 'doctor', 'patient');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
 
 CREATE TYPE specialist_request_status as ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
+CREATE TYPE notification_type as ENUM (
+    'APPOINTMENT REMINDER',
+    'TEST_RESULT_AVAILABLE',
+    'PRESCRIPTION READY',
+    'BILLING REMINDER',
+    'GENERAL NOTIFICATION'
+);

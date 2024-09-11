@@ -8,7 +8,11 @@ CREATE TABLE IF NOT EXISTS AUDIT_LOG(
    changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
    old_values JSONB,
    new_values JSONB,
-   FOREIGN KEY (changed_by) REFERENCES users(user_id)
+
+   CONSTRAINT fk_audit_log_user
+      FOREIGN KEY (changed_by) 
+      REFERENCES users(user_id)
+      ON DELETE SET NULL
 );
 
 -- need to implement trigger function to log changes to the audit log table
