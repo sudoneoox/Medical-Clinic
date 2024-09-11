@@ -6,3 +6,4 @@ CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);
 CREATE INDEX idx_medical_records_patient_id ON medical_records(patient_id);
 CREATE INDEX idx_audit_log_table_name ON audit_log(table_name);
 CREATE INDEX idx_audit_log_changed_at ON audit_log(changed_at);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
