@@ -5,11 +5,19 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    passwd VARCHAR(255) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    passwd VARCHAR(50) NOT NULL,
+    email VARCHAR(50) UNIQUE NOT NULL,
     phone phone_num,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
+    last_login DATE DEFAULT CURRENT_TIMESTAMP,
     role user_role NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE
+    CONSTRAINT chk_role CHECK (role IN ('ADMIN', 'DOCTOR', 'PATIENT')),
+    -- we dont necessarily have to check to make sure that the country code is not null we 
+    -- can assume that its in the US +1
+    CONSTRAINT chk_phone CHECK (
+        phone IS NULL
+        OR (phone).area_code IS NOT NULL
+        AND (phone).phone_number IS NOT NULL
+    ),
+    CONSTRAINT chk_email CHECK (email LIKE '%@%')
 );

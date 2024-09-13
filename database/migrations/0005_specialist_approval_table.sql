@@ -1,9 +1,8 @@
 -- specialist approval requests
 CREATE TABLE IF NOT EXISTS specialist_approvals (
-    -- ids
     approval_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY, -- unique id for each approval
     patient_id INTEGER NOT NULL,
-    requesting_doctor_id INTEGER NOT NULL,
+    requesting_doctor_id INTEGER NOT NULL, -- the primary doctor of the patient or the doctor requesting the specialist
     specialist_id INTEGER NOT NULL,
 
     requested_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -26,5 +25,7 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
         ON DELETE CASCADE,
 
     CONSTRAINT unique_specialist_request
-        UNIQUE ( patient_id, requesting_doctor_id, specialist_id )
+        UNIQUE ( patient_id, requesting_doctor_id, specialist_id ),
+    
+    CHECK ( status IN ('PENDING', 'APPROVED', 'REJECTED') )
 );

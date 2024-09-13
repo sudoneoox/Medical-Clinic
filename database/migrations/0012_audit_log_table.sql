@@ -1,7 +1,7 @@
 -- audit log to track changes in system
 CREATE TABLE IF NOT EXISTS AUDIT_LOG(
    log_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-   table_name VARCHAR(50) NOT NULL,
+   table_name VARCHAR(30) NOT NULL,
    record_id INTEGER NOT NULL,
    action VARCHAR(10) NOT NULL,
    changed_by INTEGER NOT NULL,

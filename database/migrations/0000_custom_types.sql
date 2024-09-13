@@ -6,19 +6,19 @@ CREATE TYPE phone_num AS (
 );
 
 CREATE TYPE name AS(
-    first_name VARCHAR(50),
-    middle_name VARCHAR(50),
-    last_name VARCHAR(50)
+    first_name VARCHAR(30),
+    middle_name VARCHAR(30),
+    last_name VARCHAR(30)
 );
 
 CREATE TYPE address AS (
     -- extra refers to house #, apt #, etc.
     extra VARCHAR(20),
-    street VARCHAR(50),
-    city VARCHAR(40),
-    state VARCHAR(25),
-    zip VARCHAR(10),
-    country VARCHAR(40)
+    street VARCHAR(30),
+    city VARCHAR(20),
+    state VARCHAR(15),
+    zip smallint,
+    country VARCHAR(20)
 );
 
 CREATE TYPE emergency_contact AS (
@@ -28,16 +28,16 @@ CREATE TYPE emergency_contact AS (
 );
 
 CREATE TYPE insurance AS (
-    insurance_name VARCHAR(50),
-    serial_number VARCHAR(50),
+    insurance_name VARCHAR(25),
+    serial_number VARCHAR(30),
     phone phone_num,
     email TEXT
 );
 
 CREATE TYPE medication AS (
     medication_name VARCHAR(50),
-    dosage VARCHAR(50),
-    frequency VARCHAR(50),
+    dosage VARCHAR(20),
+    frequency VARCHAR(20),
     duration INTERVAL
 );
 

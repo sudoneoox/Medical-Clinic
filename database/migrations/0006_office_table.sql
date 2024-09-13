@@ -5,7 +5,14 @@ CREATE TABLE IF NOT EXISTS office  (
     address address NOT NULL,
     phone phone_num,
     email TEXT,
-    services VARCHAR(50) []
+    services VARCHAR(50) [],
+
+    CONSTRAINT chk_phone CHECK (
+        phone IS NULL
+        OR (phone).area_code IS NOT NULL
+        AND (phone).phone_number IS NOT NULL
+    ),
+    CONSTRAINT chk_email CHECK (email IS NULL OR email LIKE '%@%')
 );
 
 -- Doctor-Office Relationship (many to many)
