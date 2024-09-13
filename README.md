@@ -4,6 +4,7 @@
 ## Project Directory Structure
 ### Backend
 contains the server-side code for handling API requests and responses using Node.js and a REST API
+and Sequelize for backend queries and database management.
 - /src: 
   - /config: Configuration files, like db connection settings.
   - /models: Defines the data models that correspond to db tables.
