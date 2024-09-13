@@ -1,132 +1,155 @@
 erDiagram
     USERS {
-        simple_int user_id PK
-        simple_string username UK
-        simple_string passwd
-        simple_string email UK
+        int user_id PK
+        string username UK
+        string passwd
+        string email UK
         composite phone_num
-        TIME created_at
-        TIME last_login
-        simple_enum user_role
-        simple_bool is_active
+        date created_at
+        date last_login
+        enum user_role
     }
     DOCTOR {
-        simple_int doctor_id PK
-        simple_int user_id UK, FK
+        int doctor_id PK
+        int user_id UK, FK
         composite doctor_name
-        simple_string license_number
-        multivalued specialties
-        simple_int years_of_experience
+        string license_number
+        int specialty_id FK
+        int years_of_experience
     }
     PATIENT {
-        simple_int patient_id PK
-        simple_int user_id UK, FK
+        int patient_id PK
+        int user_id UK, FK
         composite patient_name
-        date dob
-        simple_string gender
-        multivalued ethnicities
-        composite address
         multivalued emergency_contacts
-        simple_int primary_doctor_id FK
+        int primary_doctor_id FK
     }
-    PATIENT_SPECIALIZED_DOCTORS {
-        simple_int patient_id PK, FK
-        simple_int doctor_id PK, FK
+    PATIENT_DOCTOR {
+        int patient_id PK, FK
+        int doctor_id PK, FK
+        bool is_primary
     }
     OFFICE {
-        simple_int office_id PK
-        simple_string name
+        int office_id PK
+        string name
         composite address
         composite phone
-        simple_string email
+        string email
         multivalued services
     }
     DOCTOR_OFFICES {
-        simple_int doctor_id PK, FK
-        simple_int office_id PK, FK
+        int doctor_id PK, FK
+        int office_id PK, FK
     }
     APPOINTMENTS {
-        simple_int appointment_id PK
-        simple_int patient_id FK
-        simple_int doctor_id FK
-        simple_int office_id FK
-        TIME appointment_datetime
+        int appointment_id PK
+        int patient_id FK
+        int doctor_id FK
+        int office_id FK
+        date appointment_datetime
         interval duration
-        simple_string reason
-        simple_enum status
-        TIME created_at
-        TIME updated_at
+        string reason
+        enum status
+        date created_at
+        date updated_at
     }
     MEDICAL_RECORDS {
-        simple_int record_id PK
-        simple_int patient_id FK
-        simple_int doctor_id FK
-        simple_int appointment_id FK
-        TIME created_at
-        TIME updated_at
-        simple_string diagnosis
-        simple_string notes
+        int record_id PK
+        int patient_id FK
+        int doctor_id FK
+        int appointment_id FK
+        date created_at
+        date updated_at
+        string diagnosis
+        string notes
         json test_results
     }
     PRESCRIPTION {
-        simple_int prescription_id PK
-        simple_int record_id FK
+        int prescription_id PK
+        int record_id FK
         composite medication_info
-        TIME date_issued
+        timestamp date_issued
         json pharmacy_details
     }
     SPECIALIST_APPROVALS {
-        simple_int approval_id PK
-        simple_int patient_id FK
-        simple_int requesting_doctor_id FK
-        simple_int specialist_id FK
-        TIME requested_at
-        TIME approved_at
-        simple_enum status
+        int approval_id PK
+        int patient_id FK
+        int requesting_doctor_id FK
+        int specialist_id FK
+        timestamp requested_at
+        timestamp approved_at
+        enum status
     }
     BILLING {
-        simple_int billing_id PK
-        simple_int patient_id FK
-        simple_int appointment_id FK
+        int billing_id PK
+        int patient_id FK
+        int appointment_id FK
         decimal amount_due
         decimal amount_paid
-        simple_enum payment_status
-        TIME created_at
-        TIME updated_at
+        enum payment_status
+        date billing_due
+        date created_at
+        date updated_at
     }
     INSURANCES {
-        simple_int insurance_id PK
-        simple_int patient_id FK
+        int insurance_id PK
+        int patient_id FK
         composite insurance_info
-        simple_bool is_active
+        bool is_active
     }
     AUDIT_LOG {
-        simple_int log_id PK
-        simple_string table_name
-        simple_int record_id
-        simple_string action
-        simple_int changed_by FK
-        TIME changed_at
+        int log_id PK
+        string table_name
+        int record_id
+        string action
+        int changed_by FK
+        timestamp changed_at
         json old_values
         json new_values
     }
     NOTIFICATIONS {
-        simple_int notification_id PK
-        simple_int user_id FK
-        simple_enum type_notif
-        simple_string message
-        TIME created_at
-        TIME read_at
-        simple_bool is_read
-        simple_string related_entity_type
-        simple_int related_entity_id
+        int notification_id PK
+        int user_id FK
+        enum type_notif
+        string message
+        date created_at
+        date read_at
+        bool is_read
+        string related_entity_type
+        int related_entity_id
+    }
+    RACE_CODE {
+        smallint race_code PK
+        string race_text
+    }
+    GENDER_CODE {
+        smallint gender_code PK
+        string gender_text
+    }
+    ETHNICITY_CODE {
+        smallint ethnicity_code PK
+        string ethnicity_text
+    }
+    DEMOGRAPHICS {
+        int user_id PK, FK
+        smallint ethnicity FK
+        smallint race FK
+        smallint gender FK
+        date dob
+        int created_by
+        date created_at
+        int updated_by
+        date updated_at
+    }
+    SPECIALTIES {
+        int specialty_id PK
+        string specialty_name
     }
 
     USERS ||--o{ DOCTOR : "is a"
     USERS ||--o{ PATIENT : "is a"
-    DOCTOR ||--o{ PATIENT : "is primary doctor for"
-    PATIENT ||--o{ PATIENT_SPECIALIZED_DOCTORS : "has"
-    DOCTOR ||--o{ PATIENT_SPECIALIZED_DOCTORS : "is specialized for"
+    DOCTOR ||--o{ PATIENT_DOCTOR : "has"
+    PATIENT ||--o{ PATIENT_DOCTOR : "has"
     DOCTOR ||--o{ DOCTOR_OFFICES : "works at"
     OFFICE ||--o{ DOCTOR_OFFICES : "hosts"
     PATIENT ||--o{ APPOINTMENTS : "has"
@@ -143,3 +166,8 @@ erDiagram
     PATIENT ||--o{ INSURANCES : "has"
     USERS ||--o{ AUDIT_LOG : "generates"
     USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--|| DEMOGRAPHICS : "has"
+    RACE_CODE ||--o{ DEMOGRAPHICS : "categorizes"
+    GENDER_CODE ||--o{ DEMOGRAPHICS : "categorizes"
+    ETHNICITY_CODE ||--o{ DEMOGRAPHICS : "categorizes"
+    DOCTOR ||--|| SPECIALTIES : "has"
