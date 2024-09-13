@@ -43,8 +43,9 @@ echo "Concatenating migration files into $COMBINED_SQL_FILE..."
 cat "${migration_files[@]}" > $COMBINED_SQL_FILE
 
 # Execute combined SQL file
-execute_sql_file "$COMBINED_SQL_FILE"
-
+if [[$3 == "run"]] ; then
+    execute_sql_file "$COMBINED_SQL_FILE"
+fi
 # Cleanup the combined SQL file after execution
 # rm $COMBINED_SQL_FILE
 
