@@ -182,7 +182,7 @@ and Sequelize for backend queries and database management.
   - /config: Configuration files, like db connection settings.
   - /models: Defines the data models that correspond to db tables.
   - /routes: Defines the API endpoints and their corresponding handlers.
-  - testDbConnection.js: util script to test the db connection.
+  - /tests: tests directory to see db connection details, try to modify db from backend API, etc.
 - server.js: The main entry point for backend.
 
 ### Frontend
