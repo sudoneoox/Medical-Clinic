@@ -14,7 +14,5 @@ CREATE TABLE IF NOT EXISTS medical_records (
     -- ptr to the patient and doctor
     CONSTRAINT fk_medical_record_patient FOREIGN KEY (patient_id) REFERENCES patient(patient_id) ON DELETE CASCADE,
     CONSTRAINT fk_medical_record_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE,
-    CONSTRAINT fk_medical_record_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE
-    SET
-        NULL
+    CONSTRAINT fk_medical_record_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE SET NULL
 );

@@ -11,7 +11,8 @@ CREATE TABLE notifications (
     -- appointment, medical_record, ie what entity is related to this notification
     related_entitiy_type VARCHAR(30),
     related_entity_id INTEGER,
-    CONSTRAINT fk_notification_sender FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT fk_notification_receiver FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT chk_notif CHECK (type_notif IN ('APPOINTMENT REMINDER', 'TEST_RESULT_AVAILABLE', 'PRESCRIPTION READY', 'BILLING REMINDER', 'GENERAL NOTIFICATION'))
 );
+

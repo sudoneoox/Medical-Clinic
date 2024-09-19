@@ -1,15 +1,4 @@
 -- composite type phone number for analysis
-CREATE TYPE phone_num AS (
-    country_code VARCHAR(5),
-    area_code VARCHAR(5),
-    phone_number VARCHAR(15)
-);
-
-CREATE TYPE name AS(
-    first_name VARCHAR(30),
-    middle_name VARCHAR(30),
-    last_name VARCHAR(30)
-);
 
 CREATE TYPE address AS (
     -- extra refers to house #, apt #, etc.
@@ -22,15 +11,15 @@ CREATE TYPE address AS (
 );
 
 CREATE TYPE emergency_contact AS (
-    contact_name name,
-    phone phone_num,
+    contact_name VARCHAR(50),
+    phone VARCHAR(20),
     email TEXT
 );
 
 CREATE TYPE insurance AS (
     insurance_name VARCHAR(25),
     serial_number VARCHAR(30),
-    phone phone_num,
+    phone VARCHAR(20),
     email TEXT
 );
 
@@ -56,7 +45,7 @@ CREATE TYPE billing_status AS ENUM (
     'REFUNDED'
 );
 
-CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT', 'NURSE', 'RECEPTIONIST');
 
 CREATE TYPE specialist_request_status as ENUM ('PENDING', 'APPROVED', 'REJECTED');
 

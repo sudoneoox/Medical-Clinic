@@ -1,17 +1,12 @@
 -- office locations
 CREATE TABLE IF NOT EXISTS office  (
     office_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name VARCHAR(50) NOT NULL,
-    address address NOT NULL,
-    phone phone_num,
+    office_name VARCHAR(50) NOT NULL,
+    office_address address NOT NULL,
+    phone VARCHAR(20),
     email TEXT,
     services VARCHAR(50) [],
 
-    CONSTRAINT chk_phone CHECK (
-        phone IS NULL
-        OR (phone).area_code IS NOT NULL
-        AND (phone).phone_number IS NOT NULL
-    ),
     CONSTRAINT chk_email CHECK (email IS NULL OR email LIKE '%@%')
 );
 

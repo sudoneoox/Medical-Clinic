@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS patient (
     patient_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id INTEGER UNIQUE NOT NULL,
-    patient_name name NOT NULL,
+    patient_name VARCHAR(50) NOT NULL,
     emergency_contacts emergency_contact [],
     primary_doctor_id INTEGER,
     specialized_doctors_id INTEGER [],

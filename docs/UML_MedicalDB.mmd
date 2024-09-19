@@ -4,7 +4,7 @@ erDiagram
         string username UK
         string passwd
         string email UK
-        composite phone_num
+        string phone
         date created_at
         date last_login
         enum user_role
@@ -12,15 +12,14 @@ erDiagram
     DOCTOR {
         int doctor_id PK
         int user_id UK, FK
-        composite doctor_name
+        string doctor_name
         string license_number
-        int specialty_id FK
         int years_of_experience
     }
     PATIENT {
         int patient_id PK
         int user_id UK, FK
-        composite patient_name
+        string patient_name
         multivalued emergency_contacts
         int primary_doctor_id FK
     }
@@ -31,15 +30,29 @@ erDiagram
     }
     OFFICE {
         int office_id PK
-        string name
-        composite address
-        composite phone
+        string office_name
+        composite office_address
+        string phone
         string email
         multivalued services
     }
     DOCTOR_OFFICES {
         int doctor_id PK, FK
         int office_id PK, FK
+        time shift_start
+        time shift_end
+    }
+    NURSE_OFFICES {
+        int nurse_id PK, FK
+        int office_id PK, FK
+        time shift_start
+        time shift_end
+    }
+    RECEPTIONIST_OFFICES {
+        int receptionist_id PK, FK
+        int office_id PK, FK
+        time shift_start
+        time shift_end
     }
     APPOINTMENTS {
         int appointment_id PK
@@ -52,6 +65,8 @@ erDiagram
         enum status
         date created_at
         date updated_at
+        int booked_by FK
+        int attending_nurse FK
     }
     MEDICAL_RECORDS {
         int record_id PK
@@ -63,6 +78,8 @@ erDiagram
         string diagnosis
         string notes
         json test_results
+        int created_by FK
+        int updated_by FK
     }
     PRESCRIPTION {
         int prescription_id PK
@@ -90,6 +107,7 @@ erDiagram
         date billing_due
         date created_at
         date updated_at
+        int handled_by FK
     }
     INSURANCES {
         int insurance_id PK
@@ -101,7 +119,7 @@ erDiagram
         int log_id PK
         string table_name
         int record_id
-        string action
+        string audit_action
         int changed_by FK
         timestamp changed_at
         json old_values
@@ -109,7 +127,8 @@ erDiagram
     }
     NOTIFICATIONS {
         int notification_id PK
-        int user_id FK
+        int sender_id FK
+        int receiver_id FK
         enum type_notif
         string message
         date created_at
@@ -117,18 +136,6 @@ erDiagram
         bool is_read
         string related_entity_type
         int related_entity_id
-    }
-    RACE_CODE {
-        smallint race_code PK
-        string race_text
-    }
-    GENDER_CODE {
-        smallint gender_code PK
-        string gender_text
-    }
-    ETHNICITY_CODE {
-        smallint ethnicity_code PK
-        string ethnicity_text
     }
     DEMOGRAPHICS {
         int user_id PK, FK
@@ -145,19 +152,65 @@ erDiagram
         int specialty_id PK
         string specialty_name
     }
+    RECEPTIONIST {
+        int receptionist_id PK
+        int user_id FK
+        string receptionist_name
+    }
+    NURSE {
+        int nurse_id PK
+        int user_id UK, FK
+        string nurse_name
+        string license_number
+        string specialization
+        int years_of_experience
+    }
+    APPOINTMENT_NOTES {
+        int note_id PK
+        int appointment_id FK
+        string note_text
+        int created_by FK
+        timestamp created_at
+    }
+    DOCTOR_SPECIALTIES {
+        int doctor_id PK, FK
+        int specialty_id PK, FK
+    }
+    APPOINTMENT_CANCELLATIONS {
+        int cancellation_id PK
+        int appointment_id FK
+        string canceled_reason
+        timestamp canceled_at
+    }
+    RACE_CODE {
+        smallint race_code PK
+        string race_text
+    }
+    GENDER_CODE {
+        smallint gender_code PK
+        string gender_text
+    }
+    ETHNICITY_CODE {
+        smallint ethnicity_code PK
+        string ethnicity_text
+    }
 
     USERS ||--o{ DOCTOR : "is a"
     USERS ||--o{ PATIENT : "is a"
+    USERS ||--o{ RECEPTIONIST : "is a"
+    USERS ||--o{ NURSE : "is a"
     DOCTOR ||--o{ PATIENT_DOCTOR : "has"
     PATIENT ||--o{ PATIENT_DOCTOR : "has"
     DOCTOR ||--o{ DOCTOR_OFFICES : "works at"
     OFFICE ||--o{ DOCTOR_OFFICES : "hosts"
-    PATIENT ||--o{ APPOINTMENTS : "has"
-    DOCTOR ||--o{ APPOINTMENTS : "conducts"
+    NURSE ||--o{ NURSE_OFFICES : "works at"
+    OFFICE ||--o{ NURSE_OFFICES : "hosts"
+    PATIENT }o--o{ APPOINTMENTS : "has"
+    DOCTOR }o--o{ APPOINTMENTS : "conducts"
     OFFICE ||--o{ APPOINTMENTS : "hosts"
     PATIENT ||--o{ MEDICAL_RECORDS : "has"
     DOCTOR ||--o{ MEDICAL_RECORDS : "creates"
-    APPOINTMENTS ||--o{ MEDICAL_RECORDS : "results in"
+    APPOINTMENTS |o--o{ MEDICAL_RECORDS : "results in"
     MEDICAL_RECORDS ||--o{ PRESCRIPTION : "includes"
     PATIENT ||--o{ SPECIALIST_APPROVALS : "requests"
     DOCTOR ||--o{ SPECIALIST_APPROVALS : "requests/approves"
@@ -165,9 +218,18 @@ erDiagram
     APPOINTMENTS ||--|| BILLING : "generates"
     PATIENT ||--o{ INSURANCES : "has"
     USERS ||--o{ AUDIT_LOG : "generates"
-    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ NOTIFICATIONS : "sends/receives"
     USERS ||--|| DEMOGRAPHICS : "has"
+    DOCTOR }o--o{ DOCTOR_SPECIALTIES : "has"
+    SPECIALTIES ||--o{ DOCTOR_SPECIALTIES : "belongs to"
+    RECEPTIONIST ||--o{ APPOINTMENTS : "books"
+    RECEPTIONIST ||--o{ RECEPTIONIST_OFFICES : "works at"
+    OFFICE ||--o{ RECEPTIONIST_OFFICES : "hosts"
+    NURSE }o--o{ APPOINTMENTS : "attends"
+    APPOINTMENTS ||--o{ APPOINTMENT_NOTES : "has"
+    USERS ||--o{ APPOINTMENT_NOTES : "creates"
+    APPOINTMENTS ||--o| APPOINTMENT_CANCELLATIONS : "may have"
+    RECEPTIONIST ||--o{ BILLING : "handles"
     RACE_CODE ||--o{ DEMOGRAPHICS : "categorizes"
     GENDER_CODE ||--o{ DEMOGRAPHICS : "categorizes"
     ETHNICITY_CODE ||--o{ DEMOGRAPHICS : "categorizes"
-    DOCTOR ||--|| SPECIALTIES : "has"
