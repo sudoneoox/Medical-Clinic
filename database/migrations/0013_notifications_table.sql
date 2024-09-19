@@ -3,7 +3,7 @@ CREATE TABLE notifications (
     notification_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     sender_id INTEGER NOT NULL,
     receiver_id INTEGER NOT NULL,
-    type_notif notification_type DEFAULT 'GENERAL' NOT NULL,
+    type_notif notification_type NOT NULL,
     message TEXT NOT NULL,
     created_at DATE DEFAULT CURRENT_DATE NOT NULL,
     read_at DATE,

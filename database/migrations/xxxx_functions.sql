@@ -14,7 +14,7 @@ UPDATE
 
 -- function so only nurse and doctors can create medical records 
 CREATE OR REPLACE FUNCTION check_medical_record_creator()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $ $
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM users 
@@ -25,7 +25,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ $ LANGUAGE plpgsql;
 
 CREATE TRIGGER enforce_medical_record_creator
 BEFORE INSERT ON medical_records

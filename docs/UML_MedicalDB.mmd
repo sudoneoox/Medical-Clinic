@@ -227,7 +227,6 @@ erDiagram
     OFFICE ||--o{ RECEPTIONIST_OFFICES : "hosts"
     NURSE }o--o{ APPOINTMENTS : "attends"
     APPOINTMENTS ||--o{ APPOINTMENT_NOTES : "has"
-    USERS ||--o{ APPOINTMENT_NOTES : "creates"
     APPOINTMENTS ||--o| APPOINTMENT_CANCELLATIONS : "may have"
     RECEPTIONIST ||--o{ BILLING : "handles"
     RACE_CODE ||--o{ DEMOGRAPHICS : "categorizes"

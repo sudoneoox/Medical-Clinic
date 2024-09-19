@@ -7,11 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     passwd VARCHAR(50) NOT NULL,
     email VARCHAR(50) UNIQUE NOT NULL,
-    phone VARCHAR(20),
+    phone VARCHAR(20) NOT NULL,
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
     last_login DATE DEFAULT CURRENT_TIMESTAMP,
     role user_role NOT NULL,
-    CONSTRAINT chk_role CHECK (role IN ('ADMIN', 'DOCTOR', 'PATIENT', 'RECEPTIONIST', 'NURSE')),
-
     CONSTRAINT chk_email CHECK (email LIKE '%@%')
 );
