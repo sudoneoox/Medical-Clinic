@@ -1,6 +1,6 @@
 // https://dev.to/projectescape/the-comprehensive-sequelize-cheatsheet-3m1m#relations
 // defines all the relations btween the models
-const {
+import {
   User,
   Doctor,
   Patient,
@@ -13,7 +13,7 @@ const {
   Prescription,
   SpecialistApproval,
   Billing,
-} = require("./tableExports");
+} from './tableExports';
 
 module.exports = function initAssociations() {
   // do associations here based on the .sql files in the database/migrations directory or the ER model in the docs directory

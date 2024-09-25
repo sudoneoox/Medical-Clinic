@@ -1,10 +1,5 @@
-const DataTypes = require('../CompositeTypes/attributes')
-const { ADDRESS, NAME, EMERGENCY_CONTACT } = require("../CompositeTypes/attributes");
-
-
-
-
-const sequelize = require("../../config/database");
+import { DataTypes } from '../CompositeTypes/attributes';
+import { sequelize } from '../../config/database';
 
 const Patient = sequelize.define(
   "Patient",

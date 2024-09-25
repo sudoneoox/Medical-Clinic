@@ -1,7 +1,5 @@
-const DataTypes = require('../CompositeTypes/attributes')
-
-
-const sequelize = require("../../config/database");
+import { DataTypes } from '../CompositeTypes/attributes';
+import { sequelize } from '../../config/database';
 
 const MedicalRecord = sequelize.define(
   "MedicalRecord",
