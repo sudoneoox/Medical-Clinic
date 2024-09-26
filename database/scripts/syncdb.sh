@@ -15,7 +15,8 @@ execute_sql_file() {
     local file=$1
     echo "Executing $file..."
     # psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f "$file"
-    mysql -u $DB_USER -p $DB_PASSWORD $DB_NAME < "$file"
+    mariadb --user="$DB_USER" --database="$DB_NAME" --password="$DB_PASSWORD" < "$file"
+    
     if [ $? -ne 0 ]; then
         echo "Error executing $file"
         exit 1
