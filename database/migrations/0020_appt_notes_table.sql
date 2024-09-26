@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     note_id INT,
     appointment_id INT NOT NULL,
     note_text TEXT NOT NULL,
-    created_at TIMESTAMP CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by_nurse INT,
     created_by_receptionist INT,
     CONSTRAINT check_creator_type 

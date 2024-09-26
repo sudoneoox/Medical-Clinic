@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS nurse (
     nurse_id INT,
-    user_id, INT UNIQUE NOT NULL,
+    user_id INT UNIQUE NOT NULL,
     nurse_name VARCHAR(50) NOT NULL,
     license_number VARCHAR(30) NOT NULL,
     specialization VARCHAR(50),
