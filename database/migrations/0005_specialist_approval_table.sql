@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     requesting_doctor_id INTEGER NOT NULL, -- the primary doctor of the patient or the doctor requesting the specialist
     specialist_id INTEGER NOT NULL,
 
-    requested_at DATE DEFAULT CURRENT_TIMESTAMP,
-    approved_at DATE,
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP,
     specialist_status ENUM('APPROVED', 'PENDING', 'REJECTED') DEFAULT 'PENDING' -- PENDING, APPROVED, REJECTED
 
     -- CONSTRAINT fk_approval_patient
