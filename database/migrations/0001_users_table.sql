@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     user_password VARCHAR(50) NOT NULL,
     user_email VARCHAR(50) UNIQUE NOT NULL,
     user_phone VARCHAR(20) UNIQUE NOT NULL,
-    account_created_at DATE DEFAULT CURRENT_TIMESTAMP,
-    account_last_login DATE DEFAULT CURRENT_TIMESTAMP,
+    account_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    account_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_role ENUM(
         "ADMIN",
         "PATIENT",

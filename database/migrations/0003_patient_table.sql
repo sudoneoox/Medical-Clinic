@@ -3,7 +3,7 @@
 -- patient table, extends user
 CREATE TABLE IF NOT EXISTS patients (
     patient_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id INTEGER UNIQUE NOT NULL,
+    user_id INTEGER UNIQUE NOT NULL, -- fk
     patient_name VARCHAR(50) NOT NULL,
     emergency_contacts JSON 
 );
