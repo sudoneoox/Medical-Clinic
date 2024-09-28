@@ -1,32 +1,39 @@
-import { DataTypes } from "sequelize"
+import { DataTypes } from "@sequelize/core";
 import { classToInvokable } from "sequelize/lib/utils";
 
 // Workaround to get the actual ABSTRACT class
 const ABSTRACT = DataTypes.ABSTRACT.prototype.constructor;
 
+class ADDRESS extends ABSTRACT {
+  static key = "ADDRESS";
+  toSql() {
+    return DataTypes.JSON;
+  }
+}
 
 class EMERGENCY_CONTACT extends ABSTRACT {
   static key = "EMERGENCY_CONTACT";
   toSql() {
-    return "emergency_contact";
+    return DataTypes.JSON;
   }
 }
 
 class INSURANCE extends ABSTRACT {
   static key = "INSURANCE";
   toSql() {
-    return "insurance";
+    return DataTypes.JSON;
   }
 }
 
 class MEDICATION extends ABSTRACT {
   static key = "MEDICATION";
   toSql() {
-    return "medication";
+    return DataTypes.JSON;
   }
 }
 
 // Apply the workaround to all custom types
+DataTypes.ADDRESS = classToInvokable(ADDRESS);
 DataTypes.EMERGENCY_CONTACT = classToInvokable(EMERGENCY_CONTACT);
 DataTypes.INSURANCE = classToInvokable(INSURANCE);
 DataTypes.MEDICATION = classToInvokable(MEDICATION);
@@ -38,6 +45,7 @@ DataTypes.APPOINTMENT_STATUS = DataTypes.ENUM(
   "COMPLETED",
   "NO SHOW"
 );
+
 DataTypes.BILLING_STATUS = DataTypes.ENUM(
   "PAID",
   "NOT PAID",
@@ -46,7 +54,13 @@ DataTypes.BILLING_STATUS = DataTypes.ENUM(
   "REFUNDED"
 );
 
-DataTypes.USER_ROLE = DataTypes.ENUM("ADMIN", "DOCTOR", "PATIENT", "NURSE", "RECEPTIONIST");
+DataTypes.USER_ROLE = DataTypes.ENUM(
+  "ADMIN",
+  "DOCTOR",
+  "PATIENT",
+  "NURSE",
+  "RECEPTIONIST"
+);
 
 DataTypes.SPECIALIST_REQUEST_STATUS = DataTypes.ENUM(
   "PENDING",
@@ -54,4 +68,12 @@ DataTypes.SPECIALIST_REQUEST_STATUS = DataTypes.ENUM(
   "REJECTED"
 );
 
-module.exports = DataTypes;
+DataTypes.NOTIFICATION_TYPE = DataTypes.ENUM(
+  "APPOINTMENT REMINDER",
+  "TEST_RESULT_AVAILABLE",
+  "PRESCRIPTION READY",
+  "BILLING REMINDER",
+  "GENERAL"
+);
+
+export default DataTypes;

@@ -3,8 +3,6 @@ import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
 
 export default function LoginPage() {
-  const [userLogin, userSignup] = useState("userLogin");
-
   const navbaritems = [];
 
   const userSignupButton = {

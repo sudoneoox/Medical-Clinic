@@ -1,31 +1,33 @@
 import  DataTypes from '../CompositeTypes/customTypes.js';
 import sequelize from "../../config/database.js";
 
-  const Prescription = sequelize.define(
-    "Prescription",
+  const AppointmentNotes = sequelize.define(
+    "AppointmentNotes",
     {
-      prescription_id: {
+      note_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      medication_info: {
-        type: DataTypes.MEDICATION,
+      note_text: {
+        type: DataTypes.TEXT,
         allowNull: false,
       },
-      date_issued: {
+      created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
-      pharmacy_details: {
-        type: DataTypes.JSON,
+      created_by_nurse: {
+        type: DataTypes.INTEGER,
+      },
+      created_by_receptionist: {
+        type: DataTypes.INTEGER,
       },
     },
     {
-      tableName: "prescription",
+      tableName: "appointment_notes",
       timestamps: false,
     }
   );
 
-
-export default Prescription;
+export default AppointmentNotes;

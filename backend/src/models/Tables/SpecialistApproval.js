@@ -1,42 +1,30 @@
-import { DataTypes } from '../CompositeTypes/attributes';
-import { sequelize } from '../../config/database';
+import  DataTypes from '../CompositeTypes/customTypes.js';
+import sequelize from "../../config/database.js";
 
-const SpecialistApproval = sequelize.define(
-  "SpecialistApproval",
-  {
-    approval_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+  const SpecialistApproval = sequelize.define(
+    "SpecialistApproval",
+    {
+      approval_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      requested_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+      approved_at: {
+        type: DataTypes.DATE,
+      },
+      status: {
+        type: DataTypes.SPECIALIST_REQUEST_STATUS,
+        allowNull: false,
+      },
     },
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    requesting_doctor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    specialist_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    requested_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    approved_at: {
-      type: DataTypes.DATE,
-    },
-    specialist_request_status: {
-      type:DataTypes.SPECIALIST_REQUEST_STATUS,
-      allowNull: false,
-    },
-  },
-  {
-    tableName: "specialist_approvals",
-    timestamps: false,
-  }
-);
+    {
+      tableName: "specialist_approvals",
+      timestamps: false,
+    }
+  );
 
-module.exports = SpecialistApproval;
+export default SpecialistApproval;

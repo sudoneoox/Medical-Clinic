@@ -1,11 +1,10 @@
 import  DataTypes from '../CompositeTypes/customTypes.js';
 import sequelize from "../../config/database.js";
 
-  // ! Doctors
-  const Doctor = sequelize.define(
-    "Doctor",
+  const Nurse = sequelize.define(
+    "Nurse",
     {
-      doctor_id: {
+      nurse_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -15,7 +14,7 @@ import sequelize from "../../config/database.js";
         unique: true,
         allowNull: false,
       },
-      doctor_name: {
+      nurse_name: {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
@@ -23,19 +22,22 @@ import sequelize from "../../config/database.js";
         type: DataTypes.STRING(30),
         allowNull: false,
       },
+      specialization: {
+        type: DataTypes.STRING(50),
+      },
       years_of_experience: {
         type: DataTypes.INTEGER,
         validate: {
           min: 0,
-          max: 90,
+          max: 60,
         },
       },
     },
     {
-      tableName: "doctor",
+      tableName: "nurse",
       timestamps: false,
     }
   );
 
 
-export default Doctor;
+export default Nurse;

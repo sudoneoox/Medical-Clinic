@@ -1,8 +1,8 @@
 import  DataTypes from '../CompositeTypes/customTypes.js';
 import sequelize from "../../config/database.js";
 
-  const DoctorOffices = sequelize.define(
-    "DoctorOffices",
+  const NurseOffices = sequelize.define(
+    "NurseOffices",
     {
       shift_start: {
         type: DataTypes.TIME,
@@ -12,9 +12,9 @@ import sequelize from "../../config/database.js";
       },
     },
     {
-      tableName: "doctor_offices",
+      tableName: "nurse_offices",
       timestamps: false,
     }
   );
 
-export default DoctorOffices;
+export default NurseOffices;
