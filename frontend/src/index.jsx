@@ -10,6 +10,8 @@ import LoginPage from "./routes/LoginPage.jsx";
 import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
+import Registrations from "./routes/Registrations.jsx";
+
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -20,24 +22,29 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "About",
+    path: "about",
     element: <AboutPage />,
     errorElement: <ErrorPage />,
   },
   {
-    path: "Login",
+    path: "login",
     element: <LoginPage />,
     errorElement: <ErrorPage />,
   },
   {
-    path: "Services",
+    path: "services",
     element: <ServicesPage />,
     errorElement: <ErrorPage />,
   },
   {
-    path: "Contact",
+    path: "contact",
     element: <ContactPage />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: 'registrations/new',
+    element: <Registrations/>,
+    errorElement: <ErrorPage/>,
   },
   {
     path: "Portal/:userID",
