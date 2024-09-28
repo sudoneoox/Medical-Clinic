@@ -1,38 +1,39 @@
-import { DataTypes } from '../CompositeTypes/attributes';
-import { sequelize } from '../../config/database';
+import  DataTypes from '../CompositeTypes/customTypes.js';
+import sequelize from "../../config/database.js";
 
-const Office = sequelize.define(
-  "Office",
-  {
-    office_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+  const Office = sequelize.define(
+    "Office",
+    {
+      office_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      office_name: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      office_address: {
+        type: DataTypes.MEDICATION,
+        allowNull: false,
+      },
+      phone: {
+        type: DataTypes.STRING(20),
+      },
+      email: {
+        type: DataTypes.TEXT,
+        validate: {
+          isEmail: true,
+        },
+      },
+      services: {
+        type: DataTypes.JSON, // ! Array of STRING(50)
+      },
     },
-    name: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.ADDRESS,
-      unique: false,
-    },
-    phone_num: {
-      type: DataTypes.PHONE_NUM,
-      unique: false,
-    
-    },
-    email: {
-      type: DataTypes.TEXT,
-    },
-    services: {
-      type: DataTypes.ARRAY(DataTypes.STRING(50)),
-    },
-  },
-  {
-    tableName: "office",
-    timestamps: false,
-  }
-);
+    {
+      tableName: "office",
+      timestamps: false,
+    }
+  );
 
-module.exports = Office;
+export default Office

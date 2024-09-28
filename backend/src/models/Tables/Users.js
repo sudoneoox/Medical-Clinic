@@ -1,6 +1,5 @@
-import { DataTypes } from '../CompositeTypes/attributes';
-import { sequelize } from '../../config/database';
-
+import DataTypes from "../CompositeTypes/customTypes.js";
+import sequelize from "../../config/database.js";
 
 const User = sequelize.define(
   "User",
@@ -12,43 +11,38 @@ const User = sequelize.define(
     },
     username: {
       type: DataTypes.STRING(50),
-      allowNull: false,
       unique: true,
+      allowNull: false,
     },
     passwd: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(50),
       allowNull: false,
-
     },
     email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
+      type: DataTypes.STRING(50),
       unique: true,
+      allowNull: false,
       validate: {
         isEmail: true,
       },
     },
-    // maybe have to make my our own function have to test but this is how people did it online?
-    phone_num: {
-      type:DataTypes.PHONE_NUM,
-      unique: false,
-
+    phone: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
     },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+      allowNull: false,
     },
     last_login: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-    },
-    user_role: {
-      type: DataTypes.USER_ROLE,
       allowNull: false,
     },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
+    role: {
+      type: DataTypes.USER_ROLE,
+      allowNull: false,
     },
   },
   {
@@ -57,4 +51,4 @@ const User = sequelize.define(
   }
 );
 
-module.exports = User;
+export default User;

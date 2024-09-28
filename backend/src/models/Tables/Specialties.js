@@ -1,27 +1,23 @@
 import  DataTypes from '../CompositeTypes/customTypes.js';
 import sequelize from "../../config/database.js";
 
-  const Insurance = sequelize.define(
-    "Insurance",
+  const Specialty = sequelize.define(
+    "Specialty",
     {
-      insurance_id: {
+      specialty_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      insurance_info: {
-        type: DataTypes.INSURANCE,
+      specialty_name: {
+        type: DataTypes.STRING(50),
         allowNull: false,
-      },
-      is_active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true,
       },
     },
     {
-      tableName: "insurances",
+      tableName: "specialties",
       timestamps: false,
     }
   );
 
-export default Insurance;
+export default Specialty;

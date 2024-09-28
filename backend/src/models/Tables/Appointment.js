@@ -1,5 +1,5 @@
-import { DataTypes } from '../CompositeTypes/attributes';
-import { sequelize } from '../../config/database';
+import DataTypes from "../CompositeTypes/customTypes.js";
+import sequelize from "../../config/database.js";
 
 const Appointment = sequelize.define(
   "Appointment",
@@ -9,31 +9,18 @@ const Appointment = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    doctor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    office_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     appointment_datetime: {
       type: DataTypes.DATE,
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER, // Storing duration in minutes maybe need to change in sql? migrations
+      type: DataTypes.INTEGER, // ! Store duration in minutes
       allowNull: false,
     },
     reason: {
       type: DataTypes.TEXT,
-      allowNull: false,
     },
-    appointment_status: {
+    status: {
       type: DataTypes.APPOINTMENT_STATUS,
       allowNull: false,
     },
@@ -45,6 +32,12 @@ const Appointment = sequelize.define(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    booked_by: {
+      type: DataTypes.INTEGER,
+    },
+    attending_nurse: {
+      type: DataTypes.INTEGER,
+    },
   },
   {
     tableName: "appointments",
@@ -52,4 +45,4 @@ const Appointment = sequelize.define(
   }
 );
 
-module.exports = Appointment;
+export default Appointment;

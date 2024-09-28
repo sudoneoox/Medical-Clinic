@@ -1,48 +1,47 @@
-import { DataTypes } from '../CompositeTypes/attributes';
-import { sequelize } from '../../config/database';
+import  DataTypes from '../CompositeTypes/customTypes.js';
+import sequelize from "../../config/database.js";
 
-const Billing = sequelize.define(
-  "Billing",
-  {
-    billing_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+  const Billing = sequelize.define(
+    "Billing",
+    {
+      billing_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      amount_due: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      amount_paid: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      payment_status: {
+        type: DataTypes.BILLING_STATUS,
+        allowNull: false,
+      },
+      billing_due: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+      },
+      handled_by: {
+        type: DataTypes.INTEGER,
+      },
     },
-    patient_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    appointment_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    amount_due: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-    },
-    amount_paid: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    billing_status: {
-      type: DataTypes.BILLING_STATUS,
-      allowNull: false,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    tableName: "billing",
-    timestamps: false,
-  }
-);
+    {
+      tableName: "billing",
+      timestamps: false,
+    }
+  );
 
-module.exports = Billing;
+export default Billing;
