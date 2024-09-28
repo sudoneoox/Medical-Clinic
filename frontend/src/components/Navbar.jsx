@@ -75,7 +75,7 @@ export default function Navbar({ items = null, customButtonProps = {} }) {
     <nav className="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         {/* /* Navbar Title */ }
-        {customButtonProps['buttonText'] === 'Login' || customButtonProps['buttonText'] === 'Sign Up' ? (
+        {customButtonProps['buttonText'] === 'Sign in' || customButtonProps['buttonText'] === 'Sign Up' ? (
           <Link
             to={`/`}
             className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"

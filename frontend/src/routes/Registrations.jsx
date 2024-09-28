@@ -2,61 +2,122 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
 
-// To add aditional fileds for the forms
-const AdditionalInfo = ({ fields, onChange }) => {
-  return (
-    <div className="space-y-4">
-      {fields.map((field) => (
-        <div key={field.name}>
-          <label htmlFor={field.name} className="block text-sm font-medium text-gray-700">
-            {field.label}
-          </label>
-          <input
-            type={field.type}
-            name={field.name}
-            id={field.name}
-            onChange={onChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
+// Component for rendering a form field, depending on its type
+const FormField = ({ field, value, onChange }) => (
+  <div key={field.name}>
+    <label htmlFor={field.name} className="block text-sm font-medium text-gray-700">
+      {field.label}
+    </label>
+    {field.type === "select" ? (
+      <select
+        name={field.name}
+        id={field.name}
+        value={value}
+        onChange={onChange}
+        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+      >
+        <option value="">Select {field.label}</option>
+        {field.options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type={field.type}
+        name={field.name}
+        id={field.name}
+        value={value}
+        onChange={onChange}
+        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        pattern={field.pattern}
+        title={field.title}
+        required={field.required}
+      />
+    )}
+  </div>
+);
 
 export default function SignUp() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
-  const [additionalInfo, setAdditionalInfo] = useState({});
-
+    // State to manage form data
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    phone: "",
+    role: "",
+    providerType: "",
+    licenseNumber: "",
+    employeeId: "",
+  });
+    // State to manage form step
+  const [step, setStep] = useState(1);
+  // Navbar items for the navigation component
   const navbarItems = [];
+
+    // Props for login button on the navbar
 
   const userLoginButton = {
     buttonText: "Sign in",
     buttonLink: "/login",
-    buttonClassName:
-      "text-blue-600 hover:text-blue-800 font-semibold focus:outline-none focus:underline",
+    buttonClassName: "text-blue-600 hover:text-blue-800 font-semibold focus:outline-none focus:underline",
   };
 
-  // For the information were asking for the database 
-  const additionalFields = [
-    { name: "fullName", label: "Full Name", type: "text" },
-    { name: "phoneNumber", label: "Phone Number", type: "tel" },
-  ];
+    // Handle input change for form fields
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+
+    // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!showAdditionalInfo) {
-      setShowAdditionalInfo(true);
-    } else {
-      // Handle the final submission here
-      console.log("Form submitted", { email, password, ...additionalInfo });
+    if (step === 1) {
+      setStep(2);
+    } else if (step === 2 && formData.role === "Patient") {
+      console.log("Enrolling patient:", formData);
+      // submit patient data to enroll in backend
+    } else if (step === 2 && formData.role === "Provider") {
+      setStep(3);
+    } else if (step === 3) {
+      console.log("Submitting provider data:", formData);
+      // submit provider data to backend
     }
   };
 
-  const handleAdditionalInfoChange = (e) => {
-    setAdditionalInfo({ ...additionalInfo, [e.target.name]: e.target.value });
+    // Render appropriate form fields based on the current step
+  const renderFormFields = () => {
+    const fields = {
+      1: [
+        { name: "username", label: "Username", type: "text", required: true },
+        { name: "email", label: "Email", type: "email", required: true },
+        { name: "password", label: "Password", type: "password", required: true, pattern: ".{8,}", title: "Password must be at least 8 characters long" },
+        { name: "phone", label: "Phone Number", type: "tel", pattern: "\\+?[0-9]{10,14}", title: "Phone number must be 10-14 digits, optionally starting with +", required: true },
+      ],
+      2: [
+        { name: "role", label: "Role", type: "select", options: ["Patient", "Provider"], required: true },
+      ],
+      3: [
+        { name: "providerType", label: "Provider Type", type: "select", options: ["Nurse", "Receptionist", "Doctor"], required: true },
+        // { name: "licenseNumber", label: "License Number", type: "text", required: true },
+        { name: "employeeId", label: "Employee ID", type: "text", required: true },
+      ],
+    };
+
+    return fields[step].map(field => (
+      <FormField
+        key={field.name}
+        field={field}
+        value={formData[field.name]}
+        onChange={handleChange}
+      />
+    ));
   };
 
   return (
@@ -66,53 +127,25 @@ export default function SignUp() {
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center">Create your account</h2>
           <p className="text-gray-600 mb-6 text-center">
-            Dont worry, this won't take long!
+            {step === 1 ? "Let's get started!" : step === 2 ? "Just a bit more info..." : "Final step for providers"}
           </p>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {!showAdditionalInfo ? (
-              <>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  />
-                </div>
-              </>
-            ) : (
-              <AdditionalInfo fields={additionalFields} onChange={handleAdditionalInfoChange} />
-            )}
+            {renderFormFields()}
             <button
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {showAdditionalInfo ? "Submit" : "Sign Up"}
+              {step === 1 ? "Next" : step === 2 ? (formData.role === "Patient" ? "Enroll" : "Next") : "Submit"}
             </button>
           </form>
-          <p className="mt-4 text-xs text-center text-gray-600">
-            We just need to ask a couple more questions!
-          </p>
+          {step > 1 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="mt-4 w-full text-center text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
+            >
+              Back
+            </button>
+          )}
         </div>
       </div>
     </div>
