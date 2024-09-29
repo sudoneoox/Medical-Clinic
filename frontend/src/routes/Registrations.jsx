@@ -41,16 +41,21 @@ const FormField = ({ field, value, onChange }) => (
 
 export default function SignUp() {
     // State to manage form data
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    phone: "",
-    role: "",
-    providerType: "",
-    licenseNumber: "",
-    employeeId: "",
-  });
+    const [formData, setFormData] = useState({
+      username: "",
+      email: "",
+      password: "",
+      phone: "",
+      role: "",
+      providerType: "",
+      licenseNumber: "",
+      employeeId: "",
+      dob: "",
+      gender: "",
+      race: "",
+      ethnicity: "",
+    });
+        
     // State to manage form step
   const [step, setStep] = useState(1);
   // Navbar items for the navigation component
@@ -80,12 +85,15 @@ export default function SignUp() {
     e.preventDefault();
     if (step === 1) {
       setStep(2);
-    } else if (step === 2 && formData.role === "Patient") {
+    } else if (step === 2) {
+        console.log("Getting demographic data");
+        setStep(3);
+    } else if (step === 3 && formData.role === "Patient") {
       console.log("Enrolling patient:", formData);
       // submit patient data to enroll in backend
-    } else if (step === 2 && formData.role === "Provider") {
-      setStep(3);
-    } else if (step === 3) {
+    } else if (step === 3 && formData.role === "Provider") {
+      setStep(4);
+    } else if (step === 4) {
       console.log("Submitting provider data:", formData);
       // submit provider data to backend
     }
@@ -95,18 +103,23 @@ export default function SignUp() {
   const renderFormFields = () => {
     const fields = {
       1: [
-        { name: "username", label: "Username", type: "text", required: true },
-        { name: "email", label: "Email", type: "email", required: true },
-        { name: "password", label: "Password", type: "password", required: true, pattern: ".{8,}", title: "Password must be at least 8 characters long" },
-        { name: "phone", label: "Phone Number", type: "tel", pattern: "\\+?[0-9]{10,14}", title: "Phone number must be 10-14 digits, optionally starting with +", required: true },
-      ],
-      2: [
-        { name: "role", label: "Role", type: "select", options: ["Patient", "Provider"], required: true },
+      { name: "username", label: "Username", type: "text", required: true },
+      { name: "email", label: "Email", type: "email", required: true },
+      { name: "password", label: "Password", type: "password", required: true, pattern: ".{8,}", title: "Password must be at least 8 characters long" },
+      { name: "phone", label: "Phone Number", type: "tel", pattern: "\\+?[0-9]{10,14}", title: "Phone number must be 10-14 digits, optionally starting with +", required: true },
       ],
       3: [
-        { name: "providerType", label: "Provider Type", type: "select", options: ["Nurse", "Receptionist", "Doctor"], required: true },
-        // { name: "licenseNumber", label: "License Number", type: "text", required: true },
-        { name: "employeeId", label: "Employee ID", type: "text", required: true },
+      { name: "role", label: "Role", type: "select", options: ["Patient", "Provider"], required: true },
+      ],
+      4: [
+      { name: "providerType", label: "Provider Type", type: "select", options: ["Nurse", "Receptionist", "Doctor"], required: true },
+      { name: "employeeId", label: "Employee ID", type: "text", required: true },
+      ],
+      2: [
+      { name: 'dob', label: 'Date of Birth', type: "date", required: true },
+      { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Non-binary', 'Prefer not to say', 'Other'], required: true },
+      { name: 'race', label: "Race", type: 'select', options: ["American Indian or Alaska Native", "Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "White", "Other", "Prefer not to say"], required: true },
+      { name: "ethnicity", label: "Ethnicity", type: 'select', options: ['Hispanic or Latino', 'Not Hispanic or Latino', 'Prefer not to say'], required: true },
       ],
     };
 
