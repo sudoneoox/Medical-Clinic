@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS appointment_cancellations (
     canceled_reason TEXT,
     canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     --DATETIME does not support time zones, should manage timezonesa at the application level?
-    CONSTRAINT fk_cancellation_appointment
-        FOREIGN KEY (appointment_id)
-        REFERENCES appointments(appointment_id)
-        ON DELETE CASCADE
+    --CONSTRAINT fk_cancellation_appointment
+        --FOREIGN KEY (appointment_id)
+        --REFERENCES appointments(appointment_id)
+        --ON DELETE CASCADE
 );
