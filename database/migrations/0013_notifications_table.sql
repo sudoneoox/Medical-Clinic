@@ -13,5 +13,6 @@ CREATE TABLE /*IF NOT EXISTS*/ notifications (
     related_entity_id INT,
     -- CONSTRAINT fk_notification_sender FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE,
     -- CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT chk_notif CHECK (type_notif IN ('APPOINTMENT REMINDER', 'TEST_RESULT_AVAILABLE', 'PRESCRIPTION READY', 'BILLING REMINDER', 'GENERAL NOTIFICATION'))
+    -- CONSTRAINT chk_notif CHECK (type_notif IN ('APPOINTMENT REMINDER', 'TEST_RESULT_AVAILABLE', 'PRESCRIPTION READY', 'BILLING REMINDER', 'GENERAL NOTIFICATION'))
+    -- check is no longer relevant since type_notif is an ENUM now right?
 );
