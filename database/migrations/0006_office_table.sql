@@ -12,5 +12,7 @@ CREATE TABLE IF NOT EXISTS office (
 CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER,
     office_id INTEGER,
+    shift_start TIME NOT NULL,
+    shift_end TIME NOT NULL,
     PRIMARY KEY (doctor_id, office_id)
 );
