@@ -9,8 +9,4 @@ CREATE TABLE IF NOT EXISTS prescription (
     date_issued TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
     pharmacy_details JSON-- ,
 
---     CONSTRAINT fk_prescription_medical_record
---         FOREIGN KEY (record_id) 
---         REFERENCES medical_records(record_id)
---         ON DELETE CASCADE
 );
