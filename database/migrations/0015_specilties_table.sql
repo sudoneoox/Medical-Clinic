@@ -13,7 +13,7 @@ ALTER TABLE
 ADD
     COLUMN specialty_id INT;
 
-ALTER TABLE
-    doctor
+-- ALTER TABLE
+--     doctor
 -- ADD
     -- CONSTRAINT fk_doctor_specialty FOREIGN KEY (specialty_id) REFERENCES specialties(specialty_id);
