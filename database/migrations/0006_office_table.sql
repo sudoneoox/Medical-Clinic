@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS office (
 CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER,
     office_id INTEGER,
-    PRIMARY KEY (doctor_id, office_id),
-)
+    PRIMARY KEY (doctor_id, office_id)
+);
