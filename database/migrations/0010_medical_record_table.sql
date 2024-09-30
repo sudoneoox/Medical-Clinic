@@ -1,10 +1,10 @@
 -- medical records linking patients, doctors, and appointments (not required)
 CREATE TABLE IF NOT EXISTS medical_records (
-    record_id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    record_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
     appointment_id INTEGER,
-    created_by INTEGER NOT NULL,
+    created_by INTEGER NULL,
     updated_by INTEGER NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- dateissued

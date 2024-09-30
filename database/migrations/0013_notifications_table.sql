@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN DEFAULT FALSE,
     -- appointment, medical_record, ie what entity is related to this notification
     related_entity_type VARCHAR(30),
-    related_entity_id INTEGER NOT NULL, -- foreign key
+    related_entity_id INTEGER NOT NULL -- foreign key
 );

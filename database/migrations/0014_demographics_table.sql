@@ -14,13 +14,14 @@ CREATE TABLE IF NOT EXISTS ethnicity_code (
 );
 
 CREATE TABLE IF NOT EXISTS demographics (
-    user_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    ethnicity smallint,
-    race smallint,
-    gender smallint,
+    demographics_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INTEGER NULL,
+    ethnicity smallint NULL,
+    race smallint NULL,
+    gender smallint NULL,
     dob DATE,
     created_by INTEGER,
     created_at DATE,
     updated_by INTEGER,
-    updated_at DATE-- ,
+    updated_at DATE
 );

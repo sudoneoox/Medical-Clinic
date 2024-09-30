@@ -166,6 +166,19 @@ ADD CONSTRAINT fk_nurse_user
     REFERENCES users(user_id)
     ON DELETE CASCADE;
 
+-- Doctor-office junction table relations
+ALTER TABLE doctor_offices
+ADD CONSTRAINT fk_doctor_offices_doctor
+    FOREIGN KEY (doctor_id)
+    REFERENCES doctors(doctor_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_doctor_offices_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE;
+
+
+
 -- Nurse-Office junction table relations
 ALTER TABLE nurse_offices
 ADD CONSTRAINT fk_nurse_offices_nurse
