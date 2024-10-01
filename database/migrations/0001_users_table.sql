@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
         "Doctor",
         "Receptionist",
         "Nurse"
-    ) NOT NULL
+    ) NOT NULL,
+    demographics_id INTEGER NOT NULL
 );

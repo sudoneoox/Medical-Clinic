@@ -5,7 +5,7 @@ import sequelize from "../../config/database.js";
     "RaceCode",
     {
       race_code: {
-        type: DataTypes.SMALLINT,
+        type: DataTypes.TINYINT,
         primaryKey: true,
       },
       race_text: {

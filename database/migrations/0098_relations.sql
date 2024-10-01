@@ -1,4 +1,9 @@
 -- user table relations I dont think it has any but id have to check?
+ALTER TABLE users
+ADD CONSTRAINT fk_user_demographics_id
+    FOREIGN KEY (demographics_id)
+    REFERENCES demographics(demographics_id)
+    ON DELETE CASCADE;
 
 -- Doctor table relations
 ALTER TABLE doctors
@@ -12,11 +17,7 @@ ALTER TABLE patients
 ADD CONSTRAINT fk_patient_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_patient_doctor
-    FOREIGN KEY (primary_doctor_id) 
-    REFERENCES doctors(doctor_id)
-    ON DELETE SET NULL;
+    ON DELETE CASCADE;
 
 -- Patient_Doctor junction table relations
 ALTER TABLE patient_doctor_junction
@@ -75,7 +76,7 @@ ADD CONSTRAINT fk_billing_appointment
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
-    REFERENCES users(user_id)
+    REFERENCES receptionists(receptionist_id)
     ON DELETE SET NULL;
 
 -- Insurances table relations
@@ -98,46 +99,38 @@ ADD CONSTRAINT fk_medical_record_doctor
 ADD CONSTRAINT fk_medical_record_appointment 
     FOREIGN KEY (appointment_id) 
     REFERENCES appointments(appointment_id)
-    ON DELETE SET NULL,
-ADD CONSTRAINT fk_medical_records_created_by
-    FOREIGN KEY (created_by)
-    REFERENCES users(user_id)
-    ON DELETE SET NULL,
-ADD CONSTRAINT fk_medical_records_updated_by
-    FOREIGN KEY (updated_by)
-    REFERENCES users(user_id)
     ON DELETE SET NULL;
 
--- Prescription table relations
+-- prescription table relations
 ALTER TABLE prescription
-ADD CONSTRAINT fk_prescription_medical_record
-    FOREIGN KEY (record_id) 
+ADD CONSTRAINT fk_prescription_medical_record_id
+    FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
 
--- Audit log table relations
-ALTER TABLE AUDIT_LOG
-ADD CONSTRAINT fk_audit_log_user
-    FOREIGN KEY (changed_by) 
-    REFERENCES users(user_id)
-    ON DELETE SET NULL;
+-- test results table relations
+ALTER TABLE test_results
+ADD CONSTRAINT fk_test_results_medical_record_id
+    FOREIGN KEY (medical_record_id)
+    REFERENCES medical_records(record_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_test_results_performed_by_id
+    FOREIGN KEY (test_performed_by)
+    REFERENCES nurses(nurse_id)
+    ON DELETE CASCADE;
 
 -- Demographics table relations
 ALTER TABLE demographics
-ADD CONSTRAINT fk_demographics_user_id 
-    FOREIGN KEY (user_id) 
-    REFERENCES users(user_id)
-    ON DELETE SET NULL,
 ADD CONSTRAINT fk_demographics_race_code 
-    FOREIGN KEY (race) 
+    FOREIGN KEY (race_id) 
     REFERENCES race_code(race_code)
     ON DELETE SET NULL, 
 ADD CONSTRAINT fk_demographics_gender_code 
-    FOREIGN KEY (gender) 
+    FOREIGN KEY (gender_id) 
     REFERENCES gender_code(gender_code)
     ON DELETE SET NULL,
 ADD CONSTRAINT fk_demographics_ethnicity_code 
-    FOREIGN KEY (ethnicity) 
+    FOREIGN KEY (ethnicity_id) 
     REFERENCES ethnicity_code(ethnicity_code)
     ON DELETE SET NULL;
 
@@ -201,8 +194,8 @@ ADD CONSTRAINT fk_doctor_specialties_doctor
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_doctor_specialties_specialty
-    FOREIGN KEY (specialty_id)
-    REFERENCES specialties(specialty_id)
+    FOREIGN KEY (specialtity_code)
+    REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
 
 -- Appointment cancellations table relations
