@@ -1,31 +1,45 @@
 import  DataTypes from '../CompositeTypes/customTypes.js';
 import sequelize from "../../config/database.js";
 
-  const Prescription = sequelize.define(
-    "Prescription",
-    {
-      prescription_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      medication_info: {
-        type: DataTypes.MEDICATION,
-        allowNull: false,
-      },
-      date_issued: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      pharmacy_details: {
-        type: DataTypes.JSON,
-      },
+const Prescription = sequelize.define(
+  "Prescription",
+  {
+    prescription_id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-      tableName: "prescription",
-      timestamps: false,
-    }
-  );
-
+    record_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    medication_name: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    dosage: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+    },
+    frequency: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+    },
+    duration: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    date_issued: {
+      type: DataTypes.TIMESTAMP,
+    },
+    pharmacy_details: {
+      type: DataTypes.JSON,
+    },
+  },
+  {
+    tableName: "prescription",
+    timestamps: false,
+  }
+);
 
 export default Prescription;

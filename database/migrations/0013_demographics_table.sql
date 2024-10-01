@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS demographics (
     gender smallint NULL,
     dob DATE,
     created_by INTEGER,
-    created_at DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
     updated_at DATE
 );

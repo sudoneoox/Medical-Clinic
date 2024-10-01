@@ -8,6 +8,8 @@ import User from "../models/Tables/Users.js";
 const registerUser = async (req, res) => {
   try {
     const userData = req.body;
+    console.log(req.body);
+    return;
     const newUser = await User.create(userData);
     res.status(201).json({
       message: "User registered successfully",
@@ -15,10 +17,18 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error registering user:", error);
-    res
-      .status(500)
-      .json({ message: "Error registering user", error: error.message });
+    if (error.name === "ValidationError") {
+      res
+        .status(400)
+        .json({ message: "Validation error", errors: error.errors });
+    } else if (error.code === 11000) {
+      // Duplicate key error
+      res.status(409).json({ message: "User already exists" });
+    } else {
+      res
+        .status(500)
+        .json({ message: "Error registering user", error: error.message });
+    }
   }
 };
-
 export default registerUser;

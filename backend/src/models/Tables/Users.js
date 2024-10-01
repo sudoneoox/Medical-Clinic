@@ -8,17 +8,18 @@ const User = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      allowNull: false,
     },
-    username: {
+    user_username: {
       type: DataTypes.STRING(50),
       unique: true,
       allowNull: false,
     },
-    passwd: {
-      type: DataTypes.STRING(50),
+    user_password: {
+      type: DataTypes.STRING(200),
       allowNull: false,
     },
-    email: {
+    user_email: {
       type: DataTypes.STRING(50),
       unique: true,
       allowNull: false,
@@ -26,22 +27,19 @@ const User = sequelize.define(
         isEmail: true,
       },
     },
-    phone: {
+    user_phone: {
       type: DataTypes.STRING(20),
+      unique: true,
       allowNull: false,
     },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false,
+    account_created_at: {
+      type: DataTypes.TIMESTAMP,
     },
-    last_login: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false,
+    account_last_login: {
+      type: DataTypes.TIMESTAMP,
     },
-    role: {
-      type: DataTypes.USER_ROLE,
+    user_role: {
+      type: DataTypes.ENUM("Admin", "Patient", "Doctor", "Receptionist", "Nurse"),
       allowNull: false,
     },
   },

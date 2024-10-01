@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
     account_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     account_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_role ENUM(
-        "ADMIN",
-        "PATIENT",
-        "DOCTOR",
-        "RECEPTIONIST",
-        "NURSE"
+        "Admin",
+        "Patient",
+        "Doctor",
+        "Receptionist",
+        "Nurse"
     ) NOT NULL
 );

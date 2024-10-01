@@ -1,9 +1,10 @@
 -- Doctor table, extends user
 CREATE TABLE IF NOT EXISTS doctors (
-    doctor_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INTEGER NOT NULL AUTO_INCREMENT,
     user_id INTEGER UNIQUE NOT NULL,
     doctor_name VARCHAR(50) NOT NULL,
-    license_number VARCHAR(30) NOT NULL,
-    years_of_experience TINYINT NOT NULL
+    doctor_employee_id VARCHAR(30) NOT NULL,
+    years_of_experience TINYINT NOT NULL,
+    PRIMARY KEY(doctor_id, doctor_employee_id)
     -- CONSTRAINT chk_years_experience CHECK (years_of_experience > 0 AND years_of_experience < 90)
 );

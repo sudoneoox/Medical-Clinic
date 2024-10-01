@@ -9,34 +9,46 @@ const Appointment = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    patient_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    doctor_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    office_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     appointment_datetime: {
-      type: DataTypes.DATE,
+      type: DataTypes.TIMESTAMP,
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER, // ! Store duration in minutes
+      type: DataTypes.TIME,
       allowNull: false,
-    },
-    reason: {
-      type: DataTypes.TEXT,
-    },
-    status: {
-      type: DataTypes.APPOINTMENT_STATUS,
-      allowNull: false,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
     },
     booked_by: {
       type: DataTypes.INTEGER,
+      allowNull: true,
     },
     attending_nurse: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    reason: {
+      type: DataTypes.STRING(100),
+    },
+    status: {
+      type: DataTypes.ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW'),
+      allowNull: false,
+    },
+    created_at: {
+      type: DataTypes.TIMESTAMP,
+    },
+    updated_at: {
+      type: DataTypes.TIMESTAMP,
     },
   },
   {
