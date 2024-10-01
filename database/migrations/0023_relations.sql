@@ -122,17 +122,6 @@ ADD CONSTRAINT fk_audit_log_user
     REFERENCES users(user_id)
     ON DELETE SET NULL;
 
--- Notifications table relations
-ALTER TABLE notifications
-ADD CONSTRAINT fk_notification_sender 
-    FOREIGN KEY (sender_id) 
-    REFERENCES users(user_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_notification_receiver 
-    FOREIGN KEY (receiver_id) 
-    REFERENCES users(user_id)
-    ON DELETE CASCADE;
-
 -- Demographics table relations
 ALTER TABLE demographics
 ADD CONSTRAINT fk_demographics_user_id 

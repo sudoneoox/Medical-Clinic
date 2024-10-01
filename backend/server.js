@@ -1,11 +1,19 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
-
+import router from "./src/routes/userRoutes.js"
 const app = express();
 
+// enable cors ie so our frontend server (port 3000) can communicate with
+// our backend server (port 5000)
 app.use(cors());
+
+// parse json bodies
 app.use(express.json());
+
+// use user routes
+app.use('/api/users', router);
+
+
 
 const PORT = process.env.PORT || 5000;
 

@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
 import { useNavigate } from "react-router-dom";
 import FormField from "../components/FormField";
-import axios from "axios";
+import api from "../api.js";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -60,14 +60,27 @@ export default function SignUp() {
       console.log("Enrolling patient:", formData);
       // submit patient data to enroll in backend
       try {
-        const response = await axios.post("/api/users/register", formData);
+        const response = await api.post(
+          "http://localhost:5000/api/users/register",
+          formData
+        );
         console.log("User Patient registration successful: ", response.data);
         navigate("/login");
       } catch (err) {
-        console.log("User Patient Registration failed: ", err);
-        // TODO
-        // ! Show error to user UI? another component or page maybe redirect to a certain step
-        // ! Depending on error
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log("Registration failed: ", err.response.data.message);
+          // Show error message to user
+        } else if (err.request) {
+          // The request was made but no response was received
+          console.log("No response received: ", err.request);
+          // Show network error message to user
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error", err.message);
+          // Show general error message to user
+        }
       }
     } else if (step === 3 && formData.role === "Provider") {
       setStep(4);
@@ -75,14 +88,27 @@ export default function SignUp() {
       console.log("Submitting provider data:", formData);
       // submit provider data to backend
       try {
-        const response = await axios.post("/api/users/register", formData);
+        const response = await api.post(
+          "http://localhost:5000/api/users/register",
+          formData
+        );
         console.log("User Provider Regitrations successful: ", response.data);
         navigate("/login");
       } catch (err) {
-        console.log("Registration failed: ", err);
-        // TODO
-        // ! Show error to user UI? another component or page maybe redirect to a certain step
-        // ! Depending on error
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log("Registration failed: ", err.response.data.message);
+          // Show error message to user
+        } else if (err.request) {
+          // The request was made but no response was received
+          console.log("No response received: ", err.request);
+          // Show network error message to user
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error", err.message);
+          // Show general error message to user
+        }
       }
     }
   };

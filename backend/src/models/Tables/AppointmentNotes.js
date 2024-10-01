@@ -9,13 +9,16 @@ import sequelize from "../../config/database.js";
         primaryKey: true,
         autoIncrement: true,
       },
+      appointment_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       note_text: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
       created_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        type: DataTypes.TIMESTAMP,
       },
       created_by_nurse: {
         type: DataTypes.INTEGER,

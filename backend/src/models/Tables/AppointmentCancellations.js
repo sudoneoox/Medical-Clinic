@@ -9,12 +9,15 @@ const AppointmentCancellations = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    appointment_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     canceled_reason: {
       type: DataTypes.TEXT,
     },
     canceled_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      type: DataTypes.TIMESTAMP,
     },
   },
   {
