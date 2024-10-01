@@ -13,13 +13,13 @@ const Demographics = sequelize.define(
       primaryKey: true,
     },
     ethnicity: {
-      type: DataTypes.SMALLINT,
+      type: DataTypes.TINYINT,
     },
     race: {
-      type: DataTypes.SMALLINT,
+      type: DataTypes.TINYINT,
     },
     gender: {
-      type: DataTypes.SMALLINT,
+      type: DataTypes.TINYINT,
     },
     dob: {
       type: DataTypes.DATE,

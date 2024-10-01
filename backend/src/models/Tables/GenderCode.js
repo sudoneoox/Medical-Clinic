@@ -5,7 +5,7 @@ import sequelize from "../../config/database.js";
     "GenderCode",
     {
       gender_code: {
-        type: DataTypes.SMALLINT,
+        type: DataTypes.TINYINT,
         primaryKey: true,
       },
       gender_text: {
