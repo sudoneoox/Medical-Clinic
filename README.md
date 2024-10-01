@@ -197,6 +197,6 @@ and Sequelize for backend queries and database management.
 - index.jsx: The main entry point for React
 
 ### Database
-manages the db schema and data synchronization between ourselves locally using PostgreSQL
+manages the db schema and data synchronization between ourselves locally using MySQL
 - /migrations: we will use this directory to sync our databases
 - /scripts: utility scripts to create, restore, and sync the db
