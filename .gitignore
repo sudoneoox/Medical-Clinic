@@ -29,4 +29,3 @@ backend/.DS_Store
 backend/.env
 
 #@database misc
-database/scripts/combined_migrations.sql
