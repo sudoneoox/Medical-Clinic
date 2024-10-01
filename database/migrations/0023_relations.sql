@@ -115,13 +115,6 @@ ADD CONSTRAINT fk_prescription_medical_record
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
 
--- Audit log table relations
-ALTER TABLE AUDIT_LOG
-ADD CONSTRAINT fk_audit_log_user
-    FOREIGN KEY (changed_by) 
-    REFERENCES users(user_id)
-    ON DELETE SET NULL;
-
 -- Demographics table relations
 ALTER TABLE demographics
 ADD CONSTRAINT fk_demographics_user_id 
