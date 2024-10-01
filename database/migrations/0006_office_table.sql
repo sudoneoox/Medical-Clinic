@@ -5,7 +5,10 @@ CREATE TABLE IF NOT EXISTS office (
     office_address VARCHAR(50) NOT NULL,
     office_phone VARCHAR(20),
     office_email VARCHAR(50),
-    office_services JSON
+    office_services JSON,
+    UNIQUE(office_id),
+    UNIQUE(office_address),
+    UNIQUE(office_name)
 );
 
 -- Doctor-Office Relationship

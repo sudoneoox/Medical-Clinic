@@ -15,5 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
         "Receptionist",
         "Nurse"
     ) NOT NULL,
-    demographics_id INTEGER NOT NULL
+    demographics_id INTEGER NOT NULL,
+    UNIQUE(user_id),
+    UNIQUE(user_email),
+    UNIQUE(user_username)
 );

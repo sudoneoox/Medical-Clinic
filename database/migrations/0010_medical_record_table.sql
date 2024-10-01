@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS medical_records (
     prescription_id INTEGER NOT NULL,
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
-    appointment_id INTEGER
+    appointment_id INTEGER,
+    UNIQUE(record_id)
     
 );

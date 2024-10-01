@@ -15,5 +15,6 @@ CREATE TABLE IF NOT EXISTS billing (
     billing_due TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    handled_by INTEGER
+    handled_by INTEGER,
+    UNIQUE(billing_id)
 );

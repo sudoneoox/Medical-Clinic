@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS prescription (
     frequency VARCHAR(20) NOT NULL,
     duration VARCHAR(50) NOT NULL,  -- MySQL doesn't have an INTERVAL type
     date_issued TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    pharmacy_details JSON
+    pharmacy_details JSON,
+    UNIQUE(prescription_id)
 );

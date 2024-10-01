@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS test_results (
     test_status ENUM("PENDING", "COMPLETED"),
     -- foreign keys
     test_performed_by INTEGER NOT NULL,
-    medical_record_id INTEGER NOT NULL
+    medical_record_id INTEGER NOT NULL,
+    UNIQUE(test_results_id)
 );

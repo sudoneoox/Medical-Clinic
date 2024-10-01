@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     note_text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by_nurse INTEGER,
-    created_by_receptionist INTEGER
+    created_by_receptionist INTEGER,
+    UNIQUE(note_id)
     -- THIS IS AN IMPORTANNT CONSTRAINT NEED TO FIND A WAY 
     -- TO DO IT IN MY SQL
     -- CONSTRAINT check_creator_type  -- not supported need trigger

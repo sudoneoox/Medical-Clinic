@@ -5,5 +5,7 @@ CREATE TABLE IF NOT EXISTS nurses (
     nurse_employee_id INTEGER NOT NULL,
     specialization VARCHAR(50),
     years_of_experience TINYINT,
-    PRIMARY KEY (nurse_id, nurse_employee_id)
+    PRIMARY KEY (nurse_id, nurse_employee_id),
+    UNIQUE(nurse_id),
+    UNIQUE(user_id)
 );
