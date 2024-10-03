@@ -39,9 +39,10 @@ if [ ${#migration_files[@]} -eq 0 ]; then
     exit 0
 fi
 
-# Concatenate all migration files into one
+# Concatenate all migration files into one, excluding comment lines starting with "--"
 echo "Concatenating migration files into $COMBINED_SQL_FILE..."
-cat "${migration_files[@]}" > $COMBINED_SQL_FILE
+grep -hvE '^--' "${migration_files[@]}" > $COMBINED_SQL_FILE
+
 
 # Execute combined SQL file
 execute_sql_file "$COMBINED_SQL_FILE"

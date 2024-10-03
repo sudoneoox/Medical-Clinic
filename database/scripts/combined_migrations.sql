@@ -1,11 +1,8 @@
--- strict mode 
 SET sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
--- foreign key checks = true
 SET FOREIGN_KEY_CHECKS = 1;
 
 
--- base table for authentication and logging in 
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_username VARCHAR(50) UNIQUE NOT NULL,
@@ -22,58 +19,65 @@ CREATE TABLE IF NOT EXISTS users (
         "Receptionist",
         "Nurse"
     ) NOT NULL,
-    demographics_id INTEGER NOT NULL
-);-- Doctor table, extends user
+    demographics_id INTEGER NOT NULL,
+    portal_last_login TIMESTAMP,
+    UNIQUE(user_id),
+    UNIQUE(user_email),
+    UNIQUE(user_username)
+);
 CREATE TABLE IF NOT EXISTS doctors (
     doctor_id INTEGER NOT NULL AUTO_INCREMENT,
     doctor_employee_id VARCHAR(30) NOT NULL,
     user_id INTEGER UNIQUE NOT NULL,
     doctor_name VARCHAR(50) NOT NULL,
     years_of_experience TINYINT NOT NULL,
-    PRIMARY KEY(doctor_id, doctor_employee_id)
+    PRIMARY KEY(doctor_id, doctor_employee_id),
     -- CONSTRAINT chk_years_experience CHECK (years_of_experience > 0 AND years_of_experience < 90)
-);-- holds a ptr to the user_id to distinguish between patients and doctors
--- we could maybe do a boolcase ? ie ids larger than 1000 are doctors ? 
--- patient table, extends user
+    UNIQUE(doctor_employee_id),
+    UNIQUE(user_id)
+);
 CREATE TABLE IF NOT EXISTS patients (
     patient_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
     patient_name VARCHAR(50) NOT NULL,
-    emergency_contacts JSON 
-);CREATE TABLE IF NOT EXISTS patient_doctor_junction (
+    emergency_contacts JSON,
+    UNIQUE(user_id)
+);
+CREATE TABLE IF NOT EXISTS patient_doctor_junction (
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
     is_primary TINYINT DEFAULT 0,
     PRIMARY KEY (patient_id, doctor_id)
 );
 
--- specialist approval requests
 CREATE TABLE IF NOT EXISTS specialist_approvals (
     approval_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     approved_at TIMESTAMP NULL,
     specialist_status ENUM('APPROVED', 'PENDING', 'REJECTED') DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
     patient_id INTEGER NOT NULL,
-    requesting_doctor_id INTEGER NOT NULL,
+    reffered_doctor_id INTEGER NOT NULL,
     specialist_id INTEGER NOT NULL
-);--office locatios
+);
 CREATE TABLE IF NOT EXISTS office (
     office_id INT NOT NULL auto_increment primary key,
     office_name VARCHAR(50) NOT NULL,
     office_address VARCHAR(50) NOT NULL,
     office_phone VARCHAR(20),
     office_email VARCHAR(50),
-    office_services JSON
+    office_services JSON,
+    UNIQUE(office_id),
+    UNIQUE(office_address),
+    UNIQUE(office_name)
 );
 
--- Doctor-Office Relationship
 CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     PRIMARY KEY (doctor_id, office_id)
-);--appointments linking patients, doctors, and offices
+);
 CREATE TABLE IF NOT EXISTS appointments (
     appointment_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     patient_id INTEGER NOT NULL,
@@ -88,7 +92,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     -- Changed to ENUM
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);-- Billing table to keep track of payments for appointments
+);
 CREATE TABLE IF NOT EXISTS billing (
     billing_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     patient_id INTEGER NOT NULL,
@@ -105,14 +109,16 @@ CREATE TABLE IF NOT EXISTS billing (
     billing_due TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    handled_by INTEGER
-);-- patient insurance information linked with patient id to identify
+    handled_by INTEGER,
+    UNIQUE(billing_id)
+);
 CREATE TABLE IF NOT EXISTS insurances (
     insurance_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     patient_id INTEGER NOT NULL,
     insurance_info JSON,
-    is_active TINYINT DEFAULT (1)
-);-- medical records linking patients, doctors, and appointments (not required)
+    is_active TINYINT DEFAULT (1),
+    UNIQUE(insurance_id)
+);
 CREATE TABLE IF NOT EXISTS medical_records (
     -- primary keys
     record_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -122,13 +128,15 @@ CREATE TABLE IF NOT EXISTS medical_records (
     -- in case of any updates on diagnosis or changes 
     diagnosis VARCHAR(100),
     notes TEXT,
+    is_deleted TINYINT DEFAULT (0),
+    deleted_at TIMESTAMP NULL,
     -- foreign keys other entities
     prescription_id INTEGER NOT NULL,
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
-    appointment_id INTEGER
-    
-);-- prescription information linked to a medical record
+    appointment_id INTEGER,
+    UNIQUE(record_id)
+);
 CREATE TABLE IF NOT EXISTS prescription (
     prescription_id INTEGER PRIMARY KEY AUTO_INCREMENT,
     medical_record_id INTEGER NOT NULL,
@@ -137,20 +145,28 @@ CREATE TABLE IF NOT EXISTS prescription (
     frequency VARCHAR(20) NOT NULL,
     duration VARCHAR(50) NOT NULL,  -- MySQL doesn't have an INTERVAL type
     date_issued TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    pharmacy_details JSON
-);CREATE TABLE IF NOT EXISTS race_code (
+    pharmacy_details JSON,
+    UNIQUE(prescription_id)
+);
+CREATE TABLE IF NOT EXISTS race_code (
     race_code TINYINT NOT NULL PRIMARY KEY,
-    race_text VARCHAR(20) NOT NULL
+    race_text VARCHAR(20) NOT NULL,
+    UNIQUE(race_code),
+    UNIQUE(race_text)
 );
 
 CREATE TABLE IF NOT EXISTS gender_code (
     gender_code TINYINT NOT NULL PRIMARY KEY,
-    gender_text VARCHAR(20) NOT NULL
+    gender_text VARCHAR(20) NOT NULL,
+    UNIQUE(gender_code),
+    UNIQUE(gender_text)
 );
 
 CREATE TABLE IF NOT EXISTS ethnicity_code (
     ethnicity_code TINYINT NOT NULL PRIMARY KEY,
-    ethnicity_text VARCHAR(20) NOT NULL
+    ethnicity_text VARCHAR(20) NOT NULL,
+    UNIQUE(ethnicity_code),
+    UNIQUE(ethnicity_text)
 );
 
 CREATE TABLE IF NOT EXISTS demographics (
@@ -162,37 +178,48 @@ CREATE TABLE IF NOT EXISTS demographics (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
     updated_at DATE
-);CREATE TABLE IF NOT EXISTS specialties_code (
+);
+CREATE TABLE IF NOT EXISTS specialties_code (
     specialty_code INTEGER NOT NULL PRIMARY KEY,
-    specialty_name VARCHAR(30) NOT NULL
-);CREATE TABLE IF NOT EXISTS receptionists (
+    specialty_name VARCHAR(30) NOT NULL,
+    UNIQUE(specialty_code),
+    UNIQUE(specialty_name)
+);
+CREATE TABLE IF NOT EXISTS receptionists (
     receptionist_id INTEGER NOT NULL AUTO_INCREMENT,
     receptionist_employee_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL, -- fk
     receptionist_name VARCHAR(50) NOT NULL,
-    PRIMARY KEY(receptionist_id, receptionist_employee_id)
-);CREATE TABLE IF NOT EXISTS nurses (
+    PRIMARY KEY(receptionist_id, receptionist_employee_id),
+    UNIQUE(receptionist_id),
+    UNIQUE(user_id)
+);
+CREATE TABLE IF NOT EXISTS nurses (
     nurse_id INTEGER NOT NULL AUTO_INCREMENT,
     user_id INTEGER UNIQUE NOT NULL,
     nurse_name VARCHAR(50) NOT NULL,
     nurse_employee_id INTEGER NOT NULL,
     specialization VARCHAR(50),
     years_of_experience TINYINT,
-    PRIMARY KEY (nurse_id, nurse_employee_id)
-);CREATE TABLE IF NOT EXISTS nurse_offices (
+    PRIMARY KEY (nurse_id, nurse_employee_id),
+    UNIQUE(nurse_id),
+    UNIQUE(user_id)
+);
+CREATE TABLE IF NOT EXISTS nurse_offices (
     nurse_id INT NOT NULL,
     office_id INT NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     PRIMARY KEY (nurse_id, office_id)
-);-- nurses and receptionist can modify this when they set up an appointmetn
+);
 CREATE TABLE IF NOT EXISTS appointment_notes (
     note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     appointment_id INTEGER NOT NULL,
     note_text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by_nurse INTEGER,
-    created_by_receptionist INTEGER
+    created_by_receptionist INTEGER,
+    UNIQUE(note_id)
     -- THIS IS AN IMPORTANNT CONSTRAINT NEED TO FIND A WAY 
     -- TO DO IT IN MY SQL
     -- CONSTRAINT check_creator_type  -- not supported need trigger
@@ -200,23 +227,29 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     --         (created_by_nurse IS NOT NULL AND created_by_receptionist IS NULL) OR
     --         (created_by_nurse IS NULL AND created_by_receptionist IS NOT NULL)
     --     )
-);-- many to many relationship between doctors and specialties
+);
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
     specialtity_code INTEGER NOT NULL,
     PRIMARY KEY (doctor_id, specialtity_code)
-);CREATE TABLE IF NOT EXISTS appointment_cancellations (
+);
+CREATE TABLE IF NOT EXISTS appointment_cancellations (
     cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
     appointment_id INT NOT NULL,
     canceled_reason TEXT,
-    canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);CREATE TABLE IF NOT EXISTS receptionist_offices (
+    canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(cancellation_id),
+    UNIQUE(appointment_id)
+    
+);
+CREATE TABLE IF NOT EXISTS receptionist_offices (
     receptionist_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
     shift_start TIME,
     shift_end TIME,
     PRIMARY KEY (receptionist_id, office_id)
-);CREATE TABLE IF NOT EXISTS test_results (
+);
+CREATE TABLE IF NOT EXISTS test_results (
     -- primary keys
     test_results_id INTEGER NOT NULL PRIMARY KEY,
     test_type ENUM('BLOOD', 'XRAY', 'URINE'),
@@ -228,42 +261,225 @@ CREATE TABLE IF NOT EXISTS doctor_specialties (
     test_status ENUM("PENDING", "COMPLETED"),
     -- foreign keys
     test_performed_by INTEGER NOT NULL,
-    medical_record_id INTEGER NOT NULL
-);-- do constraints here with delimeters
+    medical_record_id INTEGER NOT NULL,
+    UNIQUE(test_results_id)
+);
+CREATE TABLE IF NOT EXISTS appointment_reminders (
+    reminder_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INTEGER NOT NULL,
+    reminder_status ENUM('Pending', 'Sent', 'Failed') NOT NULL,
+    scheduled_time TIMESTAMP NOT NULL,
+    sent_time TIMESTAMP NOT NULL
+);
+CREATE TABLE IF NOT EXISTS detailed_allergies (
+    allergy_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    medical_record_id INTEGER NOT NULL,
+    allergy_type ENUM('FOOD', 'MEDICATION', 'ENVIRONMENTAL') NOT NULL,
+    allergen VARCHAR(100) NOT NULL,
+    reaction TEXT,
+    severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
+    onset_date DATE
+);
+DELIMITER //
+CREATE PROCEDURE schedule_appointment(
+    IN p_patient_id INT,
+    IN p_doctor_id INT,
+    IN p_office_id INT,
+    IN p_appointment_datetime DATETIME,
+    IN p_duration TIME,
+    IN p_reason VARCHAR(100),
+    IN p_booked_by INT
+)
+BEGIN
+    DECLARE doctor_available INT;
+    
+    -- check if doctor is available for time chosen
+    SELECT COUNT(*) INTO doctor_available
+    FROM appointments
+    WHERE doctor_id = p_doctor_id
+    AND appointment_datetime = p_appointment_datetime
+    AND status = 'CONFIRMED';
+    
+    IF doctor_available = 0 THEN
+        INSERT INTO appointments (
+            patient_id, doctor_id, office_id, appointment_datetime, 
+            duration, reason, booked_by, status
+        ) VALUES (
+            p_patient_id, p_doctor_id, p_office_id, p_appointment_datetime, 
+            p_duration, p_reason, p_booked_by, 'CONFIRMED'
+        );
+        SELECT 'Appointment scheduled successfully' AS result;
+    ELSE
+        SELECT 'Doctor is not available at the chosen time' AS result;
+    END IF;
+END //
+DELIMITER ;
 
--- in appointment notes table
- -- THIS IS AN IMPORTANT CONSTRAINT NEED TO FIND A WAY 
-    -- TO DO IT IN MYSQL
-    -- CONSTRAINT check_creator_type  -- not supported need trigger
-    --     CHECK (
-    --         (created_by_nurse IS NOT NULL AND created_by_receptionist IS NULL) OR
-    --         (created_by_nurse IS NULL AND created_by_receptionist IS NOT NULL)
-    --     )
 
--- billing table constraints
- --   CONSTRAINT check_amount_due CHECK (amount_due >= 0),
- --   CONSTRAINT check_amount_paid CHECK (amount_paid >= 0),-- user table relations I dont think it has any but id have to check?
+DELIMITER //
+CREATE PROCEDURE cancel_appointment(
+    IN p_appointment_id INT,
+    IN p_cancellation_reason TEXT
+)
+BEGIN
+    DECLARE appointment_exists INT;
+    
+    -- Check if the appointment exists and is not already cancelled
+    SELECT COUNT(*) INTO appointment_exists
+    FROM appointments
+    WHERE appointment_id = p_appointment_id AND status != 'CANCELLED';
+    
+    IF appointment_exists > 0 THEN
+        START TRANSACTION;
+        
+        UPDATE appointments 
+        SET status = 'CANCELLED' 
+        WHERE appointment_id = p_appointment_id;
+        
+        INSERT INTO appointment_cancellations (
+            appointment_id, canceled_reason, canceled_at
+        ) VALUES (
+            p_appointment_id, p_cancellation_reason, NOW()
+        );
+        
+        COMMIT;
+        
+        SELECT 'Appointment cancelled successfully' AS result;
+    ELSE
+        SELECT 'Appointment not found or already cancelled' AS result;
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE get_patient_upcoming_appointments(
+    IN p_patient_id INT
+)
+BEGIN
+    SELECT 
+        a.appointment_id,
+        a.appointment_datetime,
+        a.duration,
+        d.doctor_name,
+        o.office_name,
+        a.reason
+    FROM 
+        appointments a
+    JOIN 
+        doctors d ON a.doctor_id = d.doctor_id
+    JOIN 
+        office o ON a.office_id = o.office_id
+    WHERE 
+        a.patient_id = p_patient_id
+    AND 
+        a.appointment_datetime > NOW()
+    AND 
+        a.status = 'CONFIRMED'
+    ORDER BY 
+        a.appointment_datetime;
+END //
+DELIMITER ;
+CREATE INDEX idx_users_role ON users(user_role);
+CREATE INDEX idx_users_email ON users(user_email);
+
+CREATE INDEX idx_doctors_name ON doctors(doctor_name);
+
+CREATE INDEX idx_patients_name ON patients(patient_name);
+
+CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);
+CREATE INDEX idx_appointments_status ON appointments(status);
+CREATE INDEX idx_appointments_patient_doctor ON appointments(patient_id, doctor_id);
+
+CREATE INDEX idx_medical_records_patient ON medical_records(patient_id);
+CREATE INDEX idx_medical_records_doctor ON medical_records(doctor_id);
+CREATE INDEX idx_medical_records_date ON medical_records(created_at);
+
+CREATE INDEX idx_prescription_medication ON prescription(medication_name);
+
+CREATE INDEX idx_billing_patient ON billing(patient_id);
+CREATE INDEX idx_billing_status ON billing(payment_status);
+
+CREATE INDEX idx_insurances_patient ON insurances(patient_id);
+CREATE INDEX idx_insurances_active ON insurances(is_active);
+
+CREATE INDEX idx_office_name ON office(office_name);
+
+CREATE INDEX idx_specialist_approvals_status ON specialist_approvals(specialist_status);
+CREATE INDEX idx_specialist_approvals_patient ON specialist_approvals(patient_id);
+
+CREATE INDEX idx_appointment_reminders_status ON appointment_reminders(reminder_status);
+CREATE INDEX idx_appointment_reminders_scheduled ON appointment_reminders(scheduled_time);
+
+CREATE INDEX idx_detailed_allergies_type ON detailed_allergies(allergy_type);
+CREATE INDEX idx_detailed_allergies_allergen ON detailed_allergies(allergen);
+
+CREATE INDEX idx_test_results_type ON test_results(test_type);
+CREATE INDEX idx_test_results_status ON test_results(test_status);
+CREATE INDEX idx_test_results_date ON test_results(test_conducted_date);
+
+CREATE INDEX idx_demographics_dob ON demographics(dob);
+
+CREATE INDEX idx_patient_doctor_junction ON patient_doctor_junction(patient_id, doctor_id);
+CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialtity_code);
+CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
+CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
+CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
+
+ALTER TABLE appointments
+ADD CONSTRAINT chk_appointment_duration 
+CHECK (TIME_TO_SEC(duration) > 0);
+
+ALTER TABLE doctors
+ADD CONSTRAINT chk_doctor_experience 
+CHECK (years_of_experience >= 0 AND years_of_experience <= 70);
+
+ALTER TABLE billing
+ADD CONSTRAINT chk_billing_amounts 
+CHECK (amount_due >= 0 AND amount_paid >= 0);
+
+
+DELIMITER //
+CREATE TRIGGER before_appointment_insert 
+BEFORE INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    IF NEW.appointment_datetime <= NOW() THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Appointment must be scheduled for a future date and time';
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_appointment_notes_creator
+BEFORE INSERT ON appointment_notes
+FOR EACH ROW
+BEGIN
+    IF NOT ((NEW.created_by_nurse IS NOT NULL AND NEW.created_by_receptionist IS NULL) OR
+            (NEW.created_by_nurse IS NULL AND NEW.created_by_receptionist IS NOT NULL)) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Appointment note must be created by either a nurse or a receptionist, not both or neither';
+    END IF;
+END //
+DELIMITER ;
 ALTER TABLE users
 ADD CONSTRAINT fk_user_demographics_id
     FOREIGN KEY (demographics_id)
     REFERENCES demographics(demographics_id)
     ON DELETE CASCADE;
 
--- Doctor table relations
 ALTER TABLE doctors
 ADD CONSTRAINT fk_doctor_user 
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
 
--- Patient table relations
 ALTER TABLE patients
 ADD CONSTRAINT fk_patient_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
 
--- Patient_Doctor junction table relations
 ALTER TABLE patient_doctor_junction
 ADD CONSTRAINT fk_patient_doctor_patient
     FOREIGN KEY (patient_id) 
@@ -274,14 +490,13 @@ ADD CONSTRAINT fk_patient_doctor_doctor
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE;
 
--- Specialist approvals table relations
 ALTER TABLE specialist_approvals
 ADD CONSTRAINT fk_approval_patient
     FOREIGN KEY (patient_id) 
     REFERENCES patients(patient_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_approval_requesting_doctor
-    FOREIGN KEY (requesting_doctor_id) 
+    FOREIGN KEY (reffered_doctor_id) 
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_approval_specialist
@@ -289,7 +504,6 @@ ADD CONSTRAINT fk_approval_specialist
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE;
 
--- Appointments table relations
 ALTER TABLE appointments
 ADD CONSTRAINT fk_appointment_patient 
     FOREIGN KEY (patient_id) 
@@ -308,7 +522,13 @@ ADD CONSTRAINT fk_appointment_attending_nurse
     REFERENCES nurses(nurse_id)
     ON DELETE SET NULL;
 
--- Billing table relations
+ALTER TABLE appointment_reminders
+ADD CONSTRAINT fk_appointment_reminder_appointment_id
+    FOREIGN KEY(appointment_id)
+    REFERENCES appointments(appointment_id)
+    ON DELETE CASCADE;
+
+
 ALTER TABLE billing
 ADD CONSTRAINT fk_billing_patient 
     FOREIGN KEY (patient_id) 
@@ -323,14 +543,12 @@ ADD CONSTRAINT fk_billing_handled_by
     REFERENCES receptionists(receptionist_id)
     ON DELETE SET NULL;
 
--- Insurances table relations
 ALTER TABLE insurances
 ADD CONSTRAINT fk_insurance_patient
     FOREIGN KEY (patient_id) 
     REFERENCES patients(patient_id)
     ON DELETE CASCADE;
 
--- Medical records table relations
 ALTER TABLE medical_records
 ADD CONSTRAINT fk_medical_record_patient 
     FOREIGN KEY (patient_id) 
@@ -345,14 +563,12 @@ ADD CONSTRAINT fk_medical_record_appointment
     REFERENCES appointments(appointment_id)
     ON DELETE SET NULL;
 
--- prescription table relations
 ALTER TABLE prescription
 ADD CONSTRAINT fk_prescription_medical_record_id
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
 
--- test results table relations
 ALTER TABLE test_results
 ADD CONSTRAINT fk_test_results_medical_record_id
     FOREIGN KEY (medical_record_id)
@@ -363,7 +579,13 @@ ADD CONSTRAINT fk_test_results_performed_by_id
     REFERENCES nurses(nurse_id)
     ON DELETE CASCADE;
 
--- Demographics table relations
+ALTER TABLE detailed_allergies
+    ADD CONSTRAINT fk_detailed_allergens_record
+    FOREIGN KEY (medical_record_id)
+    REFERENCES medical_records(record_id)
+    ON DELETE CASCADE;
+
+
 ALTER TABLE demographics
 ADD CONSTRAINT fk_demographics_race_code 
     FOREIGN KEY (race_id) 
@@ -378,21 +600,18 @@ ADD CONSTRAINT fk_demographics_ethnicity_code
     REFERENCES ethnicity_code(ethnicity_code)
     ON DELETE SET NULL;
 
--- Receptionist table relations
 ALTER TABLE receptionists
 ADD CONSTRAINT fk_receptionist_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
 
--- Nurse table relations
 ALTER TABLE nurses
 ADD CONSTRAINT fk_nurse_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
 
--- Doctor-office junction table relations
 ALTER TABLE doctor_offices
 ADD CONSTRAINT fk_doctor_offices_doctor
     FOREIGN KEY (doctor_id)
@@ -405,7 +624,6 @@ ADD CONSTRAINT fk_doctor_offices_office
 
 
 
--- Nurse-Office junction table relations
 ALTER TABLE nurse_offices
 ADD CONSTRAINT fk_nurse_offices_nurse
     FOREIGN KEY (nurse_id) 
@@ -416,7 +634,6 @@ ADD CONSTRAINT fk_nurse_offices_office
     REFERENCES office(office_id)
     ON DELETE CASCADE;
 
--- Appointment_notes table relations
 ALTER TABLE appointment_notes
 ADD CONSTRAINT fk_appointment_notes_appointment
     FOREIGN KEY (appointment_id)
@@ -431,7 +648,6 @@ ADD CONSTRAINT fk_appointment_notes_receptionist
     REFERENCES receptionists(receptionist_id)
     ON DELETE SET NULL;
 
--- Doctor-Specialties junction table relations
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor
     FOREIGN KEY (doctor_id) 
@@ -442,14 +658,12 @@ ADD CONSTRAINT fk_doctor_specialties_specialty
     REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
 
--- Appointment cancellations table relations
 ALTER TABLE appointment_cancellations
 ADD CONSTRAINT fk_cancellation_appointment
     FOREIGN KEY (appointment_id)
     REFERENCES appointments(appointment_id)
     ON DELETE CASCADE;
 
--- Receptionist_Office junction table relations
 ALTER TABLE receptionist_offices
 ADD CONSTRAINT fk_receptionist_offices_receptionist
     FOREIGN KEY (receptionist_id) 
@@ -459,4 +673,67 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
--- do complex views here for nurses and receptionists
+CREATE OR REPLACE VIEW doctor_schedule AS
+SELECT 
+    d.doctor_id,
+    d.doctor_name,
+    a.appointment_id,
+    a.appointment_datetime,
+    a.duration,
+    p.patient_name,
+    o.office_name
+FROM 
+    doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN 
+    patients p ON a.patient_id = p.patient_id
+JOIN 
+    office o ON a.office_id = o.office_id
+WHERE
+    a.status = 'CONFIRMED'
+ORDER BY
+    d.doctor_id, a.appointment_datetime;
+
+CREATE OR REPLACE VIEW patient_medical_history AS
+SELECT 
+    p.patient_id,
+    p.patient_name,
+    mr.record_id,
+    mr.diagnosis,
+    mr.created_at AS visit_date,
+    d.doctor_name AS attending_doctor,
+    pr.medication_name,
+    pr.dosage,
+    pr.frequency
+FROM
+    patients p
+JOIN 
+    medical_records mr ON p.patient_id = mr.patient_id
+JOIN 
+    doctors d ON mr.doctor_id = d.doctor_id
+LEFT JOIN
+    prescription pr ON mr.prescription_id = pr.prescription_id
+WHERE
+    mr.is_deleted = 0
+ORDER BY 
+    p.patient_id, mr.created_at DESC;
+
+CREATE OR REPLACE VIEW office_attending AS
+SELECT
+    o.office_id,
+    o.office_name,
+    DATE(a.appointment_datetime) AS date,
+    COUNT(a.appointment_id) AS appointment_count
+FROM 
+    office o
+LEFT JOIN 
+    appointments a ON o.office_id = a.office_id
+WHERE 
+    a.status = 'CONFIRMED'
+GROUP BY
+    o.office_id, o.office_name, DATE(a.appointment_datetime)
+ORDER BY
+    o.office_id, date;
+
+
+

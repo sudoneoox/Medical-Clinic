@@ -37,7 +37,7 @@ ADD CONSTRAINT fk_approval_patient
     REFERENCES patients(patient_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_approval_requesting_doctor
-    FOREIGN KEY (requesting_doctor_id) 
+    FOREIGN KEY (reffered_doctor_id) 
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_approval_specialist
@@ -63,6 +63,14 @@ ADD CONSTRAINT fk_appointment_attending_nurse
     FOREIGN KEY (attending_nurse)
     REFERENCES nurses(nurse_id)
     ON DELETE SET NULL;
+
+-- Appointmnent Reminder relations
+ALTER TABLE appointment_reminders
+ADD CONSTRAINT fk_appointment_reminder_appointment_id
+    FOREIGN KEY(appointment_id)
+    REFERENCES appointments(appointment_id)
+    ON DELETE CASCADE;
+
 
 -- Billing table relations
 ALTER TABLE billing
@@ -118,6 +126,14 @@ ADD CONSTRAINT fk_test_results_performed_by_id
     FOREIGN KEY (test_performed_by)
     REFERENCES nurses(nurse_id)
     ON DELETE CASCADE;
+
+-- Allergens table relations
+ALTER TABLE detailed_allergies
+    ADD CONSTRAINT fk_detailed_allergens_record
+    FOREIGN KEY (medical_record_id)
+    REFERENCES medical_records(record_id)
+    ON DELETE CASCADE;
+
 
 -- Demographics table relations
 ALTER TABLE demographics

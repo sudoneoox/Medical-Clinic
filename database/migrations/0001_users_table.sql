@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
         "Nurse"
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
+    portal_last_login TIMESTAMP,
     UNIQUE(user_id),
     UNIQUE(user_email),
     UNIQUE(user_username)
