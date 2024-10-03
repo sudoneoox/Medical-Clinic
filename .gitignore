@@ -29,3 +29,4 @@ backend/.DS_Store
 backend/.env
 
 #@database misc
+database/scripts/db_backup.sql
