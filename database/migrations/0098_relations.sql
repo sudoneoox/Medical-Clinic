@@ -134,6 +134,12 @@ ALTER TABLE detailed_allergies
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
 
+-- Notes table relations
+ALTER TABLE notes
+    ADD CONSTRAINT fk_notes_medical_record
+    FOREIGN KEY (medical_record_id)
+    REFERENCES medical_records(record_id)
+    ON DELETE CASCADE;
 
 -- Demographics table relations
 ALTER TABLE demographics
