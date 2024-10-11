@@ -42,6 +42,9 @@ const User = sequelize.define(
       type: DataTypes.ENUM("Admin", "Patient", "Doctor", "Receptionist", "Nurse"),
       allowNull: false,
     },
+    portal_last_login: {
+      type: DataTypes.TIMESTAMP,
+    }
   },
   {
     tableName: "users",

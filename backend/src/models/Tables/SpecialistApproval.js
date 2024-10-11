@@ -24,7 +24,7 @@ const SpecialistApproval = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    requesting_doctor_id: {
+    reffered_doctor_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

@@ -42,6 +42,14 @@ const MedicalRecord = sequelize.define(
     test_results: {
       type: DataTypes.JSON,
     },
+    deleted_at : {
+      type: DataTypes.TIMESTAMP,
+      defaultValue: null,
+    },
+    is_deleted: {
+      type: DataTypes.TINYINT,
+      defaultValue: 0,
+    }
   },
   {
     tableName: "medical_records",
