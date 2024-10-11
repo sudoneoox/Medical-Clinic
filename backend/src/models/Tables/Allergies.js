@@ -2,7 +2,7 @@ import DataTypes from "../CompositeTypes/customTypes.js";
 import sequelize from "../../config/database.js";
 
 const Allergies = sequelize.define(
-  "detailed_allergies",
+  "Allergies",
   {
     allergy_id: {
       type: DataTypes.INTEGER,
@@ -40,4 +40,4 @@ const Allergies = sequelize.define(
   }
 );
 
-export default MedicalRecord;
+export default Allergies;

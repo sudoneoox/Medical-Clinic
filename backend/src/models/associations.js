@@ -18,6 +18,8 @@ import Office from "./Tables/Office.js";
 import AppointmentNotes from "./Tables/AppointmentNotes.js";
 import Specialty from "./Tables/Specialties.js";
 import AppointmentCancellations from "./Tables/AppointmentCancellations.js";
+import Allergies from './Tables/Allergies.js';
+import AppointmentReminders from "./Tables/AppointmentReminders.js";
 
 const initAssociations = () => {
   // User associations
@@ -41,6 +43,7 @@ const initAssociations = () => {
     as: "receptionists",
     inverse: { as: "user" },
   });
+  
 };
 
 export default initAssociations;
