@@ -8,6 +8,30 @@ erDiagram
         date created_at
         date last_login
         enum user_role
+        int demographics_id FK
+    }
+    DEMOGRAPHICS {
+        int demographics_id PK
+        smallint race_id FK
+        smallint gender_id FK
+        smallint ethnicity_id FK
+        date dob
+        int created_by
+        date created_at
+        int updated_by
+        date updated_at
+    }
+    RACE_CODE {
+        smallint race_code PK
+        string race_text
+    }
+    GENDER_CODE {
+        smallint gender_code PK
+        string gender_text
+    }
+    ETHNICITY_CODE {
+        smallint ethnicity_code PK
+        string ethnicity_text
     }
     DOCTOR {
         int doctor_id PK
@@ -21,12 +45,10 @@ erDiagram
         int user_id UK, FK
         string patient_name
         multivalued emergency_contacts
-        int primary_doctor_id FK
     }
-    PATIENT_DOCTOR {
+    PATIENT_DOCTOR_JUNCTION {
         int patient_id PK, FK
         int doctor_id PK, FK
-        bool is_primary
     }
     OFFICE {
         int office_id PK
@@ -42,11 +64,24 @@ erDiagram
         time shift_start
         time shift_end
     }
+    NURSE {
+        int nurse_id PK
+        int user_id UK, FK
+        string nurse_name
+        string license_number
+        string specialization
+        int years_of_experience
+    }
     NURSE_OFFICES {
         int nurse_id PK, FK
         int office_id PK, FK
         time shift_start
         time shift_end
+    }
+    RECEPTIONIST {
+        int receptionist_id PK
+        int user_id FK
+        string receptionist_name
     }
     RECEPTIONIST_OFFICES {
         int receptionist_id PK, FK
@@ -68,6 +103,10 @@ erDiagram
         int booked_by FK
         int attending_nurse FK
     }
+    APPOINTMENT_REMINDERS {
+        int reminder_id PK
+        int appointment_id FK
+    }
     MEDICAL_RECORDS {
         int record_id PK
         int patient_id FK
@@ -77,21 +116,27 @@ erDiagram
         date updated_at
         string diagnosis
         string notes
-        json test_results
-        int created_by FK
-        int updated_by FK
     }
     PRESCRIPTION {
         int prescription_id PK
-        int record_id FK
+        int medical_record_id FK
         composite medication_info
         timestamp date_issued
         json pharmacy_details
     }
+    TEST_RESULTS {
+        int test_result_id PK
+        int medical_record_id FK
+        int test_performed_by FK
+    }
+    DETAILED_ALLERGIES {
+        int allergy_id PK
+        int medical_record_id FK
+    }
     SPECIALIST_APPROVALS {
         int approval_id PK
         int patient_id FK
-        int requesting_doctor_id FK
+        int reffered_doctor_id FK
         int specialist_id FK
         timestamp requested_at
         timestamp approved_at
@@ -115,66 +160,21 @@ erDiagram
         composite insurance_info
         bool is_active
     }
-    AUDIT_LOG {
-        int log_id PK
-        string table_name
-        int record_id
-        string audit_action
-        int changed_by FK
-        timestamp changed_at
-        json old_values
-        json new_values
-    }
-    NOTIFICATIONS {
-        int notification_id PK
-        int sender_id FK
-        int receiver_id FK
-        enum type_notif
-        string message
-        date created_at
-        date read_at
-        bool is_read
-        string related_entity_type
-        int related_entity_id
-    }
-    DEMOGRAPHICS {
-        int user_id PK, FK
-        smallint ethnicity FK
-        smallint race FK
-        smallint gender FK
-        date dob
-        int created_by
-        date created_at
-        int updated_by
-        date updated_at
-    }
-    SPECIALTIES {
-        int specialty_id PK
+    SPECIALTIES_CODE {
+        int specialty_code PK
         string specialty_name
     }
-    RECEPTIONIST {
-        int receptionist_id PK
-        int user_id FK
-        string receptionist_name
-    }
-    NURSE {
-        int nurse_id PK
-        int user_id UK, FK
-        string nurse_name
-        string license_number
-        string specialization
-        int years_of_experience
+    DOCTOR_SPECIALTIES {
+        int doctor_id PK, FK
+        int specialtity_code PK, FK
     }
     APPOINTMENT_NOTES {
         int note_id PK
         int appointment_id FK
         string note_text
-        int created_by FK
+        int created_by_nurse FK
+        int created_by_receptionist FK
         timestamp created_at
-    }
-    DOCTOR_SPECIALTIES {
-        int doctor_id PK, FK
-        int specialty_id PK, FK
     }
     APPOINTMENT_CANCELLATIONS {
         int cancellation_id PK
@@ -182,53 +182,45 @@ erDiagram
         string canceled_reason
         timestamp canceled_at
     }
-    RACE_CODE {
-        smallint race_code PK
-        string race_text
-    }
-    GENDER_CODE {
-        smallint gender_code PK
-        string gender_text
-    }
-    ETHNICITY_CODE {
-        smallint ethnicity_code PK
-        string ethnicity_text
-    }
 
+    USERS ||--o| DEMOGRAPHICS : "has"
+    DEMOGRAPHICS }o--|| RACE_CODE : "uses"
+    DEMOGRAPHICS }o--|| GENDER_CODE : "uses"
+    DEMOGRAPHICS }o--|| ETHNICITY_CODE : "uses"
     USERS ||--o{ DOCTOR : "is a"
     USERS ||--o{ PATIENT : "is a"
-    USERS ||--o{ RECEPTIONIST : "is a"
     USERS ||--o{ NURSE : "is a"
-    DOCTOR ||--o{ PATIENT_DOCTOR : "has"
-    PATIENT ||--o{ PATIENT_DOCTOR : "has"
+    USERS ||--o{ RECEPTIONIST : "is a"
+    DOCTOR ||--o{ PATIENT_DOCTOR_JUNCTION : "has"
+    PATIENT ||--o{ PATIENT_DOCTOR_JUNCTION : "has"
     DOCTOR ||--o{ DOCTOR_OFFICES : "works at"
     OFFICE ||--o{ DOCTOR_OFFICES : "hosts"
     NURSE ||--o{ NURSE_OFFICES : "works at"
     OFFICE ||--o{ NURSE_OFFICES : "hosts"
+    RECEPTIONIST ||--o{ RECEPTIONIST_OFFICES : "works at"
+    OFFICE ||--o{ RECEPTIONIST_OFFICES : "hosts"
     PATIENT }o--o{ APPOINTMENTS : "has"
     DOCTOR }o--o{ APPOINTMENTS : "conducts"
     OFFICE ||--o{ APPOINTMENTS : "hosts"
+    APPOINTMENTS ||--o{ APPOINTMENT_REMINDERS : "has"
     PATIENT ||--o{ MEDICAL_RECORDS : "has"
     DOCTOR ||--o{ MEDICAL_RECORDS : "creates"
     APPOINTMENTS |o--o{ MEDICAL_RECORDS : "results in"
     MEDICAL_RECORDS ||--o{ PRESCRIPTION : "includes"
+    MEDICAL_RECORDS ||--o{ TEST_RESULTS : "includes"
+    MEDICAL_RECORDS ||--o{ DETAILED_ALLERGIES : "includes"
+    NURSE ||--o{ TEST_RESULTS : "performs"
     PATIENT ||--o{ SPECIALIST_APPROVALS : "requests"
     DOCTOR ||--o{ SPECIALIST_APPROVALS : "requests/approves"
     PATIENT ||--o{ BILLING : "receives"
     APPOINTMENTS ||--|| BILLING : "generates"
     PATIENT ||--o{ INSURANCES : "has"
-    USERS ||--o{ AUDIT_LOG : "generates"
-    USERS ||--o{ NOTIFICATIONS : "sends/receives"
-    USERS ||--|| DEMOGRAPHICS : "has"
     DOCTOR }o--o{ DOCTOR_SPECIALTIES : "has"
-    SPECIALTIES ||--o{ DOCTOR_SPECIALTIES : "belongs to"
+    SPECIALTIES_CODE ||--o{ DOCTOR_SPECIALTIES : "belongs to"
     RECEPTIONIST ||--o{ APPOINTMENTS : "books"
-    RECEPTIONIST ||--o{ RECEPTIONIST_OFFICES : "works at"
-    OFFICE ||--o{ RECEPTIONIST_OFFICES : "hosts"
     NURSE }o--o{ APPOINTMENTS : "attends"
     APPOINTMENTS ||--o{ APPOINTMENT_NOTES : "has"
+    NURSE ||--o{ APPOINTMENT_NOTES : "creates"
+    RECEPTIONIST ||--o{ APPOINTMENT_NOTES : "creates"
     APPOINTMENTS ||--o| APPOINTMENT_CANCELLATIONS : "may have"
     RECEPTIONIST ||--o{ BILLING : "handles"
-    RACE_CODE ||--o{ DEMOGRAPHICS : "categorizes"
-    GENDER_CODE ||--o{ DEMOGRAPHICS : "categorizes"
-    ETHNICITY_CODE ||--o{ DEMOGRAPHICS : "categorizes"
