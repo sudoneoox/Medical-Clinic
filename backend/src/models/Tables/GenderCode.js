@@ -7,9 +7,12 @@ import sequelize from "../../config/database.js";
       gender_code: {
         type: DataTypes.TINYINT,
         primaryKey: true,
+        allowNull: false,
       },
       gender_text: {
         type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true,
       },
     },
     {

@@ -7,19 +7,20 @@ const Demographics = sequelize.define(
     demographics_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
+      allowNull: false,
+      autoIncrement: true,
     },
     ethnicity: {
       type: DataTypes.TINYINT,
+      allowNull: true,
     },
     race: {
       type: DataTypes.TINYINT,
+      allowNull: true,
     },
     gender: {
       type: DataTypes.TINYINT,
+      allowNull: true,
     },
     dob: {
       type: DataTypes.DATE,

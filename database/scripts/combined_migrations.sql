@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS demographics (
     updated_at DATE
 );
 CREATE TABLE IF NOT EXISTS specialties_code (
-    specialty_code INTEGER NOT NULL PRIMARY KEY,
+    specialty_code TINYINT NOT NULL PRIMARY KEY,
     specialty_name VARCHAR(30) NOT NULL,
     UNIQUE(specialty_code),
     UNIQUE(specialty_name)
@@ -220,18 +220,11 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     created_by_nurse INTEGER,
     created_by_receptionist INTEGER,
     UNIQUE(note_id)
-    -- THIS IS AN IMPORTANNT CONSTRAINT NEED TO FIND A WAY 
-    -- TO DO IT IN MY SQL
-    -- CONSTRAINT check_creator_type  -- not supported need trigger
-    --     CHECK (
-    --         (created_by_nurse IS NOT NULL AND created_by_receptionist IS NULL) OR
-    --         (created_by_nurse IS NULL AND created_by_receptionist IS NOT NULL)
-    --     )
 );
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
-    specialtity_code INTEGER NOT NULL,
-    PRIMARY KEY (doctor_id, specialtity_code)
+    specialty_code TINYINT NOT NULL,
+    PRIMARY KEY (doctor_id, specialty_code)
 );
 CREATE TABLE IF NOT EXISTS appointment_cancellations (
     cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -251,7 +244,7 @@ CREATE TABLE IF NOT EXISTS receptionist_offices (
 );
 CREATE TABLE IF NOT EXISTS test_results (
     -- primary keys
-    test_results_id INTEGER NOT NULL PRIMARY KEY,
+    test_results_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     test_type ENUM('BLOOD', 'XRAY', 'URINE'),
     test_name VARCHAR(30),
     test_conducted_date DATE,
@@ -420,7 +413,7 @@ CREATE INDEX idx_test_results_date ON test_results(test_conducted_date);
 CREATE INDEX idx_demographics_dob ON demographics(dob);
 
 CREATE INDEX idx_patient_doctor_junction ON patient_doctor_junction(patient_id, doctor_id);
-CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialtity_code);
+CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_code);
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
@@ -654,7 +647,7 @@ ADD CONSTRAINT fk_doctor_specialties_doctor
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_doctor_specialties_specialty
-    FOREIGN KEY (specialtity_code)
+    FOREIGN KEY (specialty_code)
     REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
 

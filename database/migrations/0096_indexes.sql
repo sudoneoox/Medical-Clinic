@@ -54,7 +54,7 @@ CREATE INDEX idx_demographics_dob ON demographics(dob);
 
 -- indexes for junction tables
 CREATE INDEX idx_patient_doctor_junction ON patient_doctor_junction(patient_id, doctor_id);
-CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialtity_code);
+CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_code);
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);

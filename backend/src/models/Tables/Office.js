@@ -12,10 +12,12 @@ const Office = sequelize.define(
     office_name: {
       type: DataTypes.STRING(50),
       allowNull: false,
+      unique: true,
     },
     office_address: {
       type: DataTypes.STRING(50),
       allowNull: false,
+      unique: true,
     },
     office_phone: {
       type: DataTypes.STRING(20),

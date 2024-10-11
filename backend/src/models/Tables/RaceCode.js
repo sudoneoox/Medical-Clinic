@@ -7,9 +7,12 @@ import sequelize from "../../config/database.js";
       race_code: {
         type: DataTypes.TINYINT,
         primaryKey: true,
+        allowNull: false,
       },
       race_text: {
         type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true,
       },
     },
     {

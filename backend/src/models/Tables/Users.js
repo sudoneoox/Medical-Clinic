@@ -10,6 +10,10 @@ const User = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
+    demographics_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     user_username: {
       type: DataTypes.STRING(50),
       unique: true,

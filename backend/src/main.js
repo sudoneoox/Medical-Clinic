@@ -12,7 +12,7 @@ async function initDB() {
     // Synchronize models with the database
     // Using { force: true } will drop tables if they exist and recreate them
     // WARNING: Only use force: true in development or testing, never in production
-    await sequelize.sync({ alter:false }); // Alternatively, use { force: true } for testing
+    await sequelize.sync({ alter:true}); // Alternatively, use { force: true } for testing
     console.log("Models synchronized");
 
     return models;

@@ -7,9 +7,12 @@ import sequelize from "../../config/database.js";
       ethnicity_code: {
         type: DataTypes.TINYINT,
         primaryKey: true,
+        allowNull: false,
       },
       ethnicity_text: {
         type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true,  
       },
     },
     {

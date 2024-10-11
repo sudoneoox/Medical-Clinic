@@ -21,6 +21,7 @@ const Doctor = sequelize.define(
     doctor_employee_id: {
       type: DataTypes.STRING(30),
       allowNull: false,
+      primaryKey: true,
     },
     years_of_experience: {
       type: DataTypes.TINYINT,
