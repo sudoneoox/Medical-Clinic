@@ -236,3 +236,26 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
+
+
+
+-- valid nos
+ALTER TABLE doctors
+ADD CONSTRAINT fk_valid_employee_no_doctor
+    FOREIGN KEY (doctor_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE nurses
+ADD CONSTRAINT fk_valid_employee_no_nurse
+    FOREIGN KEY (nurse_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE receptionists
+ADD CONSTRAINT fk_valid_employee_no_receptionist
+    FOREIGN KEY (receptionist_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+

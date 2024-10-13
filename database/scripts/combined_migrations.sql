@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE TABLE IF NOT EXISTS doctors (
     doctor_id INTEGER NOT NULL AUTO_INCREMENT,
-    doctor_employee_id VARCHAR(30) NOT NULL,
+    doctor_employee_id INTEGER NOT NULL,
     user_id INTEGER UNIQUE NOT NULL,
     doctor_name VARCHAR(50) NOT NULL,
     years_of_experience TINYINT NOT NULL,
@@ -275,6 +275,10 @@ CREATE TABLE IF NOT EXISTS detailed_allergies (
     reaction TEXT,
     severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
     onset_date DATE
+);
+CREATE TABLE IF NOT EXISTS valid_employees (
+  employee_no INT NOT NULL UNIQUE PRIMARY KEY,
+  employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN')
 );
 INSERT INTO race_code (race_code, race_text) VALUES
 (1, 'American Indian or Alaska Native'),
@@ -694,6 +698,28 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
+
+
+
+ALTER TABLE doctors
+ADD CONSTRAINT fk_valid_employee_no_doctor
+    FOREIGN KEY (doctor_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE nurses
+ADD CONSTRAINT fk_valid_employee_no_nurse
+    FOREIGN KEY (nurse_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE receptionists
+ADD CONSTRAINT fk_valid_employee_no_receptionist
+    FOREIGN KEY (receptionist_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
     d.doctor_id,

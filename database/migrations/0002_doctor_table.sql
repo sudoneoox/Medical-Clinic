@@ -1,7 +1,7 @@
 -- Doctor table, extends user
 CREATE TABLE IF NOT EXISTS doctors (
     doctor_id INTEGER NOT NULL AUTO_INCREMENT,
-    doctor_employee_id VARCHAR(30) NOT NULL,
+    doctor_employee_id INTEGER NOT NULL,
     user_id INTEGER UNIQUE NOT NULL,
     doctor_name VARCHAR(50) NOT NULL,
     years_of_experience TINYINT NOT NULL,
