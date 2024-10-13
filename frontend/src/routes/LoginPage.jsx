@@ -43,18 +43,7 @@ export default function LoginPage() {
       localStorage.setItem("userRole", response.data.role);
       
       // Redirect based on user role
-      switch (response.data.role) {
-        case "PATIENT":
-          navigate("/patient-dashboard");
-          break;
-        case "DOCTOR":
-        case "NURSE":
-        case "RECEPTIONIST":
-          navigate("/provider-dashboard");
-          break;
-        default:
-          navigate("/");
-      }
+      navigate('/portal', {state: {userRole: response.data.role}});
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message || "Login failed. Please try again.");
