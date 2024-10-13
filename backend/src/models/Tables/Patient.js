@@ -17,10 +17,6 @@ const Patient = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
     },
-    primary_doctor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
     emergency_contacts: {
       type: DataTypes.JSON,
     },
