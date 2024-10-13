@@ -10,15 +10,15 @@ const Demographics = sequelize.define(
       allowNull: false,
       autoIncrement: true,
     },
-    ethnicity: {
+    ethnicity_id: {
       type: DataTypes.TINYINT,
       allowNull: true,
     },
-    race: {
+    race_id: {
       type: DataTypes.TINYINT,
       allowNull: true,
     },
-    gender: {
+    gender_id: {
       type: DataTypes.TINYINT,
       allowNull: true,
     },

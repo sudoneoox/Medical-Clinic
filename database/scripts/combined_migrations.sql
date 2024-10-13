@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS users (
     account_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     account_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_role ENUM(
-        "Admin",
-        "Patient",
-        "Doctor",
-        "Receptionist",
-        "Nurse"
+        "ADMIN",
+        "PATIENT",
+        "DOCTOR",
+        "RECEPTIONIST",
+        "NURSE"
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
     portal_last_login TIMESTAMP,
@@ -149,24 +149,27 @@ CREATE TABLE IF NOT EXISTS prescription (
     UNIQUE(prescription_id)
 );
 CREATE TABLE IF NOT EXISTS race_code (
-    race_code TINYINT NOT NULL PRIMARY KEY,
-    race_text VARCHAR(20) NOT NULL,
+    race_code TINYINT NOT NULL ,
+    race_text VARCHAR(50) NOT NULL ,
     UNIQUE(race_code),
-    UNIQUE(race_text)
+    UNIQUE(race_text),
+    PRIMARY KEY(race_code, race_text)
 );
 
 CREATE TABLE IF NOT EXISTS gender_code (
-    gender_code TINYINT NOT NULL PRIMARY KEY,
-    gender_text VARCHAR(20) NOT NULL,
+    gender_code TINYINT NOT NULL ,
+    gender_text VARCHAR(50) NOT NULL ,
     UNIQUE(gender_code),
-    UNIQUE(gender_text)
+    UNIQUE(gender_text),
+    PRIMARY KEY (gender_code, gender_text)
 );
 
 CREATE TABLE IF NOT EXISTS ethnicity_code (
-    ethnicity_code TINYINT NOT NULL PRIMARY KEY,
-    ethnicity_text VARCHAR(20) NOT NULL,
+    ethnicity_code TINYINT NOT NULL ,
+    ethnicity_text VARCHAR(50) NOT NULL ,
     UNIQUE(ethnicity_code),
-    UNIQUE(ethnicity_text)
+    UNIQUE(ethnicity_text),
+    PRIMARY KEY (ethnicity_code, ethnicity_text)
 );
 
 CREATE TABLE IF NOT EXISTS demographics (
@@ -178,7 +181,7 @@ CREATE TABLE IF NOT EXISTS demographics (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
     updated_at DATE
-);
+); 
 CREATE TABLE IF NOT EXISTS specialties_code (
     specialty_code TINYINT NOT NULL PRIMARY KEY,
     specialty_name VARCHAR(30) NOT NULL,
@@ -273,6 +276,26 @@ CREATE TABLE IF NOT EXISTS detailed_allergies (
     severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
     onset_date DATE
 );
+INSERT INTO race_code (race_code, race_text) VALUES
+(1, 'American Indian or Alaska Native'),
+(2, 'Asian'),
+(3, 'Black or African American'),
+(4, 'Native Hawaiian or Other Pacific Islander'),
+(5, 'White'),
+(6, 'Other'),
+(7, 'Prefer not to say');
+
+INSERT INTO gender_code (gender_code, gender_text) VALUES
+(1, 'Male'),
+(2, 'Female'),
+(3, 'Non-binary'),
+(4, 'Prefer not to say'),
+(5, 'Other');
+
+INSERT INTO ethnicity_code (ethnicity_code, ethnicity_text) VALUES
+(1, 'Hispanic or Latino'),
+(2, 'Not Hispanic or Latino'),
+(3, 'Prefer not to say');
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(
     IN p_patient_id INT,
@@ -513,7 +536,12 @@ ADD CONSTRAINT fk_appointment_booked_by
 ADD CONSTRAINT fk_appointment_attending_nurse
     FOREIGN KEY (attending_nurse)
     REFERENCES nurses(nurse_id)
-    ON DELETE SET NULL;
+    ON DELETE SET NULL,
+ADD CONSTRAINT fk_appointment_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE;
+
 
 ALTER TABLE appointment_reminders
 ADD CONSTRAINT fk_appointment_reminder_appointment_id
