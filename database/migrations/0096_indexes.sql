@@ -3,10 +3,20 @@ CREATE INDEX idx_users_role ON users(user_role);
 CREATE INDEX idx_users_email ON users(user_email);
 
 -- Doctors table indexes
-CREATE INDEX idx_doctors_name ON doctors(doctor_name);
+CREATE INDEX idx_doctors_fname ON doctors(doctor_fname);
+CREATE INDEX idx_doctors_lname ON doctors(doctor_lname);
 
 -- Patients table indexes
-CREATE INDEX idx_patients_name ON patients(patient_name);
+CREATE INDEX idx_patients_fname ON patients(patient_fname);
+CREATE INDEX idx_patients_lname ON patients(patient_lname);
+
+-- nurse table idx
+CREATE INDEX idx_nurse_fname ON nurses(nurse_fname);
+CREATE INDEX idx_nurse_lname ON nurses(nurse_lname);
+
+-- receptinoist table idx
+CREATE INDEX idx_receptionist_fname ON receptionists(receptionist_fname);
+CREATE INDEX idx_receptionist_lname ON receptionists(receptionist_lname);
 
 -- Appointments table indexes
 CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);

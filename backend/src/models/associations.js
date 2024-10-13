@@ -25,6 +25,7 @@ import DoctorOffices from "./Tables/DoctorOffices.js";
 import NurseOffices from "./Tables/NurseOffices.js";
 import ReceptionistOffices from "./Tables/ReceptionistOffices.js";
 import DoctorSpecialties from "./Tables/DoctorSpecialties.js";
+import EmployeeNo from './Tables/ValidEmployeeNo.js';
 
 const initAssociations = () => {
   // User associations
@@ -181,6 +182,12 @@ const initAssociations = () => {
   Billing.belongsTo(Patient, { foreignKey: "patient_id" });
   Billing.belongsTo(Appointment, { foreignKey: "appointment_id" });
   Billing.belongsTo(Receptionist, { foreignKey: "handled_by" });
-};
 
+  Doctor.belongsTo(EmployeeNo, {foreignKey: {name: 'doctor_employee_id', onDelete: "CASCADE"}, });
+  Nurse.belongsTo(EmployeeNo, {foreignKey: {name: 'nurse_employee_id', onDelete: "CASCADE"}, });
+  Receptionist.belongsTo(EmployeeNo, {foreignKey: {name:'receptionist_employee_id', onDelete: "CASCADE"}, });
+  
+
+};
+ 
 export default initAssociations;

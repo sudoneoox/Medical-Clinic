@@ -7,20 +7,9 @@ import Patient from '../models/Tables/Patient.js'
 import Nurse from '../models/Tables/Nurse.js';
 import Receptionist from '../models/Tables/Receptionist.js'
 import Doctor from '../models/Tables/Doctor.js';
+import EmployeeNo from '../models/Tables/ValidEmployeeNo.js';
+
 import jwt from 'jsonwebtoken';
-
-// TODO  also have to add a (doctor, patient, nurse, or receptionist) depending on the user role
-// TODO given on the form, and parse out the req for specific data in each?
-// TODO also have to parse out the demographic data and associate it to the respecitive codes etc.
-// TODO have to link the user with the role they chose with their foreign keys
-//
-
-
-
-
-
-
-
 
 const registerUser = async (req, res) => {
   try {
@@ -45,11 +34,28 @@ const registerUser = async (req, res) => {
     // console.log('created demographics table ', demographic)
 
     // other information
-    const userRole = userData.role;
+    let userRole = userData.role;
+    if(userRole.toUpperCase() === 'PROVIDER'){
+      userRole = userData.providerType;
+    }
     const userPassword = userData.password;
     const userUsername = userData.username;
     const userPhone = userData.phone;
     const userEmail = userData.email;
+    
+    // LOGIC: to only allow valid employees to make their accounts
+    const empNo = await EmployeeNo.findOne({where: {employee_no: userData.employeeId}});
+    console.log("EMPNO: ", empNo);
+    if(empNo == null && userRole.toUpperCase() !== "PATIENT"){
+        
+      if(empNo == null) {
+        throw new Error('NOT A VALID EMPLOYEE NO');
+      } else if (empNo.employee_role !== user.user_role.toUpperCase()){
+        throw new Error("Invalid employee number")
+      } else {
+        console.log('found valid employee no: ', empNo);
+      }
+    }
     
 
     const newUser = await User.create({
@@ -61,42 +67,44 @@ const registerUser = async (req, res) => {
       user_username: userUsername,
     });
 
-
-
-
     // logic for correctly registering only approved providers
     // create asoociated entity with user   
     let associatedEntity = null;
-    switch(userData.role.toUpperCase()){
+    switch(userRole.toUpperCase()){
       case 'DOCTOR':
         associatedEntity = await Doctor.create({
           user_id: newUser.user_id,
-          doctor_name: `${userData.firstName} ${userData.lastName}`,
-          doctor_employee_id: userData.employeeId,
+          doctor_fname: userData.fname,
+          doctor_lname: userData.lname,
+          doctor_employee_id: empNo.employee_no,
           years_of_experience: userData.yearsOfExperience,
         });
         break;
         case 'NURSE':
         associatedEntity = await Nurse.create({
           user_id: newUser.user_id,
-          nurse_name: `${userData.firstName} ${userData.lastName}`,
-          nurse_employee_id: userData.employeeId,
-          specialization: userData.specialization, // Assuming this is provided in the request
+          nurse_fname: userData.fname,
+          nurse_lname: userData.lname,
+          nurse_employee_id: empNo.employee_no,
+          specialization: userData.specialization, 
           years_of_experience: userData.yearsOfExperience
         });
         break;
       case 'RECEPTIONIST':
         associatedEntity = await Receptionist.create({
           user_id: newUser.user_id,
-          receptionist_name: `${userData.firstName} ${userData.lastName}`,
-          receptionist_employee_id: userData.employeeId
+          receptionist_fname: userData.fname,
+          receptionist_lname: userData.lname,
+          receptionist_employee_id: empNo.employee_no,
         });
         break;
       case 'PATIENT':
         associatedEntity = await Patient.create({
           user_id: newUser.user_id,
+          patient_fname: userData.fname,
+          patient_lname: userData.lname,
           patient_name: `${userData.firstName} ${userData.lastName}`,
-          emergency_contacts: userData.emergencyContacts // Assuming this is provided as a JSON object
+          emergency_contacts: userData.emergencyContacts 
         });
         break;
       default:
@@ -111,23 +119,21 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error registering user:", error);
-    if (error.name === "ValidationError") {
-      res
-        .status(400)
-        .json({ message: "Validation error", errors: error.errors });
-    } else if (error.code === 11000) {
-      // Duplicate key error
-      res.status(409).json({ message: "User already exists" });
+    if (error.name === "SequelizeUniqueConstraintError") {
+      // Handle unique constraint violations  
+      const field1 = error.errors[0].path;
+      const field2 = error.errors[0].value;
+      console.log(error.errors[1])
+      res.status(409).json({ message: `${field1} ${field2} is already taken` });
+    } else if (error.message === "NOT A VALID EMPLOYEE NO") {
+      res.status(400).json({ message: "Invalid employee number" });
+    } else if (error.message === "Valid employee no but not for the correct role") {
+      res.status(400).json({ message: "Employee number does not match the specified role" });
     } else {
-      res
-        .status(500)
-        .json({ message: "Error registering user", error: error.message });
+      res.status(500).json({ message: "Error registering user", error: error.message });
     }
   }
 };
-
-
-
 
 const loginUser = async (req, res) => {
   try {
@@ -166,6 +172,8 @@ const loginUser = async (req, res) => {
         break;
     }
 
+
+   
     console.log('found associatedEntity: ', associatedEntity)
 
     res.status(200).json({
