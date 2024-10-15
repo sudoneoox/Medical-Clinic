@@ -184,7 +184,7 @@ const loginUser = async (req, res) => {
         entityFullName =
           associatedEntity.receptionist_fname +
           " " +
-          associatedEntity.doctor_lname;
+          associatedEntity.receptionist_lname;
         break;
       case "PATIENT":
         associatedEntity = await Patient.findOne({ user_id: user.user_id });
