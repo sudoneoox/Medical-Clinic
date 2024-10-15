@@ -109,7 +109,6 @@ const registerUser = async (req, res) => {
           user_id: newUser.user_id,
           patient_fname: userData.fname,
           patient_lname: userData.lname,
-          patient_name: `${userData.firstName} ${userData.lastName}`,
           emergency_contacts: userData.emergencyContacts,
         });
         break;
@@ -166,30 +165,43 @@ const loginUser = async (req, res) => {
     //
     // Fetch associated entity based on user role
     let associatedEntity = null;
+    let entityFullName;
     switch (user.user_role) {
       case "DOCTOR":
         associatedEntity = await Doctor.findOne({ user_id: user.user_id });
+        entityFullName =
+          associatedEntity.doctor_fname + " " + associatedEntity.doctor_lname;
         break;
       case "NURSE":
         associatedEntity = await Nurse.findOne({ user_id: user.user_id });
+        entityFullName =
+          associatedEntity.nurse_fname + " " + associatedEntity.nurse_lname;
         break;
       case "RECEPTIONIST":
         associatedEntity = await Receptionist.findOne({
           user_id: user.user_id,
         });
+        entityFullName =
+          associatedEntity.receptionist_fname +
+          " " +
+          associatedEntity.receptionist_lname;
         break;
       case "PATIENT":
         associatedEntity = await Patient.findOne({ user_id: user.user_id });
+        entityFullName =
+          associatedEntity.patient_fname + " " + associatedEntity.patient_lname;
         break;
     }
 
     console.log("found associatedEntity: ", associatedEntity);
+    console.log("Entity Full Name ", entityFullName);
 
     res.status(200).json({
       message: "User logged in successfully",
       // token, TODO: implement later?
       userId: user.user_id,
       role: user.user_role,
+      userFullName: entityFullName,
     });
   } catch (error) {
     console.error(`Error logging in user: ${req.body.email}`, error);

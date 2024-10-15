@@ -1,6 +1,13 @@
 import React from "react";
 import MainFrame from "./Mainframe";
-
+import {
+  CalendarDays,
+  ClipboardPlus,
+  LogOut,
+  Clock9,
+  ChartNoAxesGantt,
+  Settings,
+} from "lucide-react";
 // TODO: create all of these different links and each of these links make them pass to
 // the backend the user id to get their respective data tied to the user
 
@@ -16,7 +23,7 @@ const commonSidebarItems = [
   { label: "Logout", path: "/logout", icon: "" },
 ];
 
-export const DoctorPortal = ({ userName }) => {
+export const DoctorPortal = ({ userFullName }) => {
   const sidebarItems = [
     ...commonSidebarItems,
     { label: "Patients", path: "/patients", icon: "" },
@@ -25,7 +32,7 @@ export const DoctorPortal = ({ userName }) => {
 
   return (
     <MainFrame
-      userName={userName}
+      userFullName={userFullName}
       userRole="Doctor"
       sidebarItems={sidebarItems}
     >
@@ -35,7 +42,7 @@ export const DoctorPortal = ({ userName }) => {
   );
 };
 
-export const NursePortal = ({ userName }) => {
+export const NursePortal = ({ userFullName }) => {
   const sidebarItems = [
     ...commonSidebarItems,
     { label: "Patient Care", path: "/patient-care", icon: "" },
@@ -43,14 +50,18 @@ export const NursePortal = ({ userName }) => {
   ];
 
   return (
-    <MainFrame userName={userName} userRole="Nurse" sidebarItems={sidebarItems}>
+    <MainFrame
+      userFullName={userFullName}
+      userRole="Nurse"
+      sidebarItems={sidebarItems}
+    >
       <h1 className="text-2xl font-bold mb-4">Nurse Dashboard</h1>
       {/* TODO: nurse-specific components */}
     </MainFrame>
   );
 };
 
-export const ReceptionistPortal = ({ userName }) => {
+export const ReceptionistPortal = ({ userFullName }) => {
   const sidebarItems = [
     ...commonSidebarItems,
     { label: "Appointments", path: "/appointments", icon: "" },
@@ -59,7 +70,7 @@ export const ReceptionistPortal = ({ userName }) => {
 
   return (
     <MainFrame
-      userName={userName}
+      userFullName={userFullName}
       userRole="Receptionist"
       sidebarItems={sidebarItems}
     >
@@ -68,19 +79,32 @@ export const ReceptionistPortal = ({ userName }) => {
     </MainFrame>
   );
 };
-export const PatientPortal = ({ userName }) => {
+export const PatientPortal = ({ userFullName }) => {
   const sidebarItems = [
-    { label: "Overview", path: "/overview", icon: "" },
-    { label: "Calendar", path: "/calendar", icon: "" },
-    { label: "My Appointments", path: "/my-appointments", icon: "" },
-    { label: "Medical Records", path: "/medical-records", icon: "" },
-    { section: "account", label: "Settings", path: "/settings", icon: "⚙️" },
-    { label: "Logout", path: "/logout", icon: "" },
+    { label: "Overview", path: "/overview", icon: <ChartNoAxesGantt /> },
+    { label: "Calendar", path: "/calendar", icon: <CalendarDays /> },
+    {
+      label: "My Appointments",
+      path: "/my-appointments",
+      icon: <Clock9 />,
+    },
+    {
+      label: "Medical Records",
+      path: "/medical-records",
+      icon: <ClipboardPlus />,
+    },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/settings",
+      icon: <Settings />,
+    },
+    { label: "Logout", path: "/logout", icon: <LogOut /> },
   ];
 
   return (
     <MainFrame
-      userName={userName}
+      userFullName={userFullName}
       userRole="Patient"
       sidebarItems={sidebarItems}
     >
@@ -111,7 +135,7 @@ export const PatientPortal = ({ userName }) => {
 };
 
 // TODO: also create admin entity and etc
-export const AdminPortal = ({ userName }) => {
+export const AdminPortal = ({ userFullName }) => {
   const sidebarItems = [
     ...commonSidebarItems,
     { label: "User Management", path: "/users", icon: "" },
@@ -119,7 +143,11 @@ export const AdminPortal = ({ userName }) => {
   ];
 
   return (
-    <MainFrame userName={userName} userRole="Admin" sidebarItems={sidebarItems}>
+    <MainFrame
+      userFullName={userFullName}
+      userRole="Admin"
+      sidebarItems={sidebarItems}
+    >
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       {/* TODO: admin-specific components */}
     </MainFrame>
