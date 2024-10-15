@@ -7,7 +7,7 @@ import api from "../api.js";
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   // State to manage form data
   const [formData, setFormData] = useState({
     username: "",
@@ -52,55 +52,55 @@ export default function SignUp() {
   //
   //
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(""); // Clear any previous errors
+    e.preventDefault();
+    setError(""); // Clear any previous errors
 
-  if (step === 1) {
-    setStep(2);
-  } else if (step === 2) {
-    console.log("Getting demographic data");
-    setStep(3);
-  } else if (step === 3 && formData.role === "Patient") {
-    console.log("Enrolling patient:", formData);
-    try {
-      const response = await api.post(
-        "http://localhost:5000/api/users/register",
-        formData
-      );
-      console.log("User Patient registration successful: ", response.data);
-      navigate("/login");
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message);
-      } else if (err.request) {
-        setError("No response received from server. Please try again.");
-      } else {
-        setError("An error occurred. Please try again.");
+    if (step === 1) {
+      setStep(2);
+    } else if (step === 2) {
+      console.log("Getting demographic data");
+      setStep(3);
+    } else if (step === 3 && formData.role === "Patient") {
+      console.log("Enrolling patient:", formData);
+      try {
+        const response = await api.post(
+          "http://localhost:5000/api/users/register",
+          formData,
+        );
+        console.log("User Patient registration successful: ", response.data);
+        navigate("/login");
+      } catch (err) {
+        if (err.response) {
+          setError(err.response.data.message);
+        } else if (err.request) {
+          setError("No response received from server. Please try again.");
+        } else {
+          setError("An error occurred. Please try again.");
+        }
+      }
+    } else if (step === 3 && formData.role === "Provider") {
+      setStep(4);
+    } else if (step === 4) {
+      console.log("Submitting provider data:", formData);
+      try {
+        const response = await api.post(
+          "http://localhost:5000/api/users/register",
+          formData,
+        );
+        console.log("User Provider Registration successful: ", response.data);
+        navigate("/login");
+      } catch (err) {
+        if (err.response) {
+          setError(err.response.data.message);
+        } else if (err.request) {
+          setError("No response received from server. Please try again.");
+        } else {
+          setError("An error occurred. Please try again.");
+        }
       }
     }
-  } else if (step === 3 && formData.role === "Provider") {
-    setStep(4);
-  } else if (step === 4) {
-    console.log("Submitting provider data:", formData);
-    try {
-      const response = await api.post(
-        "http://localhost:5000/api/users/register",
-        formData
-      );
-      console.log("User Provider Registration successful: ", response.data);
-      navigate("/login");
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message);
-      } else if (err.request) {
-        setError("No response received from server. Please try again.");
-      } else {
-        setError("An error occurred. Please try again.");
-      }
-    }
-  }
-};
-   // Render appropriate form fields based on the current step
+  };
+  // Render appropriate form fields based on the current step
   const renderFormFields = () => {
     const fields = {
       1: [
@@ -124,18 +124,17 @@ export default function SignUp() {
           required: true,
         },
         {
-          name: 'fname',
+          name: "fname",
           label: "First Name",
-          type: 'text',
+          type: "text",
           required: true,
         },
         {
-          name: 'lname',
+          name: "lname",
           label: "Last Name",
-          type: 'text',
+          type: "text",
           required: true,
-
-        }
+        },
       ],
       2: [
         { name: "dob", label: "Date of Birth", type: "date", required: true },
@@ -224,7 +223,10 @@ export default function SignUp() {
             Create your account
           </h2>
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+              role="alert"
+            >
               <span className="block sm:inline">{error}</span>
             </div>
           )}
@@ -232,10 +234,10 @@ export default function SignUp() {
             {step === 1
               ? "Let's get started!"
               : step === 2
-              ? "Just a bit more info..."
-              : step === 3
-              ? "Final step for patients"
-              : "Final step for providers"}
+                ? "Just a bit more info..."
+                : step === 3
+                  ? "Final step for patients"
+                  : "Final step for providers"}
           </p>
           <form onSubmit={handleSubmit} className="space-y-6">
             {renderFormFields()}
@@ -246,10 +248,10 @@ export default function SignUp() {
               {step === 1
                 ? "Next"
                 : step === 2
-                ? formData.role === "Patient"
-                  ? "Enroll"
-                  : "Next"
-                : "Submit"}
+                  ? formData.role === "Patient"
+                    ? "Enroll"
+                    : "Next"
+                  : "Submit"}
             </button>
           </form>
           {step > 1 && (
