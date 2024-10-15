@@ -14,16 +14,12 @@ const Patient = sequelize.define(
     },
     patient_lname: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
     },
 
     user_id: {
       type: DataTypes.INTEGER,
       unique: true,
-      allowNull: false,
-    },
-    patient_name: {
-      type: DataTypes.STRING(50),
       allowNull: false,
     },
     emergency_contacts: {
@@ -33,6 +29,6 @@ const Patient = sequelize.define(
   {
     tableName: "patients",
     timestamps: false,
-  }
+  },
 );
 export default Patient;

@@ -1,5 +1,5 @@
 -- doctor spceialties
-INSERT INTO specialties_code (specialty_code, specialty_name) VALUES (
+INSERT INTO specialties_code (specialty_code, specialty_name) VALUES 
 (1, 'Family Medicine'),
 (2, 'Internal Medicine'),
 (3, 'Pediatrics'),
