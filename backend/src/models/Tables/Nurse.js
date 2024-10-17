@@ -14,14 +14,9 @@ const Nurse = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    nurse_name: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
     nurse_employee_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
     },
     specialization: {
       type: DataTypes.STRING(50),

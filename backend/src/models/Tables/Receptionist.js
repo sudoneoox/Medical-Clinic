@@ -11,15 +11,19 @@ const Receptionist = sequelize.define(
     },
     receptionist_employee_id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       allowNull: false,
     },
+    receptionist_fname: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    receptionist_lname: {
+      type: DataTypes.STRING(50),
+      allowNull: false
+    },
+
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    receptionist_name: {
-      type: DataTypes.STRING(50),
       allowNull: false,
     },
   },

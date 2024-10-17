@@ -3,11 +3,13 @@
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
     d.doctor_id,
-    d.doctor_name,
+    d.doctor_fname,
+    d.doctor_lname,
     a.appointment_id,
     a.appointment_datetime,
     a.duration,
-    p.patient_name,
+    p.patient_fname,
+    p.patient_lname,
     o.office_name
 FROM 
     doctors d
@@ -25,11 +27,13 @@ ORDER BY
 CREATE OR REPLACE VIEW patient_medical_history AS
 SELECT 
     p.patient_id,
-    p.patient_name,
+    p.patient_fname,
+    p.patient_lname,
     mr.record_id,
     mr.diagnosis,
     mr.created_at AS visit_date,
-    d.doctor_name AS attending_doctor,
+    d.doctor_fname AS attending_doctor_fname,
+    d.doctor_lname AS attending_doctor_lname,
     pr.medication_name,
     pr.dosage,
     pr.frequency

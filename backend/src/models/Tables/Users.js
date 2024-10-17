@@ -9,7 +9,8 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
-    },
+    }, 
+    
     demographics_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

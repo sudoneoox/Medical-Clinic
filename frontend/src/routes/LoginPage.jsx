@@ -1,8 +1,8 @@
-import React, {useState} from 'react'
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
-import api from '../api.js'
-import {useNavigate} from 'react-router-dom';
+import api from "../api.js";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -34,19 +34,30 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post("http://localhost:5000/api/users/login", formData);
+      const response = await api.post(
+        "http://localhost:5000/api/users/login",
+        formData,
+      );
       console.log("Login successful:", response.data);
-      
+
       // Store the token and user info in localStorage
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userId", response.data.userId);
       localStorage.setItem("userRole", response.data.role);
-      
+      localStorage.setItem("userFullName", response.data.userFullName);
+      console.log(response.data);
       // Redirect based on user role
-      navigate('/portal', {state: {userRole: response.data.role}});
+      navigate("/portal", {
+        state: {
+          userRole: response.data.role,
+          userFullName: response.data.userFullName,
+        },
+      });
     } catch (err) {
       if (err.response) {
-        setError(err.response.data.message || "Login failed. Please try again.");
+        setError(
+          err.response.data.message || "Login failed. Please try again.",
+        );
       } else if (err.request) {
         setError("No response received from server. Please try again later.");
       } else {
@@ -55,10 +66,9 @@ export default function LoginPage() {
       console.error("Login error:", err);
     }
   };
-  
 
   return (
-   <>
+    <>
       <Navbar items={navbaritems} customButtonProps={userSignupButton} />
       <div className="flex min-h-screen bg-gray-100">
         <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex lg:px-20 xl:px-24">
@@ -122,7 +132,9 @@ export default function LoginPage() {
                   </div>
 
                   {error && (
-                    <div className="text-red-500 text-sm font-bold ">{error}</div>
+                    <div className="text-red-500 text-sm font-bold ">
+                      {error}
+                    </div>
                   )}
 
                   <div>
@@ -165,5 +177,5 @@ export default function LoginPage() {
         </div>
       </div>
     </>
- );
+  );
 }

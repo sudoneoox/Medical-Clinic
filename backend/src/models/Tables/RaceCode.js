@@ -10,7 +10,7 @@ import sequelize from "../../config/database.js";
         allowNull: false,
       },
       race_text: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(50),
         allowNull: false,
         unique: true,
       },
