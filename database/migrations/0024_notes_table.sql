@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS notes (
+    note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    subject VARCHAR(100),
+    description TEXT,
+    is_deleted TINYINT DEFAULT (0),
+    deleted_at TIMESTAMP NULL,
+    medical_record_id INTEGER NOT NULL,
+    UNIQUE(note_id)
+);

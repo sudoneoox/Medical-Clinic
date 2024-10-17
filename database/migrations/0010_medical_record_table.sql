@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS medical_records (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- in case of any updates on diagnosis or changes 
     diagnosis VARCHAR(100),
-    notes TEXT,
     is_deleted TINYINT DEFAULT (0),
     deleted_at TIMESTAMP NULL,
     -- foreign keys other entities

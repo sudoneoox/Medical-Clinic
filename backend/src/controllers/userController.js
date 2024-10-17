@@ -1,4 +1,4 @@
-import User from "../models/Tables/Users.js";
+
 import Demographics from "../models/Tables/Demographics.js";
 import RaceCode from "../models/Tables/RaceCode.js";
 import GenderCode from "../models/Tables/GenderCode.js";
@@ -8,6 +8,7 @@ import Nurse from "../models/Tables/Nurse.js";
 import Receptionist from "../models/Tables/Receptionist.js";
 import Doctor from "../models/Tables/Doctor.js";
 import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
+import User from '../models/Tables/Users.js'
 
 import jwt from "jsonwebtoken";
 
@@ -144,6 +145,8 @@ const registerUser = async (req, res) => {
   }
 };
 
+
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -151,10 +154,16 @@ const loginUser = async (req, res) => {
 
     // Find the user by email
     const user = await User.findOne({ where: { user_email: email } });
+    const validPassword = user.user_password === password ? true: false;
     console.log("found user: ", user);
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "email does not exist" }); 
     }
+
+    if ((!validPassword)){
+      return res.status(402).json({message: "incorrect password "});
+    }
+
 
     //TODO:  Generate a JWT token
     // const token = jwt.sign(
@@ -162,7 +171,7 @@ const loginUser = async (req, res) => {
     //   process.env.JWT_SECRET,
     //   { expiresIn: '1h' }
     // );
-    //
+
     // Fetch associated entity based on user role
     let associatedEntity = null;
     let entityFullName;
