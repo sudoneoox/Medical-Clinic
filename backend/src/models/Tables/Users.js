@@ -9,6 +9,11 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
+    }, 
+    
+    demographics_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     user_username: {
       type: DataTypes.STRING(50),
@@ -39,9 +44,12 @@ const User = sequelize.define(
       type: DataTypes.TIMESTAMP,
     },
     user_role: {
-      type: DataTypes.ENUM("Admin", "Patient", "Doctor", "Receptionist", "Nurse"),
+      type: DataTypes.ENUM('PATIENT', 'NURSE', 'DOCTOR', 'RECEPTIONIST'),
       allowNull: false,
     },
+    portal_last_login: {
+      type: DataTypes.TIMESTAMP,
+    }
   },
   {
     tableName: "users",

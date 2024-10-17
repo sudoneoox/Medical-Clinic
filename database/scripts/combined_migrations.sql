@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS users (
     account_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     account_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_role ENUM(
-        "Admin",
-        "Patient",
-        "Doctor",
-        "Receptionist",
-        "Nurse"
+        "ADMIN",
+        "PATIENT",
+        "DOCTOR",
+        "RECEPTIONIST",
+        "NURSE"
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
     portal_last_login TIMESTAMP,
@@ -26,20 +26,21 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE(user_username)
 );
 CREATE TABLE IF NOT EXISTS doctors (
-    doctor_id INTEGER NOT NULL AUTO_INCREMENT,
-    doctor_employee_id VARCHAR(30) NOT NULL,
+    doctor_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    doctor_employee_id INTEGER NOT NULL,
+    doctor_fname VARCHAR(50) NOT NULL,
+    doctor_lname VARCHAR(50) NOT NULL,
     user_id INTEGER UNIQUE NOT NULL,
-    doctor_name VARCHAR(50) NOT NULL,
     years_of_experience TINYINT NOT NULL,
-    PRIMARY KEY(doctor_id, doctor_employee_id),
     -- CONSTRAINT chk_years_experience CHECK (years_of_experience > 0 AND years_of_experience < 90)
     UNIQUE(doctor_employee_id),
     UNIQUE(user_id)
-);
+); 
 CREATE TABLE IF NOT EXISTS patients (
     patient_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
-    patient_name VARCHAR(50) NOT NULL,
+    patient_fname VARCHAR(50) NOT NULL,
+    patient_lname VARCHAR(50) NOT NULL,
     emergency_contacts JSON,
     UNIQUE(user_id)
 );
@@ -149,24 +150,27 @@ CREATE TABLE IF NOT EXISTS prescription (
     UNIQUE(prescription_id)
 );
 CREATE TABLE IF NOT EXISTS race_code (
-    race_code TINYINT NOT NULL PRIMARY KEY,
-    race_text VARCHAR(20) NOT NULL,
+    race_code TINYINT NOT NULL ,
+    race_text VARCHAR(50) NOT NULL ,
     UNIQUE(race_code),
-    UNIQUE(race_text)
+    UNIQUE(race_text),
+    PRIMARY KEY(race_code, race_text)
 );
 
 CREATE TABLE IF NOT EXISTS gender_code (
-    gender_code TINYINT NOT NULL PRIMARY KEY,
-    gender_text VARCHAR(20) NOT NULL,
+    gender_code TINYINT NOT NULL ,
+    gender_text VARCHAR(50) NOT NULL ,
     UNIQUE(gender_code),
-    UNIQUE(gender_text)
+    UNIQUE(gender_text),
+    PRIMARY KEY (gender_code, gender_text)
 );
 
 CREATE TABLE IF NOT EXISTS ethnicity_code (
-    ethnicity_code TINYINT NOT NULL PRIMARY KEY,
-    ethnicity_text VARCHAR(20) NOT NULL,
+    ethnicity_code TINYINT NOT NULL ,
+    ethnicity_text VARCHAR(50) NOT NULL ,
     UNIQUE(ethnicity_code),
-    UNIQUE(ethnicity_text)
+    UNIQUE(ethnicity_text),
+    PRIMARY KEY (ethnicity_code, ethnicity_text)
 );
 
 CREATE TABLE IF NOT EXISTS demographics (
@@ -178,30 +182,30 @@ CREATE TABLE IF NOT EXISTS demographics (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
     updated_at DATE
-);
+); 
 CREATE TABLE IF NOT EXISTS specialties_code (
-    specialty_code INTEGER NOT NULL PRIMARY KEY,
+    specialty_code TINYINT NOT NULL PRIMARY KEY,
     specialty_name VARCHAR(30) NOT NULL,
     UNIQUE(specialty_code),
     UNIQUE(specialty_name)
 );
 CREATE TABLE IF NOT EXISTS receptionists (
-    receptionist_id INTEGER NOT NULL AUTO_INCREMENT,
+    receptionist_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     receptionist_employee_id INTEGER NOT NULL,
+    receptionist_fname VARCHAR(50) NOT NULL,
+    receptionist_lname VARCHAR(50) NOT NULL,
     user_id INTEGER NOT NULL, -- fk
-    receptionist_name VARCHAR(50) NOT NULL,
-    PRIMARY KEY(receptionist_id, receptionist_employee_id),
     UNIQUE(receptionist_id),
     UNIQUE(user_id)
 );
 CREATE TABLE IF NOT EXISTS nurses (
-    nurse_id INTEGER NOT NULL AUTO_INCREMENT,
+    nurse_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
-    nurse_name VARCHAR(50) NOT NULL,
     nurse_employee_id INTEGER NOT NULL,
+    nurse_fname VARCHAR(50) NOT NULL,
+    nurse_lname VARCHAR(50) NOT NULL,
     specialization VARCHAR(50),
     years_of_experience TINYINT,
-    PRIMARY KEY (nurse_id, nurse_employee_id),
     UNIQUE(nurse_id),
     UNIQUE(user_id)
 );
@@ -220,18 +224,11 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     created_by_nurse INTEGER,
     created_by_receptionist INTEGER,
     UNIQUE(note_id)
-    -- THIS IS AN IMPORTANNT CONSTRAINT NEED TO FIND A WAY 
-    -- TO DO IT IN MY SQL
-    -- CONSTRAINT check_creator_type  -- not supported need trigger
-    --     CHECK (
-    --         (created_by_nurse IS NOT NULL AND created_by_receptionist IS NULL) OR
-    --         (created_by_nurse IS NULL AND created_by_receptionist IS NOT NULL)
-    --     )
 );
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
-    specialtity_code INTEGER NOT NULL,
-    PRIMARY KEY (doctor_id, specialtity_code)
+    specialty_code TINYINT NOT NULL,
+    PRIMARY KEY (doctor_id, specialty_code)
 );
 CREATE TABLE IF NOT EXISTS appointment_cancellations (
     cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -251,7 +248,7 @@ CREATE TABLE IF NOT EXISTS receptionist_offices (
 );
 CREATE TABLE IF NOT EXISTS test_results (
     -- primary keys
-    test_results_id INTEGER NOT NULL PRIMARY KEY,
+    test_results_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     test_type ENUM('BLOOD', 'XRAY', 'URINE'),
     test_name VARCHAR(30),
     test_conducted_date DATE,
@@ -280,6 +277,77 @@ CREATE TABLE IF NOT EXISTS detailed_allergies (
     severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
     onset_date DATE
 );
+CREATE TABLE IF NOT EXISTS valid_employees (
+  employee_no INT NOT NULL UNIQUE PRIMARY KEY,
+  employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN') NOT NULL
+);
+INSERT INTO race_code (race_code, race_text) VALUES
+(1, 'American Indian or Alaska Native'),
+(2, 'Asian'),
+(3, 'Black or African American'),
+(4, 'Native Hawaiian or Other Pacific Islander'),
+(5, 'White'),
+(6, 'Other'),
+(7, 'Prefer not to say');
+
+INSERT INTO gender_code (gender_code, gender_text) VALUES
+(1, 'Male'),
+(2, 'Female'),
+(3, 'Non-binary'),
+(4, 'Prefer not to say'),
+(5, 'Other');
+
+INSERT INTO ethnicity_code (ethnicity_code, ethnicity_text) VALUES
+(1, 'Hispanic or Latino'),
+(2, 'Not Hispanic or Latino'),
+(3, 'Prefer not to say');
+INSERT INTO specialties_code (specialty_code, specialty_name) VALUES 
+(1, 'Family Medicine'),
+(2, 'Internal Medicine'),
+(3, 'Pediatrics'),
+(4, 'Obstetrics and Gynecology'),
+(5, 'General Surgery'),
+(6, 'Psychiatry'),
+(7, 'Cardiology'),
+(8, 'Dermatology'),
+(9, 'Orthopedics'),
+(10, 'Neurology'),
+(11, 'Oncology'),
+(12, 'Emergency Medicine'),
+(13, 'Gastroenterology'),
+(14, 'Endocrinology'),
+(15, 'Urology');
+
+INSERT INTO valid_employees (employee_no, employee_role) VALUES
+(1000, 'RECEPTIONIST'),
+(1200, 'DOCTOR'),
+(1400, 'NURSE');
+
+INSERT INTO users (user_username, user_password, user_email, user_phone, user_role, demographics_id) VALUES
+('john_doe', 'abc', 'john.doe@email.com', '1234567890', 'PATIENT', 1),
+('jane_smith', 'abc', 'jane.smith@email.com', '2345678901', 'DOCTOR', 2),
+('bob_nurse', 'abc', 'bob.nurse@email.com', '3456789012', 'NURSE', 3),
+('alice_receptionist', 'abc', 'alice.receptionist@email.com', '4567890123', 'RECEPTIONIST', 4);
+
+
+INSERT INTO demographics (ethnicity_id, race_id, gender_id, dob) VALUES
+(1, 5, 1, '1980-05-15'),
+(2, 2, 2, '1975-09-22'),
+(1, 3, 1, '1990-03-10'),
+(3, 5, 2, '1985-12-01');
+
+INSERT INTO patients (user_id, patient_fname, patient_lname, emergency_contacts) VALUES
+(1, 'John', 'Doe', '{"name": "Jane Doe", "relationship": "Wife", "phone": "5678901234"}');
+
+INSERT INTO doctors (doctor_employee_id, doctor_fname, doctor_lname, user_id, years_of_experience) VALUES
+(1200, 'Jane', 'Smith', 2, 15);
+
+INSERT INTO nurses (user_id, nurse_employee_id, nurse_fname, nurse_lname, specialization, years_of_experience) VALUES
+(3, 1400, 'Bob', 'Johnson', 'Pediatrics', 8);
+
+INSERT INTO receptionists (receptionist_employee_id, receptionist_fname, receptionist_lname, user_id) VALUES
+(1000, 'Alice', 'Williams', 4);
+
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(
     IN p_patient_id INT,
@@ -360,7 +428,8 @@ BEGIN
         a.appointment_id,
         a.appointment_datetime,
         a.duration,
-        d.doctor_name,
+        d.doctor_fname,
+        d.doctor_lname,
         o.office_name,
         a.reason
     FROM 
@@ -382,9 +451,17 @@ DELIMITER ;
 CREATE INDEX idx_users_role ON users(user_role);
 CREATE INDEX idx_users_email ON users(user_email);
 
-CREATE INDEX idx_doctors_name ON doctors(doctor_name);
+CREATE INDEX idx_doctors_fname ON doctors(doctor_fname);
+CREATE INDEX idx_doctors_lname ON doctors(doctor_lname);
 
-CREATE INDEX idx_patients_name ON patients(patient_name);
+CREATE INDEX idx_patients_fname ON patients(patient_fname);
+CREATE INDEX idx_patients_lname ON patients(patient_lname);
+
+CREATE INDEX idx_nurse_fname ON nurses(nurse_fname);
+CREATE INDEX idx_nurse_lname ON nurses(nurse_lname);
+
+CREATE INDEX idx_receptionist_fname ON receptionists(receptionist_fname);
+CREATE INDEX idx_receptionist_lname ON receptionists(receptionist_lname);
 
 CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);
 CREATE INDEX idx_appointments_status ON appointments(status);
@@ -420,7 +497,7 @@ CREATE INDEX idx_test_results_date ON test_results(test_conducted_date);
 CREATE INDEX idx_demographics_dob ON demographics(dob);
 
 CREATE INDEX idx_patient_doctor_junction ON patient_doctor_junction(patient_id, doctor_id);
-CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialtity_code);
+CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_code);
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
@@ -520,7 +597,12 @@ ADD CONSTRAINT fk_appointment_booked_by
 ADD CONSTRAINT fk_appointment_attending_nurse
     FOREIGN KEY (attending_nurse)
     REFERENCES nurses(nurse_id)
-    ON DELETE SET NULL;
+    ON DELETE SET NULL,
+ADD CONSTRAINT fk_appointment_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE;
+
 
 ALTER TABLE appointment_reminders
 ADD CONSTRAINT fk_appointment_reminder_appointment_id
@@ -654,7 +736,7 @@ ADD CONSTRAINT fk_doctor_specialties_doctor
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_doctor_specialties_specialty
-    FOREIGN KEY (specialtity_code)
+    FOREIGN KEY (specialty_code)
     REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
 
@@ -673,14 +755,38 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
+
+
+
+ALTER TABLE doctors
+ADD CONSTRAINT fk_valid_employee_no_doctor
+    FOREIGN KEY (doctor_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE nurses
+ADD CONSTRAINT fk_valid_employee_no_nurse
+    FOREIGN KEY (nurse_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE receptionists
+ADD CONSTRAINT fk_valid_employee_no_receptionist
+    FOREIGN KEY (receptionist_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
     d.doctor_id,
-    d.doctor_name,
+    d.doctor_fname,
+    d.doctor_lname,
     a.appointment_id,
     a.appointment_datetime,
     a.duration,
-    p.patient_name,
+    p.patient_fname,
+    p.patient_lname,
     o.office_name
 FROM 
     doctors d
@@ -697,11 +803,13 @@ ORDER BY
 CREATE OR REPLACE VIEW patient_medical_history AS
 SELECT 
     p.patient_id,
-    p.patient_name,
+    p.patient_fname,
+    p.patient_lname,
     mr.record_id,
     mr.diagnosis,
     mr.created_at AS visit_date,
-    d.doctor_name AS attending_doctor,
+    d.doctor_fname AS attending_doctor_fname,
+    d.doctor_lname AS attending_doctor_lname,
     pr.medication_name,
     pr.dosage,
     pr.frequency

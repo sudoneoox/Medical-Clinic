@@ -14,10 +14,15 @@ const Doctor = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    doctor_name: {
+    doctor_fname: {
       type: DataTypes.STRING(50),
       allowNull: false,
     },
+    doctor_lname: {
+      type: DataTypes.STRING(50),
+      allowNull: false
+    },
+
     doctor_employee_id: {
       type: DataTypes.STRING(30),
       allowNull: false,

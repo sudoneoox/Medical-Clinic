@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS test_results (
     -- primary keys
-    test_results_id INTEGER NOT NULL PRIMARY KEY,
+    test_results_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     test_type ENUM('BLOOD', 'XRAY', 'URINE'),
     test_name VARCHAR(30),
     test_conducted_date DATE,

@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
     account_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     account_last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_role ENUM(
-        "Admin",
-        "Patient",
-        "Doctor",
-        "Receptionist",
-        "Nurse"
+        "ADMIN",
+        "PATIENT",
+        "DOCTOR",
+        "RECEPTIONIST",
+        "NURSE"
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
     portal_last_login TIMESTAMP,

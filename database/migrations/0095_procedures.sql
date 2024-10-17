@@ -81,7 +81,8 @@ BEGIN
         a.appointment_id,
         a.appointment_datetime,
         a.duration,
-        d.doctor_name,
+        d.doctor_fname,
+        d.doctor_lname,
         o.office_name,
         a.reason
     FROM 

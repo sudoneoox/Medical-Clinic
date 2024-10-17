@@ -62,7 +62,12 @@ ADD CONSTRAINT fk_appointment_booked_by
 ADD CONSTRAINT fk_appointment_attending_nurse
     FOREIGN KEY (attending_nurse)
     REFERENCES nurses(nurse_id)
-    ON DELETE SET NULL;
+    ON DELETE SET NULL,
+ADD CONSTRAINT fk_appointment_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE;
+
 
 -- Appointmnent Reminder relations
 ALTER TABLE appointment_reminders
@@ -216,7 +221,7 @@ ADD CONSTRAINT fk_doctor_specialties_doctor
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_doctor_specialties_specialty
-    FOREIGN KEY (specialtity_code)
+    FOREIGN KEY (specialty_code)
     REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
 
@@ -237,3 +242,26 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
+
+
+
+-- valid nos
+ALTER TABLE doctors
+ADD CONSTRAINT fk_valid_employee_no_doctor
+    FOREIGN KEY (doctor_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE nurses
+ADD CONSTRAINT fk_valid_employee_no_nurse
+    FOREIGN KEY (nurse_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+ALTER TABLE receptionists
+ADD CONSTRAINT fk_valid_employee_no_receptionist
+    FOREIGN KEY (receptionist_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+
+

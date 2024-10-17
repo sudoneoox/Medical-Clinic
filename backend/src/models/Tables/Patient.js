@@ -8,18 +8,19 @@ const Patient = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    patient_fname: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    patient_lname: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+
     user_id: {
       type: DataTypes.INTEGER,
       unique: true,
       allowNull: false,
-    },
-    patient_name: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    primary_doctor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
     },
     emergency_contacts: {
       type: DataTypes.JSON,
@@ -28,6 +29,6 @@ const Patient = sequelize.define(
   {
     tableName: "patients",
     timestamps: false,
-  }
+  },
 );
 export default Patient;

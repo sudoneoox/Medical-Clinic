@@ -8,8 +8,8 @@ const DoctorSpecialties = sequelize.define(
       allowNull: false,
       primaryKey: true,
     },
-    specialty_id: {
-      type: DataTypes.INTEGER,
+    specialty_code: {
+      type: DataTypes.TINYINT,
       allowNull: false,
       primaryKey: true,
     },

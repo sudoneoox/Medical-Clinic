@@ -4,17 +4,19 @@ import sequelize from "../../config/database.js";
 const Specialty = sequelize.define(
   "Specialty",
   {
-    specialties_code: {
+    specialty_code: {
       type: DataTypes.TINYINT,
       allowNull: false,
+      primaryKey: true,
     },
     specialty_name: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(30),
       allowNull: false,
+      unique: true,
     },
   },
   {
-    tableName: "specialties",
+    tableName: "specialties_code",
     timestamps: false,
   }
 );
