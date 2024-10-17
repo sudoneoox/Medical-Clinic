@@ -5,5 +5,4 @@ CREATE TABLE IF NOT EXISTS appointment_cancellations (
     canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(cancellation_id),
     UNIQUE(appointment_id)
-    
 );
