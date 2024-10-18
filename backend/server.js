@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import router from "./src/routes/userRoutes.js"
+import router from "./src/routes/userRoutes.js";
+import homepageRouter from "./src/routes/homepageRouter.js";
 const app = express();
 
 // enable cors ie so our frontend server (port 3000) can communicate with
@@ -8,10 +9,11 @@ const app = express();
 app.use(cors());
 
 // parse json bodies
-app.use(express.json());
+app.use(express.json()); 
 
 // use user routes
 app.use('/api/users', router);
+app.use('/api/homepage', homepageRouter);
 
 
 

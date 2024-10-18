@@ -5,8 +5,8 @@ import "dotenv/config";
 const sequelize = new Sequelize({
   dialect: MySqlDialect,
   database: "medical_clinic",
-  user: "admin",
-  password: "abc",
+  user: "root",
+  password: "admin321",
   host: "localhost",
   logging: false, // set to console.log to see the raw SQL queries
   port: 3306,
