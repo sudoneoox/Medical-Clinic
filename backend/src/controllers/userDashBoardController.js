@@ -70,22 +70,81 @@ try {
 
 
 //TODO: complete subfunctions based on what frontend is going to showcase for each role
-
 const populateDashboardForPatient = (user, patient) =>{
-
+  // TODO: for patient 
+  // get current appointments for calendar tab
+  // get available doctors for appointments for appointments tab
+  // get patient medical records which could showcase their test results allowing them to soft delete or to save etc
+  // overview tab would show the other relevant data 
+  // if we want to implement settings if we have time wed have to make a relationship entity with the users named user-settings 
+  try {
+    
+  } catch (err){
+    console.error("Error within populateDashboardForPatient ", error);
+    if(error.name === "'){
+    } else {
+      res
+        .status(500)
+        .json({message: "Error: ", error: error.message});
+    }
+  }
 }
 const populateDashboardForAdmin = (user, admin) =>{
+try {
+    
+  } catch (err){
+    console.error("Error within populateDashboardForPatient ", error);
+    if(error.name === "'){
+    } else {
+      res
+        .status(500)
+        .json({message: "Error: ", error: error.message});
+    }
+  }
 
 } 
 const populateDashboardForDoctor = (user, doctor) =>{
+try {
+    
+  } catch (err){
+    console.error("Error within populateDashboardForPatient ", error);
+    if(error.name === "'){
+    } else {
+      res
+        .status(500)
+        .json({message: "Error: ", error: error.message});
+    }
+  }
 
 }
 
 const populateDashboardForReceptionist = (user, receptionist) =>{
+try {
+    
+  } catch (err){
+    console.error("Error within populateDashboardForPatient ", error);
+    if(error.name === "'){
+    } else {
+      res
+        .status(500)
+        .json({message: "Error: ", error: error.message});
+    }
+  }
 
 }
 
 const populateDashboardForNurse = (user, nurse) =>{
+try {
+    
+  } catch (err){
+    console.error("Error within populateDashboardForPatient ", error);
+    if(error.name === "'){
+    } else {
+      res
+        .status(500)
+        .json({message: "Error: ", error: error.message});
+    }
+  }
 
 }
 
