@@ -128,7 +128,6 @@ CREATE TABLE IF NOT EXISTS medical_records (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- in case of any updates on diagnosis or changes 
     diagnosis VARCHAR(100),
-    notes TEXT,
     is_deleted TINYINT DEFAULT (0),
     deleted_at TIMESTAMP NULL,
     -- foreign keys other entities
@@ -238,7 +237,6 @@ CREATE TABLE IF NOT EXISTS appointment_cancellations (
     canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(cancellation_id),
     UNIQUE(appointment_id)
-    
 );
 CREATE TABLE IF NOT EXISTS receptionist_offices (
     receptionist_id INTEGER NOT NULL,
@@ -281,6 +279,17 @@ CREATE TABLE IF NOT EXISTS detailed_allergies (
 CREATE TABLE IF NOT EXISTS valid_employees (
   employee_no INT NOT NULL UNIQUE PRIMARY KEY,
   employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN') NOT NULL
+);
+CREATE TABLE IF NOT EXISTS notes (
+    note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    subject VARCHAR(100),
+    description TEXT,
+    is_deleted TINYINT DEFAULT (0),
+    deleted_at TIMESTAMP NULL,
+    medical_record_id INTEGER NOT NULL,
+    UNIQUE(note_id)
 );
 INSERT INTO race_code (race_code, race_text) VALUES
 (1, 'American Indian or Alaska Native'),
@@ -668,6 +677,11 @@ ALTER TABLE detailed_allergies
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
 
+ALTER TABLE notes
+    ADD CONSTRAINT fk_notes_medical_record
+    FOREIGN KEY (medical_record_id)
+    REFERENCES medical_records(record_id)
+    ON DELETE CASCADE;
 
 ALTER TABLE demographics
 ADD CONSTRAINT fk_demographics_race_code 

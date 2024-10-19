@@ -15,7 +15,6 @@ const Specialty = sequelize.define(
       allowNull: false,
       unique: true,
     },
-  },{
     specialty_desc: {
       type: DataTypes.STRING(500),
       allowNull: true,

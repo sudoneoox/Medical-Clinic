@@ -26,11 +26,10 @@ try {
     // TODO: either make the subfunctions in this switch case return the json response back idk if thats allowed or if
     // return await is either valid or make the subfunctions return a json datatype and then make this master function return that
     // to the frontend
-    const relatedEntityType;
+    let relatedEntityType;
     switch (user.user_role) {
       case "RECEPTIONIST": 
         relatedEntityType = await Receptionist.findOne({where:{user_id: user_id}});
-        relatedEntityType === null ? (return res.status(401).json({message: 'error could not find related subentity type within populateDashboard '})):(true);
         return await populateDashboardForReceptionist(user, receptionist);
         break;
       case "ADMIN":
@@ -41,22 +40,19 @@ try {
         break;
       case "NURSE":
         relatedEntityType = await Nurse.findOne({where:{user_id: user_id}});
-        relatedEntityType === null ? (return res.status(401).json({message: 'error could not find related subentity type within populateDashboard '})):(true);
         return await populateDashboardForNurse(user, nurse);
         break;
       case "PATIENT":
         relatedEntityType = await Patient.findOne({where:{user_id: user_id}});
-        relatedEntityType === null ? (return res.status(401).json({message: 'error could not find related subentity type within populateDashboard '})):(true);
         return await populateDashboardForPatient(user, patient);
         break;
       case "DOCTOR":
         relatedEntityType = await Doctor.findOne({where:{user_id: user_id}});
-        relatedEntityType === null ? (return res.status(401).json({message: 'error could not find related subentity type within populateDashboard '})):(true);
         return await populateDashboardForDoctor(user, doctor);
         break;
       default:
         console.error("Could not find a valid user_role ")
-        return res.status(401).json({message: {'provided user_role in the populteDashboard function does not match any valid roles within the database'}})
+        return res.status(401).json({message: `provided user_role in the populteDashboard function does not match any valid roles within the database`})
         break;
     }
   }

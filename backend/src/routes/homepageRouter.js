@@ -1,8 +1,8 @@
 import express from "express";
-import Specialities from "../controllers/ServicesController.js";
+import ServicesFuncs from '../controllers/ServicesController.js'
 
 const router = express.Router();
 
-router.post('/specialities', Specialities.fetchSpecialties);
+router.post('/specialities', ServicesFuncs.fetchSpecialties);
 
 export default router;

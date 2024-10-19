@@ -11,9 +11,20 @@ import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
-
+import api from './api.js'
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+async function loader() {
+  try {
+    const response = await api.post("http://localhost:5000/api/homepage/specialities");
+    return { specialties: response.data };
+  } catch (error) {
+    console.error("Error fetching specialties:", error);
+    return { specialties: [] };
+  }
+}
+
 
 const router = createBrowserRouter([
   {
@@ -35,6 +46,7 @@ const router = createBrowserRouter([
     path: "services",
     element: <ServicesPage />,
     errorElement: <ErrorPage />,
+    loader: loader,
   },
   {
     path: "contact",

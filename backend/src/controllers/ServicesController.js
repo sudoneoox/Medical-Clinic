@@ -1,26 +1,6 @@
 import Speciality from "../models/Tables/Specialties.js";
 
-// async function fetchSpecialties() {
-//     try {
-//       const specialties = await Speciality.findAll({
-//         attributes: ['specialty_code', 'specialty_name']
-//       });
-
-//       // Convert the results into an array of objects for easier looping
-//       const specialtyList = specialties.map(specialty => ({
-//         code: specialty.specialty_code,
-//         name: specialty.specialty_name
-//       }));
-  
-//       // Log or return the list
-//       console.log(specialtyList);
-//       return specialtyList;
-//     } catch (error) {
-//       console.error('Error fetching specialties:', error);
-//     }
-// }
-
-const fetchSpecialties = async (_req, res) => {
+const fetchSpecialties = async (req, res) => {
     try {
       console.log('fetchSpecialties function called');
       const specialties = await Speciality.findAll({
@@ -34,10 +14,7 @@ const fetchSpecialties = async (_req, res) => {
         desc: specialty.specialty_desc
       }));
 
-      // specialtyList.forEach(specialty => {
-      //   console.log(`Code: ${specialty.code}, Name: ${specialty.name}`);
-      // });
-      // Send the list as JSON response
+     // Send the list as JSON response
       res.json(specialtyList);
       // return specialtyList;
   
@@ -47,10 +24,9 @@ const fetchSpecialties = async (_req, res) => {
       res.status(500).json({ error: 'Failed to fetch specialties' });
     }
 };
-// Get specialities data from getspecialities.js
 
-const Servicesfuncs = {
+const ServicesFuncs = {
     fetchSpecialties,
 };
 
-export default Servicesfuncs;
+export default ServicesFuncs;

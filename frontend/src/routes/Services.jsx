@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles/tailwindbase.css";
 import Navbar from "../components/Navbar";
 import api from "../api";
-// import {useNavigate} from 'react-router-dom';
-export default function Services() {
+import {useLoaderData} from 'react-router-dom';
 
   const DepartmentCard = ({ title, description, image }) => {
     return (
@@ -16,23 +15,10 @@ export default function Services() {
       </div>
     );
   };
-  const [specialties, setSpecialties] = useState([]);
-  useEffect(() => {
+
+function Services(){
     // Fetch data when component mounts
-    async function fetchData() {
-      try {
-        const response = await api.post("http://localhost:5000/api/homepage/specialities");
-        // setSpecialties(response.data); // Update state with fetched data
-        // response.data.forEach(specialty => {
-        //   console.log(`Code: ${specialty.code}, Name: ${specialty.name}`);
-        // });
-        setSpecialties(response.data);
-      } catch (error) {
-        console.error("Error fetching specialties:123", error);
-      }
-    }
-  fetchData(); // Call the function to fetch data
-  },);
+  const {specialties} = useLoaderData();
 
   const navbarItems = [
     { label: "Home", to: "/", isActive: false },
@@ -64,25 +50,11 @@ export default function Services() {
               image={`images/${specialty.name}.jpeg`} // Assuming image names are based on specialty codes
             />
           ))}
-          {/* <DepartmentCard
-            title="Cardiology"
-            description="Our cardiology department provides comprehensive care for heart conditions."
-            image="images/Cardiology.jpg"
-          />
-          <DepartmentCard
-            title="Neurology"
-            description="Our neurology department specializes in the diagnosis and treatment of brain and nervous system disorders."
-            image="images/Neurology.jpg"
-          />
-          <DepartmentCard
-            title="Orthopedics"
-            description="Our orthopedics department provides expert care for musculoskeletal conditions and injuries."
-            image="images/Orthopedics.jpg"
-          /> */}
-          {/* Add more department cards here */}
         </div>
       </div>
     </div>
     </>
   );
 }
+
+export default Services;
