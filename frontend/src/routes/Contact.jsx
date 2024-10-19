@@ -14,7 +14,7 @@ export default function ContactPage() {
 <div id="contact-page" >
           <h1 className="text-2xl font-bold mb-4">Contact Us</h1>
           <div className="text-2xl font-semibold mb-4 text-center">
-          <p>
+          <p className="">
             At WSYK Medical center, we are dedicated to providing the highest level of care to our patients. 
             </p>
           <p>If you have any questions, need assistance, or would like to schedule an appointment, </p>
