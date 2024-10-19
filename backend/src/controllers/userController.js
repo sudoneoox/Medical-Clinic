@@ -147,7 +147,6 @@ const registerUser = async (req, res) => {
 
 
 
-// TODO: check for matching password
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -158,10 +157,11 @@ const loginUser = async (req, res) => {
     const validPassword = user.user_password === password ? true: false;
     console.log("found user: ", user);
     if (!user) {
-      return res.status(401).json({ message: "email does not exist" }); 
+      return res.status(401).json({ message: "Email does not exist" }); 
     }
+
     if ((!validPassword)){
-      return res.status(402).json({message: "incorrect password "});
+      return res.status(401).json({message: "Incorrect Password "});
     }
 
 
@@ -171,7 +171,7 @@ const loginUser = async (req, res) => {
     //   process.env.JWT_SECRET,
     //   { expiresIn: '1h' }
     // );
-    //
+
     // Fetch associated entity based on user role
     let associatedEntity = null;
     let entityFullName;

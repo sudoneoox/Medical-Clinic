@@ -1,5 +1,6 @@
 import DataTypes from "../CompositeTypes/customTypes.js";
 import sequelize from "../../config/database.js";
+import { type } from "os";
 
 const Specialty = sequelize.define(
   "Specialty",
@@ -13,6 +14,11 @@ const Specialty = sequelize.define(
       type: DataTypes.STRING(30),
       allowNull: false,
       unique: true,
+    },
+  },{
+    specialty_desc: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
     },
   },
   {
