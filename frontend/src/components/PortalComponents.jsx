@@ -13,14 +13,16 @@ import {
 
 // TODO: use react library for the icons
 
+
+
 // NOTE: for the 'provider' users were going to need a data entry
 // form component for all of them
 
 const commonSidebarItems = [
-  { label: "Overview", path: "/overview", icon: "" },
-  { label: "Calendar", path: "/calendar", icon: "" },
-  { label: "Settings", path: "/settings", icon: "⚙️" },
-  { label: "Logout", path: "/logout", icon: "" },
+  { label: "Overview", path: "/portal/overview", icon: "" },
+  { label: "Calendar", path: "/portal/calendar", icon: "" },
+  { label: "Settings", path: "/portal/settings", icon: "⚙️" },
+  { label: "Logout", path: "/portal/logout", icon: "" },
 ];
 
 export const DoctorPortal = ({ userFullName }) => {
@@ -81,25 +83,25 @@ export const ReceptionistPortal = ({ userFullName }) => {
 };
 export const PatientPortal = ({ userFullName }) => {
   const sidebarItems = [
-    { label: "Overview", path: "/overview", icon: <ChartNoAxesGantt /> },
-    { label: "Calendar", path: "/calendar", icon: <CalendarDays /> },
+    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
+    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
     {
       label: "My Appointments",
-      path: "/my-appointments",
+      path: "/portal/my-appointments",
       icon: <Clock9 />,
     },
     {
       label: "Medical Records",
-      path: "/medical-records",
+      path: "/portal/medical-records",
       icon: <ClipboardPlus />,
     },
     {
       section: "account",
       label: "Settings",
-      path: "/settings",
+      path: "/portal/settings",
       icon: <Settings />,
     },
-    { label: "Logout", path: "/logout", icon: <LogOut /> },
+    { label: "Logout", path: "/portal/logout", icon: <LogOut /> },
   ];
 
   return (
