@@ -3,6 +3,7 @@ import userControllerFuncs from "../controllers/userController.js";
 import dashBoardControllerFuncs from "../controllers/userDashBoardController.js";
 import jwt from "jsonwebtoken";
 
+// TODO: put this in a .env before pushing to production
 const JWT_SECRET =
   "adba8f88a5b4a2898b62366a3763837ca6669d9dd5048bb64af0e7717ded0569";
 
