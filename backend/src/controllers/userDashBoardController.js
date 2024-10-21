@@ -66,48 +66,28 @@ const populateDashboard = async (req, res) => {
 
 const populateDashboardForPatient = async (user, patient, res) => {
   try {
-    // Get appointments with associations
-    // const appointments = await Patient.findOne({
-    //   where: { patient_id: patient.patient_id },
-    //   include: [
-    //     {
-    //       model: Appointment,
-    //       where: { status: "CONFIRMED" },
-    //       required: false,
-    //       include: [
-    //         {
-    //           model: Doctor,
-    //           attributes: ["doctor_fname", "doctor_lname"],
-    //         },
-    //         {
-    //           model: Office,
-    //           attributes: ["office_name", "office_address"],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
+    // Get appointments 
+    const appointments = Appointments.findAll({
+      where: {
+        patient_id: patient.patient_id,
+        status: 'CONFIRMED';
+      }
+    })
+    console.log(appointments);
+    // get the offices as well and map them together with the appointments
     //
-    // Get medical records
-    // const medicalRecords = await Patient.findOne({
-    //   where: { patient_id: patient.patient_id },
-    //   include: [
-    //     {
-    //       model: MedicalRecord,
-    //       where: { is_deleted: false },
-    //       required: false,
-    //       include: [
-    //         {
-    //           model: Doctor,
-    //           attributes: ["doctor_fname", "doctor_lname"],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
-    //
-    return res.json({
-      patientInfo: {
+    
+    // get medical records of patient
+    const medicalRecords = MedicalRecords.findAll({
+      where: {
+        patient_id: patient.patient_id,
+        is_deleted: 0,
+      }
+
+    })
+    console.log(medicalRecords);
+
+    patientInfo: {
         name: `${patient.patient_fname} ${patient.patient_lname}`,
         email: user.user_email,
         phone: user.user_phone,
