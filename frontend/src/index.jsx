@@ -11,13 +11,19 @@ import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
-import api from './api.js'
+import api from "./api.js";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  redirect,
+} from "react-router-dom";
 
 async function servicesLoader() {
   try {
-    const response = await api.post("http://localhost:5000/api/homepage/specialities");
+    const response = await api.post(
+      "http://localhost:5000/api/homepage/specialities",
+    );
     return { specialties: response.data };
   } catch (error) {
     console.error("Error fetching specialties:", error);
@@ -25,6 +31,29 @@ async function servicesLoader() {
   }
 }
 
+async function portalLoader() {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
+
+  if (!token || !userId || !userRole) {
+    return redirect("/login");
+  }
+  try {
+    const response = await api.post(
+      "http://localhost:5000/api/users/dashboard",
+      { user_id: userId, user_role: userRole },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    return { dashboardData: response.data };
+  } catch (error) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.clear();
+      return redirect("/login");
+    }
+    throw error;
+  }
+}
 
 const router = createBrowserRouter([
   {
@@ -54,14 +83,15 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: 'registrations/new',
-    element: <Registrations/>,
-    errorElement: <ErrorPage/>,
+    path: "registrations/new",
+    element: <Registrations />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "portal",
     element: <Portal />,
     errorElement: <ErrorPage />,
+    loader: portalLoader,
   },
 ]);
 
@@ -69,7 +99,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

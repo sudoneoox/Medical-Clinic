@@ -276,6 +276,12 @@ CREATE TABLE IF NOT EXISTS detailed_allergies (
     severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
     onset_date DATE
 );
+CREATE TABLE IF NOT EXISTS appointment_cancellations (
+    cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
+    appointment_id INT NOT NULL,
+    canceled_reason TEXT,
+    canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP-- ,
+);
 CREATE TABLE IF NOT EXISTS valid_employees (
   employee_no INT NOT NULL UNIQUE PRIMARY KEY,
   employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN') NOT NULL
@@ -330,86 +336,33 @@ INSERT INTO specialties_code (specialty_code, specialty_name, specialty_desc) VA
 
 INSERT INTO valid_employees (employee_no, employee_role) VALUES
 (1000, 'RECEPTIONIST'),
-(1001, 'RECEPTIONIST'),
-(1002, 'RECEPTIONIST'),
 (1200, 'DOCTOR'),
-(1201, 'DOCTOR'),
-(1202, 'DOCTOR'),
-(1400, 'NURSE'),
-(1401, 'NURSE'),
-(1402, 'NURSE');
+(1400, 'NURSE');
 
 INSERT INTO users (user_username, user_password, user_email, user_phone, user_role, demographics_id) VALUES
 ('john_doe', 'abc', 'john.doe@email.com', '1234567890', 'PATIENT', 1),
 ('jane_smith', 'abc', 'jane.smith@email.com', '2345678901', 'DOCTOR', 2),
 ('bob_nurse', 'abc', 'bob.nurse@email.com', '3456789012', 'NURSE', 3),
-('alice_receptionist', 'abc', 'alice.receptionist@email.com', '4567890123', 'RECEPTIONIST', 4),
-('linda_green', 'password123', 'linda.green@email.com', '4567891123', 'PATIENT', 5),
-('james_white', 'password123', 'james.white@email.com', '5678901234', 'PATIENT', 6),
-('emily_clark', 'password123', 'emily.c@email.com', '6789012345', 'DOCTOR', 7),
-('michael_brown', 'password123', 'michael.b@email.com', '7890123456', 'DOCTOR', 8),
-('anna_smith', 'password123', 'anna.s@email.com', '8901234567', 'NURSE', 9),
-('john_keneth', 'password123', 'john.keneth@email.com', '9012345678', 'NURSE', 10),
-('sarah_johnson', 'password123', 'sarah.j@email.com', '0123456789', 'RECEPTIONIST', 11),
-('mark_lee', 'password123', 'mark.l@email.com', '1234567891', 'RECEPTIONIST', 12);
+('alice_receptionist', 'abc', 'alice.receptionist@email.com', '4567890123', 'RECEPTIONIST', 4);
 
 
 INSERT INTO demographics (ethnicity_id, race_id, gender_id, dob) VALUES
 (1, 5, 1, '1980-05-15'),
 (2, 2, 2, '1975-09-22'),
 (1, 3, 1, '1990-03-10'),
-(3, 5, 2, '1985-12-01'),
-(1, 4, 2, '1988-11-05'),  
-(2, 5, 1, '1979-12-12'),
-(1, 1, 1, '1980-06-25'),
-(2, 2, 2, '1975-04-12'),
-(3, 3, 1, '1983-05-30'),
-(1, 4, 2, '1990-08-15'),
-(2, 5, 1, '1982-12-01'), 
-(1, 1, 2, '1995-03-20');
+(3, 5, 2, '1985-12-01');
 
 INSERT INTO patients (user_id, patient_fname, patient_lname, emergency_contacts) VALUES
-(1, 'John', 'Doe', '{"name": "Jane Doe", "relationship": "Wife", "phone": "5678901234"}'),
-(2, 'Linda', 'Green', '{"name": "Tom Green", "relationship": "Brother", "phone": "8901234567"}'),
-(3, 'James', 'White', '{"name": "Emily White", "relationship": "Mother", "phone": "9012345678"}');
+(1, 'John', 'Doe', '{"name": "Jane Doe", "relationship": "Wife", "phone": "5678901234"}');
 
 INSERT INTO doctors (doctor_employee_id, doctor_fname, doctor_lname, user_id, years_of_experience) VALUES
-(1200, 'Jane', 'Smith', 2, 15),
-(1201, 'Emily', 'Clark', 7, 10),
-(1202, 'Michael', 'Brown', 8, 15);
+(1200, 'Jane', 'Smith', 2, 15);
 
-INSERT INTO nurses (user_id,nurse_employee_id,nurse_fname,nurse_lname,specialization,years_of_experience) VALUES
-(3,1400,'Bob','Johnson','Pediatrics',8),
-(9,1401,'Anna','Smith','Pediatrics',5),
-(10,1402,'John','Keneth','Emergency Care',3);
+INSERT INTO nurses (user_id, nurse_employee_id, nurse_fname, nurse_lname, specialization, years_of_experience) VALUES
+(3, 1400, 'Bob', 'Johnson', 'Pediatrics', 8);
 
-INSERT INTO receptionists (receptionist_employee_id,receptionist_fname,receptionist_lname,user_id) VALUES
-(1000,'Alice','Williams',4),
-(1001,'Sarah','Johnson',11),
-(1002,'Mark','Lee',12);
-
-INSERT INTO office (office_name, office_address, office_phone, office_email, office_services) VALUES 
-('Houston', '123 Health St, Houston, TX', '713-555-0101', 'houston@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Pediatrics','Obstetrics and Gynecology','General Surgery','Cardiology'))),
-('Katy', '456 Oakwood Ave, Houston, TX', '713-555-0222', 'katy@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Orthopedics','Psychiatry','Oncology','Dermatology'))),
-('Sugarland', '789 Heights Blvd, Houston, TX', '713-555-0333', 'sugarland@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Pediatrics', 'Neurology'))),
-('Missouri City', '321 Uptown Dr, Houston, TX', '713-555-0444', 'missouricity@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Cardiology', 'Emergency Medicine'))),
-('Pearland', '654 Riverside Dr, Houston, TX', '713-555-0555', 'pearland@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Dermatology','Gastroenterology','Urology','Endocrinology')));
-
-INSERT INTO doctor_offices (doctor_id,office_id,shift_start,shift_end) VALUES
-(1,1,'08:00:00','13:00:00'),
-(1,3,'14:00:00','18:00:00'),
-(16,2,'09:00:00','17:00:00'),
-(17,4,'09:00:00','19:00:00');
-
-INSERT INTO nurse_offices (nurse_id,office_id,shift_start,shift_end) VALUES
-(1,3,'09:00:00','17:00:00'),
-(2,1,'08:00:00','16:00:00'),
-(3,2,'09:00:00','17:00:00');
-
-INSERT INTO appointments (patient_id,doctor_id,office_id,appointment_datetime,duration,booked_by,attending_nurse,reason,status,created_at,updated_at) VALUES
-(1,1,1,'2024-12-01 10:00:00','01:00:00',1,NULL,'Routine check-up','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08'),
-(2,16,1,'2024-12-04 14:00:00','01:15:00',2,NULL,'Annual physical exam','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08'),
-(3,17,2,'2024-12-05 15:30:00','00:30:00',3,NULL,'Consultation','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08');
+INSERT INTO receptionists (receptionist_employee_id, receptionist_fname, receptionist_lname, user_id) VALUES
+(1000, 'Alice', 'Williams', 4);
 
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(

@@ -47,12 +47,7 @@ export default function LoginPage() {
       localStorage.setItem("userFullName", response.data.userFullName);
       console.log(response.data);
       // Redirect based on user role
-      navigate("/portal", {
-        state: {
-          userRole: response.data.role,
-          userFullName: response.data.userFullName,
-        },
-      });
+      navigate("/portal");
     } catch (err) {
       if (err.response) {
         setError(

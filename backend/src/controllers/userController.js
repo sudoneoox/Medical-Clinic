@@ -1,4 +1,3 @@
-
 import Demographics from "../models/Tables/Demographics.js";
 import RaceCode from "../models/Tables/RaceCode.js";
 import GenderCode from "../models/Tables/GenderCode.js";
@@ -8,14 +7,13 @@ import Nurse from "../models/Tables/Nurse.js";
 import Receptionist from "../models/Tables/Receptionist.js";
 import Doctor from "../models/Tables/Doctor.js";
 import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
-import User from '../models/Tables/Users.js'
-
+import User from "../models/Tables/Users.js";
 import jwt from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
   try {
     const userData = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     // get corresponding demographic data
     const raceCode = await RaceCode.findOne({
@@ -54,7 +52,7 @@ const registerUser = async (req, res) => {
     const empNo = await EmployeeNo.findOne({
       where: { employee_no: userData.employeeId },
     });
-    console.log("EMPNO: ", empNo);
+    // console.log("EMPNO: ", empNo);
     if (empNo == null && userRole.toUpperCase() !== "PATIENT") {
       if (empNo == null) {
         throw new Error("NOT A VALID EMPLOYEE NO");
@@ -145,32 +143,23 @@ const registerUser = async (req, res) => {
   }
 };
 
-
+const JWT_SECRET =
+  "adba8f88a5b4a2898b62366a3763837ca6669d9dd5048bb64af0e7717ded0569";
 
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
 
     // Find the user by email
     const user = await User.findOne({ where: { user_email: email } });
-    const validPassword = user.user_password === password ? true: false;
-    console.log("found user: ", user);
+    const validPassword = user.user_password === password ? true : false;
     if (!user) {
-      return res.status(401).json({ message: "Email does not exist" }); 
+      return res.status(401).json({ message: "Email does not exist" });
     }
 
-    if ((!validPassword)){
-      return res.status(401).json({message: "Incorrect Password "});
+    if (!validPassword) {
+      return res.status(401).json({ message: "Incorrect Password " });
     }
-
-
-    //TODO:  Generate a JWT token
-    // const token = jwt.sign(
-    //   { userId: user._id, role: user.user_role },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: '1h' }
-    // );
 
     // Fetch associated entity based on user role
     let associatedEntity = null;
@@ -202,12 +191,22 @@ const loginUser = async (req, res) => {
         break;
     }
 
-    console.log("found associatedEntity: ", associatedEntity);
-    console.log("Entity Full Name ", entityFullName);
+    const token = jwt.sign(
+      {
+        userId: user.user_id,
+        role: user.user_role,
+        fullName: entityFullName,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+
+    // console.log("found associatedEntity: ", associatedEntity);
+    // console.log("Entity Full Name ", entityFullName);
 
     res.status(200).json({
       message: "User logged in successfully",
-      // token, TODO: implement later?
+      token,
       userId: user.user_id,
       role: user.user_role,
       userFullName: entityFullName,
