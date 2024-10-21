@@ -4,9 +4,15 @@ import Navbar from "../components/Navbar";
 
 
 export default function ContactPage() {
+  const navbarItems = [
+    { label: "Home", to: "/", isActive: false },
+    { label: "About", to: "/About", isActive: false },
+    { label: "Services", to: "/Services", isActive: false },
+    { label: "Contact", to: "/Contact", isActive: true },
+  ];
   return (
     <>
-      <Navbar />
+      <Navbar items={navbarItems}/>
       <main className="relative w-full h-full flex flex-col items-center">
         <div
           className="w-screen h-screen bg-cover bg-center object-fill"
