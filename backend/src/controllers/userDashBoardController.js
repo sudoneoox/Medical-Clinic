@@ -81,7 +81,7 @@ const populateDashboardForPatient = (user, patient) =>{
     
   } catch (err){
     console.error("Error within populateDashboardForPatient ", error);
-    if(error.name === "'){
+    if(error.name === ""){
     } else {
       res
         .status(500)
@@ -94,7 +94,7 @@ try {
     
   } catch (err){
     console.error("Error within populateDashboardForPatient ", error);
-    if(error.name === "'){
+    if(error.name === ""){
     } else {
       res
         .status(500)
@@ -108,7 +108,7 @@ try {
     
   } catch (err){
     console.error("Error within populateDashboardForPatient ", error);
-    if(error.name === "'){
+    if(error.name === ""){
     } else {
       res
         .status(500)
@@ -123,7 +123,7 @@ try {
     
   } catch (err){
     console.error("Error within populateDashboardForPatient ", error);
-    if(error.name === "'){
+    if(error.name === ""){
     } else {
       res
         .status(500)
@@ -138,7 +138,7 @@ try {
     
   } catch (err){
     console.error("Error within populateDashboardForPatient ", error);
-    if(error.name === "'){
+    if(error.name === ""){
     } else {
       res
         .status(500)
