@@ -15,7 +15,7 @@ import api from './api.js'
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-async function loader() {
+async function servicesLoader() {
   try {
     const response = await api.post("http://localhost:5000/api/homepage/specialities");
     return { specialties: response.data };
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
     path: "services",
     element: <ServicesPage />,
     errorElement: <ErrorPage />,
-    loader: loader,
+    loader: servicesLoader,
   },
   {
     path: "contact",
