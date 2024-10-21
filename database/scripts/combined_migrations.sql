@@ -395,6 +395,22 @@ INSERT INTO office (office_name, office_address, office_phone, office_email, off
 ('Missouri City', '321 Uptown Dr, Houston, TX', '713-555-0444', 'missouricity@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Cardiology', 'Emergency Medicine'))),
 ('Pearland', '654 Riverside Dr, Houston, TX', '713-555-0555', 'pearland@medicalclinic.com', JSON_OBJECT('services', JSON_ARRAY('Family Medicine', 'Dermatology','Gastroenterology','Urology','Endocrinology')));
 
+INSERT INTO doctor_offices (doctor_id,office_id,shift_start,shift_end) VALUES
+(1,1,'08:00:00','13:00:00'),
+(1,3,'14:00:00','18:00:00'),
+(16,2,'09:00:00','17:00:00'),
+(17,4,'09:00:00','19:00:00');
+
+INSERT INTO nurse_offices (nurse_id,office_id,shift_start,shift_end) VALUES
+(1,3,'09:00:00','17:00:00'),
+(2,1,'08:00:00','16:00:00'),
+(3,2,'09:00:00','17:00:00');
+
+INSERT INTO appointments (patient_id,doctor_id,office_id,appointment_datetime,duration,booked_by,attending_nurse,reason,status,created_at,updated_at) VALUES
+(1,1,1,'2024-12-01 10:00:00','01:00:00',1,NULL,'Routine check-up','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08'),
+(2,16,1,'2024-12-04 14:00:00','01:15:00',2,NULL,'Annual physical exam','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08'),
+(3,17,2,'2024-12-05 15:30:00','00:30:00',3,NULL,'Consultation','CONFIRMED','2024-10-21 02:31:08','2024-10-21 02:31:08');
+
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(
     IN p_patient_id INT,
