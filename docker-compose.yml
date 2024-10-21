@@ -1,15 +1,15 @@
 version: '3.8'
-
 services:
   frontend:
-  build:
-    context: ./frontend
-    dockerfile: Dockerfile
-  ports:
-    - "80:80"
-  restart: always
-  depends_on:
-    - backend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - backend
+
   backend:
     build:
       context: ./backend
@@ -25,15 +25,17 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=medical_clinic
       - DB_PORT=3306
-      restart: always
+    restart: always
 
   db:
     image: mariadb:latest
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=medical_clinic
+      - MARIADB_ROOT_PASSWORD=${DB_PASSWORD}
+      - MARIADB_USER=admin
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_DATABASE=medical_clinic
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -41,11 +43,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    migration:
-      image: mariadb:latest
-      build:
-        context: ./database
-        dockerfile: Dockerfile
+
+  migration:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -54,6 +56,6 @@ services:
       - DB_USER=admin
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=medical_clinic
-  volumes:
-    db_data: 
-  
+
+volumes:
+  db_data:

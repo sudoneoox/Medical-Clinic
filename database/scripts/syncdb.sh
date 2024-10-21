@@ -3,7 +3,7 @@
 # Database connection
 DB_NAME=medical_clinic
 DB_USER=admin
-DB_PASSWORD=$1
+DB_PASSWORD=$DB_PASSWORD
 DB_HOST="localhost"
 DB_PORT="3306"
 
@@ -49,4 +49,3 @@ execute_sql_file "$COMBINED_SQL_FILE"
 # rm $COMBINED_SQL_FILE
 
 echo "All migrations completed successfully."
-

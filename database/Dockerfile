@@ -1,7 +1,6 @@
-FROM mysql:8.0
-
+FROM mariadb:latest
 WORKDIR /migrations
 COPY migrations/ /migrations/
 COPY scripts/syncdb.sh /migrations/
-
-CMD ["./syncdb.sh $DB_PASSWORD"]
+RUN chmod +x /migrations/syncdb.sh
+CMD ["/migrations/syncdb.sh"]
