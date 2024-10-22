@@ -65,6 +65,9 @@ const populateDashboard = async (req, res) => {
   }
 };
 
+// TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
+// could use this if we had a more descriptive medicalrecord entity or maybe add a score attribute to make a graph
+// like the inspiration were taking from to make an overall health graph
 const populateDashboardForPatient = async (user, patient, res) => {
   try {
     // Get appointments with associations
@@ -106,6 +109,12 @@ const populateDashboardForPatient = async (user, patient, res) => {
         },
       ],
     });
+    console.log(
+      `inside populatePatientDashboardForPatient received data ${user}\n\n\n ${patient}\n\n\n`,
+    );
+
+    console.log("found medicalRecords", medicalRecords);
+    console.log("\n\n\n found appointments", appointments.appointments);
 
     return res.json({
       patientInfo: {
@@ -114,8 +123,8 @@ const populateDashboardForPatient = async (user, patient, res) => {
         phone: user.user_phone,
         emergencyContacts: patient.emergency_contacts,
       },
-      appointments: appointments?.Appointments || [],
-      medicalRecords: medicalRecords?.MedicalRecords || [],
+      appointments: appointments?.appointments || [],
+      medicalRecords: medicalRecords?.medicalRecords || [],
     });
   } catch (error) {
     console.error("Error in populateDashboardForPatient:", error);
