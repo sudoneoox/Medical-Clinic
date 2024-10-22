@@ -10,10 +10,11 @@ const SpecialistApproval = sequelize.define(
       autoIncrement: true,
     },
     requested_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     approved_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
     },
     specialist_status: {
       type: DataTypes.SPECIALIST_REQUEST_STATUS,
@@ -36,7 +37,7 @@ const SpecialistApproval = sequelize.define(
   {
     tableName: "specialist_approvals",
     timestamps: false,
-  }
+  },
 );
 
 export default SpecialistApproval;

@@ -9,8 +9,8 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
-    }, 
-    
+    },
+
     demographics_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -38,23 +38,26 @@ const User = sequelize.define(
       allowNull: false,
     },
     account_created_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     account_last_login: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     user_role: {
-      type: DataTypes.ENUM('PATIENT', 'NURSE', 'DOCTOR', 'RECEPTIONIST'),
+      type: DataTypes.ENUM("PATIENT", "NURSE", "DOCTOR", "RECEPTIONIST"),
       allowNull: false,
     },
     portal_last_login: {
-      type: DataTypes.TIMESTAMP,
-    }
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+    },
   },
   {
     tableName: "users",
     timestamps: false,
-  }
+  },
 );
 
 export default User;

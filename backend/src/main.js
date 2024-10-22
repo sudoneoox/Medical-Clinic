@@ -12,19 +12,21 @@ async function initDB() {
     // Synchronize models with the database
     // Using { force: true } will drop tables if they exist and recreate them
     // WARNING: Only use force: true in development or testing, never in production
-    await sequelize.sync({ alter:false}); // Alternatively, use { force: true } for testing
+    await sequelize.sync({ alter: false }); // Alternatively, use { force: true } for testing
     console.log("Models synchronized");
 
     return models;
   } catch (e) {
     console.log("Error encountered in /backend/src/main.js: ", e);
-    throw e;
   }
 }
 
-initDB().then((models) => {
-  // Use models here or export them if needed
-}).catch(err => {
-  console.error('Failed to initialize database:', err);
-  process.exit(1);
-});
+initDB()
+  .then((models) => {
+    // Use models here or export them if needed
+    console.log("Finished logging within initDB\n\n\n\n\n");
+  })
+  .catch((err) => {
+    console.error("Failed to initialize database:", err);
+    process.exit(1);
+  });

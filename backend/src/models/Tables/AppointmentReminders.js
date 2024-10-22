@@ -19,18 +19,18 @@ const AppointmentReminders = sequelize.define(
       allowNull: false,
     },
     scheduled_time: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
       allowNull: false,
     },
     sent_time: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
       allowNull: false,
     },
   },
   {
     tableName: "appointment_reminders",
     timestamps: false,
-  }
+  },
 );
 
 export default AppointmentReminders;

@@ -1,3 +1,4 @@
+// userDashBoardController.js
 import Receptionist from "../models/Tables/Receptionist.js";
 import Nurse from "../models/Tables/Nurse.js";
 import Doctor from "../models/Tables/Doctor.js";
@@ -66,35 +67,55 @@ const populateDashboard = async (req, res) => {
 
 const populateDashboardForPatient = async (user, patient, res) => {
   try {
-    // Get appointments 
-    const appointments = Appointments.findAll({
-      where: {
-        patient_id: patient.patient_id,
-        status: 'CONFIRMED';
-      }
-    })
-    console.log(appointments);
-    // get the offices as well and map them together with the appointments
-    //
-    
-    // get medical records of patient
-    const medicalRecords = MedicalRecords.findAll({
-      where: {
-        patient_id: patient.patient_id,
-        is_deleted: 0,
-      }
+    // Get appointments with associations
+    const appointments = await Patient.findOne({
+      where: { patient_id: patient.patient_id },
+      include: [
+        {
+          model: Appointment,
+          where: { status: "CONFIRMED" },
+          required: false,
+          include: [
+            {
+              model: Doctor,
+              attributes: ["doctor_fname", "doctor_lname"],
+            },
+            {
+              model: Office,
+              attributes: ["office_name", "office_address"],
+            },
+          ],
+        },
+      ],
+    });
 
-    })
-    console.log(medicalRecords);
+    // Get medical records
+    const medicalRecords = await Patient.findOne({
+      where: { patient_id: patient.patient_id },
+      include: [
+        {
+          model: MedicalRecord,
+          where: { is_deleted: 0 },
+          required: false,
+          include: [
+            {
+              model: Doctor,
+              attributes: ["doctor_fname", "doctor_lname"],
+            },
+          ],
+        },
+      ],
+    });
 
-    patientInfo: {
+    return res.json({
+      patientInfo: {
         name: `${patient.patient_fname} ${patient.patient_lname}`,
         email: user.user_email,
         phone: user.user_phone,
         emergencyContacts: patient.emergency_contacts,
       },
-      // appointments: appointments?.Appointments || [],
-      // medicalRecords: medicalRecords?.MedicalRecords || [],
+      appointments: appointments?.Appointments || [],
+      medicalRecords: medicalRecords?.MedicalRecords || [],
     });
   } catch (error) {
     console.error("Error in populateDashboardForPatient:", error);

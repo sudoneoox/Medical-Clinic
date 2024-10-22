@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS medical_records (
     is_deleted TINYINT DEFAULT (0),
     deleted_at TIMESTAMP NULL,
     -- foreign keys other entities
-    prescription_id INTEGER NOT NULL,
+    prescription_id INTEGER NULL,
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
     appointment_id INTEGER,

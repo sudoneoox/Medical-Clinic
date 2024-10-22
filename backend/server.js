@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import UserLogicRouter from "./src/routes/userRoutes.js";
 import HomePageRouter from "./src/routes/homepageRouter.js";
+import "./src/main.js"; // to initialize the associations it runs on its own
+
 const app = express();
 
 // enable cors ie so our frontend server (port 3000) can communicate with
@@ -9,15 +11,13 @@ const app = express();
 app.use(cors());
 
 // parse json bodies
-app.use(express.json()); 
+app.use(express.json());
 
 // use user routes
-app.use('/api/users', UserLogicRouter);
+app.use("/api/users", UserLogicRouter);
 
 // use homepage routes
-app.use('/api/homepage', HomePageRouter);
-
-
+app.use("/api/homepage", HomePageRouter);
 
 const PORT = process.env.PORT || 5000;
 

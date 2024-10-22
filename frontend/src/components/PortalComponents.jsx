@@ -8,12 +8,12 @@ import {
   ChartNoAxesGantt,
   Settings,
 } from "lucide-react";
+import Dashboard from "./DashboardCard.jsx";
+
 // TODO: create all of these different links and each of these links make them pass to
 // the backend the user id to get their respective data tied to the user
 
 // TODO: use react library for the icons
-
-
 
 // NOTE: for the 'provider' users were going to need a data entry
 // form component for all of them
@@ -81,7 +81,8 @@ export const ReceptionistPortal = ({ userFullName }) => {
     </MainFrame>
   );
 };
-export const PatientPortal = ({ userFullName }) => {
+
+export const PatientPortal = ({ userFullName, dashboardData }) => {
   const sidebarItems = [
     { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
     { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
@@ -101,37 +102,21 @@ export const PatientPortal = ({ userFullName }) => {
       path: "/portal/settings",
       icon: <Settings />,
     },
-    { label: "Logout", path: "/portal/logout", icon: <LogOut /> },
+    // FOR LOG OUT you could just clear JWT and send them back to /login
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
+  console.log("patient dashboardData", dashboardData);
   return (
     <MainFrame
       userFullName={userFullName}
       userRole="Patient"
       sidebarItems={sidebarItems}
     >
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800">Patient Dashboard</h2>
-        {/* TODO: patient-specific components */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Upcoming Appointments
-            </h3>
-            {/* TODO: appointments list component */}
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Recent Medical Records
-            </h3>
-            {/* TODO: medical records summary component */}
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Health Metrics</h3>
-          {/* TODO: health metrics chart component */}
-        </div>
-      </div>
+      <Dashboard
+        userData={{ user_role: "PATIENT" }}
+        dashboardData={dashboardData}
+      />
     </MainFrame>
   );
 };

@@ -1,31 +1,75 @@
-INSERT INTO valid_employees (employee_no, employee_role) VALUES
-(1000, 'RECEPTIONIST'),
-(1200, 'DOCTOR'),
-(1400, 'NURSE');
-
--- sample users for logging in from the frontend with necessary relations as well
-INSERT INTO users (user_username, user_password, user_email, user_phone, user_role, demographics_id) VALUES
-('john_doe', 'abc', 'john.doe@email.com', '1234567890', 'PATIENT', 1),
-('jane_smith', 'abc', 'jane.smith@email.com', '2345678901', 'DOCTOR', 2),
-('bob_nurse', 'abc', 'bob.nurse@email.com', '3456789012', 'NURSE', 3),
-('alice_receptionist', 'abc', 'alice.receptionist@email.com', '4567890123', 'RECEPTIONIST', 4);
-
-
 INSERT INTO demographics (ethnicity_id, race_id, gender_id, dob) VALUES
-(1, 5, 1, '1980-05-15'),
-(2, 2, 2, '1975-09-22'),
-(1, 3, 1, '1990-03-10'),
-(3, 5, 2, '1985-12-01');
+(1, 2, 1, '1980-05-15'),  -- Doctor Smith
+(2, 3, 2, '1975-09-22'),  -- Doctor Jones
+(1, 5, 2, '1990-03-10'),  -- Nurse Johnson
+(2, 4, 1, '1988-07-25'),  -- Receptionist Williams
+(1, 1, 1, '1995-12-03'),  -- Patient Brown
+(3, 5, 2, '1982-04-18');  -- Patient Davis
 
-INSERT INTO patients (user_id, patient_fname, patient_lname, emergency_contacts) VALUES
-(1, 'John', 'Doe', '{"name": "Jane Doe", "relationship": "Wife", "phone": "5678901234"}');
+-- Insert users
+INSERT INTO users (user_username, user_password, user_email, user_phone, user_role, demographics_id) VALUES
+('dr.smith', 'abc', 'smith@hospital.com', '1234567890', 'DOCTOR', 1),
+('dr.jones', 'abc', 'jones@hospital.com', '2345678901', 'DOCTOR', 2),
+('nurse.johnson', 'abc', 'johnson@hospital.com', '3456789012', 'NURSE', 3),
+('rec.williams', 'abc', 'williams@hospital.com', '4567890123', 'RECEPTIONIST', 4),
+('patient.brown', 'abc', 'brown@email.com', '5678901234', 'PATIENT', 5),
+('patient.davis', 'abc', 'davis@email.com', '6789012345', 'PATIENT', 6);
 
+-- Insert valid employee numbers
+INSERT INTO valid_employees (employee_no, employee_role) VALUES
+(1201, 'DOCTOR'),
+(1202, 'DOCTOR'),
+(1401, 'NURSE'),
+(1001, 'RECEPTIONIST');
+
+-- Insert doctors
 INSERT INTO doctors (doctor_employee_id, doctor_fname, doctor_lname, user_id, years_of_experience) VALUES
-(1200, 'Jane', 'Smith', 2, 15);
+(1201, 'Sarah', 'Smith', 1, 15),
+(1202, 'Michael', 'Jones', 2, 10);
 
-INSERT INTO nurses (user_id, nurse_employee_id, nurse_fname, nurse_lname, specialization, years_of_experience) VALUES
-(3, 1400, 'Bob', 'Johnson', 'Pediatrics', 8);
+-- Insert nurses
+INSERT INTO nurses (nurse_employee_id, nurse_fname, nurse_lname, user_id, specialization, years_of_experience) VALUES
+(1401, 'Emily', 'Johnson', 3, 'Pediatrics', 8);
 
+-- Insert receptionists
 INSERT INTO receptionists (receptionist_employee_id, receptionist_fname, receptionist_lname, user_id) VALUES
-(1000, 'Alice', 'Williams', 4);
+(1001, 'Jessica', 'Williams', 4);
 
+-- Insert patients
+INSERT INTO patients (user_id, patient_fname, patient_lname, emergency_contacts) VALUES
+(5, 'Robert', 'Brown', '{"name": "Mary Brown", "relationship": "Wife", "phone": "7890123456"}'),
+(6, 'Emma', 'Davis', '{"name": "John Davis", "relationship": "Husband", "phone": "8901234567"}');
+
+-- Insert offices
+INSERT INTO office (office_name, office_address, office_phone, office_email) VALUES
+('Main Clinic', '123 Medical Ave', '9012345678', 'main@hospital.com'),
+('North Branch', '456 Health St', '0123456789', 'north@hospital.com');
+
+-- Insert appointments
+INSERT INTO appointments (patient_id, doctor_id, office_id, appointment_datetime, duration, booked_by, attending_nurse, reason, status) VALUES
+(1, 1, 1, '2024-10-23 09:00:00', '01:00:00', 1, 1, 'Annual Checkup', 'CONFIRMED'),
+(2, 2, 2, '2024-10-23 10:30:00', '00:30:00', 1, 1, 'Follow-up', 'CONFIRMED'),
+(1, 2, 1, '2024-10-24 14:00:00', '01:00:00', 1, 1, 'Consultation', 'CONFIRMED');
+
+-- Insert medical records
+INSERT INTO medical_records (diagnosis, patient_id, doctor_id, appointment_id) VALUES
+('Regular checkup - all clear', 1, 1, 1),
+('Minor respiratory infection', 2, 2, 2);
+
+-- connect doctors to specialties
+INSERT INTO doctor_specialties (doctor_id, specialty_code) VALUES
+(1, 1),  -- Family Medicine
+(2, 2);  -- Internal Medicine
+
+-- connect doctors to offices
+INSERT INTO doctor_offices (doctor_id, office_id, shift_start, shift_end) VALUES
+(1, 1, '08:00:00', '17:00:00'),
+(2, 2, '09:00:00', '18:00:00');
+
+-- connect nurses to offices
+INSERT INTO nurse_offices (nurse_id, office_id, shift_start, shift_end) VALUES
+(1, 1, '08:00:00', '17:00:00');
+
+-- connect receptionists to offices
+INSERT INTO receptionist_offices (receptionist_id, office_id, shift_start, shift_end) VALUES
+(1, 1, '08:00:00', '17:00:00');

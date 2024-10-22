@@ -29,19 +29,21 @@ const Demographics = sequelize.define(
       type: DataTypes.INTEGER,
     },
     created_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     updated_by: {
       type: DataTypes.INTEGER,
     },
     updated_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
   },
   {
     tableName: "demographics",
     timestamps: false,
-  }
+  },
 );
 
 export default Demographics;

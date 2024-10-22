@@ -1,4 +1,4 @@
-import  DataTypes from '../CompositeTypes/customTypes.js';
+import DataTypes from "../CompositeTypes/customTypes.js";
 import sequelize from "../../config/database.js";
 
 const Prescription = sequelize.define(
@@ -30,7 +30,8 @@ const Prescription = sequelize.define(
       allowNull: false,
     },
     date_issued: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     pharmacy_details: {
       type: DataTypes.JSON,
@@ -39,7 +40,7 @@ const Prescription = sequelize.define(
   {
     tableName: "prescription",
     timestamps: false,
-  }
+  },
 );
 
 export default Prescription;

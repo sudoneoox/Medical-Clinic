@@ -17,13 +17,13 @@ const AppointmentCancellations = sequelize.define(
       type: DataTypes.TEXT,
     },
     canceled_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
     },
   },
   {
     tableName: "appointment_cancellations",
     timestamps: false,
-  }
+  },
 );
 
 export default AppointmentCancellations;

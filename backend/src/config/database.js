@@ -25,7 +25,7 @@ const sequelize = new Sequelize({
   password: "abc",
   host: "localhost",
   port: 3306,
-  logging: console.log, // Temporarily enable logging
+  // logging: console.log, // Temporarily enable logging
 });
 
 export default sequelize;

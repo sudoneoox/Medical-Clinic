@@ -22,7 +22,7 @@ const Appointment = sequelize.define(
       allowNull: false,
     },
     appointment_datetime: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
       allowNull: false,
     },
     duration: {
@@ -41,20 +41,22 @@ const Appointment = sequelize.define(
       type: DataTypes.STRING(100),
     },
     status: {
-      type: DataTypes.ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW'),
+      type: DataTypes.ENUM("CONFIRMED", "CANCELLED", "COMPLETED", "NO SHOW"),
       allowNull: false,
     },
     created_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     updated_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
   },
   {
     tableName: "appointments",
     timestamps: false,
-  }
+  },
 );
 
 export default Appointment;

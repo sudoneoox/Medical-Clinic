@@ -12,19 +12,19 @@ class ADDRESS extends ABSTRACT {
 }
 class TIMESTAMP extends ABSTRACT {
   static key = "TIMESTAMP";
-  
+
   constructor(options = {}) {
     super();
     this.options = options;
   }
 
   toSql() {
-    let defaultSql = 'DATETIME DEFAULT CURRENT_TIMESTAMP';
+    let defaultSql = "DATETIME DEFAULT CURRENT_TIMESTAMP";
     if (this.options.notNull) {
-      defaultSql += ' NOT NULL';
+      defaultSql += " NOT NULL";
     }
     if (this.options.onUpdate) {
-      defaultSql += ' ON UPDATE CURRENT_TIMESTAMP';
+      defaultSql += " ON UPDATE CURRENT_TIMESTAMP";
     }
     return defaultSql;
   }
@@ -63,7 +63,7 @@ DataTypes.APPOINTMENT_STATUS = DataTypes.ENUM(
   "CONFIRMED",
   "CANCELLED",
   "COMPLETED",
-  "NO SHOW"
+  "NO SHOW",
 );
 
 DataTypes.BILLING_STATUS = DataTypes.ENUM(
@@ -71,7 +71,7 @@ DataTypes.BILLING_STATUS = DataTypes.ENUM(
   "NOT PAID",
   "IN PROGRESS",
   "CANCELLED",
-  "REFUNDED"
+  "REFUNDED",
 );
 
 DataTypes.USER_ROLE = DataTypes.ENUM(
@@ -79,13 +79,13 @@ DataTypes.USER_ROLE = DataTypes.ENUM(
   "Doctor",
   "Patient",
   "Nurse",
-  "Receptionist"
+  "Receptionist",
 );
 
 DataTypes.SPECIALIST_REQUEST_STATUS = DataTypes.ENUM(
   "PENDING",
   "APPROVED",
-  "REJECTED"
+  "REJECTED",
 );
 
 DataTypes.NOTIFICATION_TYPE = DataTypes.ENUM(
@@ -93,7 +93,7 @@ DataTypes.NOTIFICATION_TYPE = DataTypes.ENUM(
   "TEST_RESULT_AVAILABLE",
   "PRESCRIPTION READY",
   "BILLING REMINDER",
-  "GENERAL"
+  "GENERAL",
 );
 
 export default DataTypes;

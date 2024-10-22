@@ -1,4 +1,4 @@
-import  DataTypes from '../CompositeTypes/customTypes.js';
+import DataTypes from "../CompositeTypes/customTypes.js";
 import sequelize from "../../config/database.js";
 
 const Billing = sequelize.define(
@@ -27,18 +27,26 @@ const Billing = sequelize.define(
       defaultValue: 0,
     },
     payment_status: {
-      type: DataTypes.ENUM('PAID', 'NOT PAID', 'IN PROGRESS', 'CANCELLED', 'REFUNDED'),
+      type: DataTypes.ENUM(
+        "PAID",
+        "NOT PAID",
+        "IN PROGRESS",
+        "CANCELLED",
+        "REFUNDED",
+      ),
       allowNull: false,
     },
     billing_due: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
       allowNull: false,
     },
     created_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     updated_at: {
-      type: DataTypes.TIMESTAMP,
+      type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     handled_by: {
       type: DataTypes.INTEGER,
@@ -47,7 +55,7 @@ const Billing = sequelize.define(
   {
     tableName: "billing",
     timestamps: false,
-  }
+  },
 );
 
 export default Billing;
