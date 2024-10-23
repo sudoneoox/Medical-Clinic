@@ -9,53 +9,83 @@ services:
     restart: always
     depends_on:
       - backend
-
+    volumes:
+      - ./frontend:/app
+    networks:
+      - app-network
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
+    volumes:
+      - ./backend:/src
+      - /src/node_modules  # Add this to prevent node_modules from being overwritten
     depends_on:
       db:
         condition: service_healthy
     environment:
       - DB_HOST=db
       - DB_USER=admin
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PASSWORD=abc
       - DB_NAME=medical_clinic
       - DB_PORT=3306
+      - NODE_ENV=development
     restart: always
+    command: npm run dev  # Assuming this runs nodemon
+    networks:
+      - app-network
+  migration:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASSWORD=abc
+      - DB_NAME=medical_clinic
+      - DB_PORT=3306
+    volumes:
+      - ./database:/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
 
   db:
     image: mariadb:latest
     ports:
       - "3306:3306"
     environment:
-      - MARIADB_ROOT_PASSWORD=${DB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=abc
       - MARIADB_USER=admin
-      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_PASSWORD=abc
       - MARIADB_DATABASE=medical_clinic
+      # Add these for better security
+      - MARIADB_ROOT_HOST=%
+      - MARIADB_MYSQL_LOCALHOST_USER=1
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "admin", "--password=abc"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
+    restart: always
+    networks:
+      - app-network
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-name-resolve
+      - --default-authentication-plugin=mysql_native_password
 
-  migration:
-    build:
-      context: ./database
-      dockerfile: Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      - DB_HOST=db
-      - DB_USER=admin
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=medical_clinic
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   db_data:
