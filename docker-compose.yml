@@ -58,12 +58,12 @@ services:
     image: mariadb:latest
     ports:
       - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
     environment:
       - MARIADB_ROOT_PASSWORD=abc
       - MARIADB_USER=admin
       - MARIADB_PASSWORD=abc
       - MARIADB_DATABASE=medical_clinic
-      # Add these for better security
       - MARIADB_ROOT_HOST=%
       - MARIADB_MYSQL_LOCALHOST_USER=1
     volumes:
