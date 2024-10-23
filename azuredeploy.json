@@ -53,12 +53,56 @@
                                 {
                                     "name": "MARIADB_ROOT_HOST",
                                     "value": "%"
+                                },
+                                {
+                                    "name": "MARIADB_MYSQL_LOCALHOST_USER",
+                                    "value": "1"
                                 }
                             ],
                             "resources": {
                                 "requests": {
-                                    "cpu": 0.5,
-                                    "memoryInGB": 0.5
+                                    "cpu": 0.4,
+                                    "memoryInGB": 0.4
+                                }
+                            },
+                            "command": [
+                                "--character-set-server=utf8mb4",
+                                "--collation-server=utf8mb4_unicode_ci",
+                                "--skip-name-resolve",
+                                "--default-authentication-plugin=mysql_native_password"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "migration",
+                        "properties": {
+                            "image": "[format('{0}/medical-clinic-migration:latest', variables('acrLoginServer'))]",
+                            "environmentVariables": [
+                                {
+                                    "name": "DB_HOST",
+                                    "value": "localhost"
+                                },
+                                {
+                                    "name": "DB_USER",
+                                    "value": "admin"
+                                },
+                                {
+                                    "name": "DB_PASSWORD",
+                                    "value": "abc"
+                                },
+                                {
+                                    "name": "DB_NAME",
+                                    "value": "medical_clinic"
+                                },
+                                {
+                                    "name": "DB_PORT",
+                                    "value": "3306"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 0.1,
+                                    "memoryInGB": 0.1
                                 }
                             }
                         }
@@ -76,7 +120,7 @@
                             "environmentVariables": [
                                 {
                                     "name": "DB_HOST",
-                                    "value": "mariadb"
+                                    "value": "localhost"
                                 },
                                 {
                                     "name": "DB_USER",
@@ -89,6 +133,14 @@
                                 {
                                     "name": "DB_NAME",
                                     "value": "medical_clinic"
+                                },
+                                {
+                                    "name": "DB_PORT",
+                                    "value": "3306"
+                                },
+                                {
+                                    "name": "NODE_ENV",
+                                    "value": "production"
                                 }
                             ],
                             "resources": {
