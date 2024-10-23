@@ -2,10 +2,10 @@ import express from "express";
 import userControllerFuncs from "../controllers/userController.js";
 import dashBoardControllerFuncs from "../controllers/userDashBoardController.js";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-// TODO: put this in a .env before pushing to production
-const JWT_SECRET =
-  "adba8f88a5b4a2898b62366a3763837ca6669d9dd5048bb64af0e7717ded0569";
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];

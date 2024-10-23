@@ -1,6 +1,12 @@
 FROM mariadb:latest
+
 WORKDIR /migrations
-COPY migrations/ /migrations/
-COPY scripts/syncdb.sh /migrations/
-RUN chmod +x /migrations/syncdb.sh
-CMD ["/migrations/syncdb.sh"]
+
+# Copy migrations and scripts
+COPY migrations/ /migrations/migrations/
+COPY scripts/ /migrations/scripts/
+
+# Make sure the script is executable
+RUN chmod +x /migrations/scripts/syncdb.sh
+
+CMD ["/migrations/scripts/syncdb.sh"]
