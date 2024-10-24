@@ -37,7 +37,7 @@ export default function AboutPage() {
       <main
         className="relative w-full h-screen pt-24"
         style={{
-          backgroundImage: "url('https://img.freepik.com/free-photo/abstract-blur-hospital-clinic-interior_1203-7891.jpg?w=1800&t=st=1729190866~exp=1729191466~hmac=a1a864deb7df3908bc3e3c67ba5128c7d300aeea3bde742a6ae20ddc8a40317b')",
+          backgroundImage: 'url("images/contact_logo.png")',
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
