@@ -7,6 +7,7 @@ import {
   Clock9,
   ChartNoAxesGantt,
   Settings,
+  UserSearch,
 } from "lucide-react";
 import Dashboard from "./DashboardCard.jsx";
 
@@ -25,21 +26,89 @@ const commonSidebarItems = [
   { label: "Logout", path: "/portal/logout", icon: "" },
 ];
 
-export const DoctorPortal = ({ userFullName }) => {
+export const PatientPortal = ({ userFullName, dashboardData }) => {
   const sidebarItems = [
-    ...commonSidebarItems,
-    { label: "Patients", path: "/patients", icon: "" },
-    { label: "Prescriptions", path: "/prescriptions", icon: "" },
+    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
+    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
+    {
+      label: "My Appointments",
+      path: "/portal/my-appointments",
+      icon: <Clock9 />,
+    },
+    {
+      label: "Medical Records",
+      path: "/portal/medical-records",
+      icon: <ClipboardPlus />,
+    },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/portal/settings",
+      icon: <Settings />,
+    },
+    // FOR LOG OUT you could just clear JWT and send them back to /login
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
+  console.log("patient dashboardData", dashboardData);
+  return (
+    <MainFrame
+      userFullName={userFullName}
+      userRole="Patient"
+      sidebarItems={sidebarItems}
+    >
+      <Dashboard
+        userData={{ user_role: "PATIENT" }}
+        dashboardData={dashboardData}
+      />
+    </MainFrame>
+  );
+};
+
+export const DoctorPortal = ({ userFullName, dashboardData }) => {
+  // const sidebarItems = [
+  //   ...commonSidebarItems,
+  //   { label: "Patients", path: "/patients", icon: "" },
+  //   { label: "Prescriptions", path: "/prescriptions", icon: "" },
+  // ];
+  const sidebarItems = [
+    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
+    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
+    {
+      label: "My Appointments",
+      path: "/portal/my-appointments",
+      icon: <Clock9 />,
+    },
+    {
+      label: "Patients",
+      path: "/portal/patients",
+      icon: <UserSearch />,
+    },
+    {
+      label: "Prescriptions",
+      path: "/portal/medical-records",
+      icon: <ClipboardPlus />,
+    },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/portal/settings",
+      icon: <Settings />,
+    },
+    // FOR LOG OUT you could just clear JWT and send them back to /login
+    { label: "Logout", path: "/login", icon: <LogOut /> },
+  ];
   return (
     <MainFrame
       userFullName={userFullName}
       userRole="Doctor"
       sidebarItems={sidebarItems}
     >
-      <h1 className="text-2xl font-bold mb-4">Doctor Dashboard</h1>
       {/* TODO: doctor-specific components */}
+      <Dashboard
+        userData={{ user_role: "DOCTOR" }}
+        dashboardData={dashboardData}
+      />
     </MainFrame>
   );
 };
@@ -82,44 +151,6 @@ export const ReceptionistPortal = ({ userFullName }) => {
   );
 };
 
-export const PatientPortal = ({ userFullName, dashboardData }) => {
-  const sidebarItems = [
-    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
-    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
-    {
-      label: "My Appointments",
-      path: "/portal/my-appointments",
-      icon: <Clock9 />,
-    },
-    {
-      label: "Medical Records",
-      path: "/portal/medical-records",
-      icon: <ClipboardPlus />,
-    },
-    {
-      section: "account",
-      label: "Settings",
-      path: "/portal/settings",
-      icon: <Settings />,
-    },
-    // FOR LOG OUT you could just clear JWT and send them back to /login
-    { label: "Logout", path: "/login", icon: <LogOut /> },
-  ];
-
-  console.log("patient dashboardData", dashboardData);
-  return (
-    <MainFrame
-      userFullName={userFullName}
-      userRole="Patient"
-      sidebarItems={sidebarItems}
-    >
-      <Dashboard
-        userData={{ user_role: "PATIENT" }}
-        dashboardData={dashboardData}
-      />
-    </MainFrame>
-  );
-};
 
 // TODO: also create admin entity and etc
 export const AdminPortal = ({ userFullName }) => {
