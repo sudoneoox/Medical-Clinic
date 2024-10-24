@@ -41,6 +41,9 @@ export default function AboutPage() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
+          height: "100%",
+          margin: 0,
+          paddingBottom: "20px",
         }}
       >
         <div id="about-page" className="container mx-auto px-4 relative z-10">
