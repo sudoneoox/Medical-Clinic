@@ -93,6 +93,7 @@ const populateDashboardForPatient = async (user, patient, res) => {
     });
 
     // Get medical records
+
     const medicalRecords = await Patient.findOne({
       where: { patient_id: patient.patient_id },
       include: [

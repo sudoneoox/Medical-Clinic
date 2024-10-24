@@ -89,6 +89,7 @@ export const PatientPortal = ({ userFullName, dashboardData }) => {
     {
       label: "My Appointments",
       path: "/portal/my-appointments",
+      backendRequest: "",
       icon: <Clock9 />,
     },
     {
@@ -106,7 +107,6 @@ export const PatientPortal = ({ userFullName, dashboardData }) => {
     { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
-  console.log("patient dashboardData", dashboardData);
   return (
     <MainFrame
       userFullName={userFullName}
