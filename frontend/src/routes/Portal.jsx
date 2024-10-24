@@ -1,17 +1,14 @@
 import React from "react";
 import "../styles/tailwindbase.css";
 import { Navigate, useLoaderData } from "react-router-dom";
-import {
-  DoctorPortal,
-  NursePortal,
-  ReceptionistPortal,
-  PatientPortal,
-  AdminPortal,
-} from "../components/PortalComponents";
+import AdminPortal from "../components/Portals/AdminPortal.jsx";
+import NursePortal from "../components/Portals/NursePortal.jsx";
+import ReceptionistPortal from "../components/Portals/ReceptionistPortal.jsx";
+import DoctorPortal from "../components/Portals/DoctorPortal.jsx";
+import PatientPortal from "../components/Portals/PatientPortal.jsx";
 
-// this function will be used to render the components inside the mainframe portal page based on the user type
-// i.e. users will have different views/privalages compared to the admin which will have a db web portal
-
+//INFO: basically this function is what decides what portal is rendered after
+// the user logs in backend logic for this is in index.jsx root dir
 export default function Portal() {
   const { dashboardData } = useLoaderData();
   const userRole = localStorage.getItem("userRole");
