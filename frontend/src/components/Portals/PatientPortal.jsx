@@ -1,49 +1,61 @@
-import PortCommImports from "./CommonImports.jsx";
+import React from "react";
+import MainFrame from "../Mainframe.jsx";
+import Dashboard from "../DashboardCard.jsx";
+import {
+  CalendarDays,
+  ClipboardPlus,
+  LogOut,
+  Clock9,
+  ChartNoAxesGantt,
+  Settings,
+} from "lucide-react";
+
 const PatientPortal = ({ userFullName, dashboardData }) => {
+  console.log(userFullName, dashboardData);
   const sidebarItems = [
     {
       label: "Overview",
       path: "/portal/overview",
-      icon: <PortCommImports.ChartNoAxesGantt />,
+      icon: <ChartNoAxesGantt />,
     },
     {
       label: "Calendar",
       path: "/portal/calendar",
-      icon: <PortCommImports.CalendarDays />,
+      icon: <CalendarDays />,
     },
     {
       label: "My Appointments",
       path: "/portal/my-appointments",
       backendRequest: "",
-      icon: <PortCommImports.Clock9 />,
+      icon: <Clock9 />,
     },
     {
       label: "Medical Records",
       path: "/portal/medical-records",
-      icon: <PortCommImports.ClipboardPlus />,
+      icon: <ClipboardPlus />,
     },
     {
       section: "account",
       label: "Settings",
       path: "/portal/settings",
-      icon: <PortCommImports.Settings />,
+      icon: <Settings />,
     },
     // FOR LOG OUT you could just clear JWT and send them back to /login
-    { label: "Logout", path: "/login", icon: <PortCommImports.LogOut /> },
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
   return (
-    <PortCommImports.MainFrame
+    <MainFrame
       userFullName={userFullName}
       userRole="Patient"
       sidebarItems={sidebarItems}
     >
       {/* TODO: MAKE THIS CONDITINAL IE A CHECK FLAG TO CHANGE  */}
-      <PortCommImports.Dashboard
+      <Dashboard
         userData={{ user_role: "PATIENT" }}
         dashboardData={dashboardData}
       />
-    </PortCommImports.MainFrame>
+    </MainFrame>
   );
 };
 
