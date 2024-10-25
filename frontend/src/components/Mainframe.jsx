@@ -131,7 +131,7 @@ const MainFrame = ({
     if (item.label === "Logout") {
       // Handle logout separately
       // Clear JWT token and redirect to login
-      localStorage.removeItem("token");
+      localStorage.clear();
       window.location.href = "/login";
       return;
     }

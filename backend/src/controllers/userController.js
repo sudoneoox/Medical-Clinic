@@ -66,7 +66,7 @@ const registerUser = async (req, res) => {
     const newUser = await User.create({
       demographics_id: demographic.demographics_id,
       user_role: userRole.toUpperCase(),
-      user_email: userEmail,
+      user_email: userEmail.toLowerCase(),
       user_phone: userPhone,
       user_password: userPassword,
       user_username: userUsername,
@@ -151,7 +151,12 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Find the user by email
-    const user = await User.findOne({ where: { user_email: email } });
+    const user = await User.findOne({
+      where: { user_email: email.toLowerCase() },
+    });
+
+    console.log(user);
+
     const validPassword = user.user_password === password ? true : false;
     if (!user) {
       return res.status(401).json({ message: "Email does not exist" });
@@ -166,18 +171,22 @@ const loginUser = async (req, res) => {
     let entityFullName;
     switch (user.user_role) {
       case "DOCTOR":
-        associatedEntity = await Doctor.findOne({ user_id: user.user_id });
+        associatedEntity = await Doctor.findOne({
+          where: { user_id: user.user_id },
+        });
         entityFullName =
           associatedEntity.doctor_fname + " " + associatedEntity.doctor_lname;
         break;
       case "NURSE":
-        associatedEntity = await Nurse.findOne({ user_id: user.user_id });
+        associatedEntity = await Nurse.findOne({
+          where: { user_id: user.user_id },
+        });
         entityFullName =
           associatedEntity.nurse_fname + " " + associatedEntity.nurse_lname;
         break;
       case "RECEPTIONIST":
         associatedEntity = await Receptionist.findOne({
-          user_id: user.user_id,
+          where: { user_id: user.user_id },
         });
         entityFullName =
           associatedEntity.receptionist_fname +
@@ -185,9 +194,17 @@ const loginUser = async (req, res) => {
           associatedEntity.receptionist_lname;
         break;
       case "PATIENT":
-        associatedEntity = await Patient.findOne({ user_id: user.user_id });
+        associatedEntity = await Patient.findOne({
+          where: { user_id: user.user_id },
+        });
         entityFullName =
           associatedEntity.patient_fname + " " + associatedEntity.patient_lname;
+        break;
+      case "ADMIN":
+        console.error("ROLE NOT YET IMPLEMENTED");
+        break;
+      default:
+        console.error("USER ROLE NOT FOUND in loginUSER");
         break;
     }
 
@@ -201,8 +218,8 @@ const loginUser = async (req, res) => {
       { expiresIn: "24h" },
     );
 
-    // console.log("found associatedEntity: ", associatedEntity);
-    // console.log("Entity Full Name ", entityFullName);
+    console.error("\n\n\n\nfound associatedEntity: \n\n ", associatedEntity);
+    console.log("Entity Full Name ", entityFullName);
 
     res.status(200).json({
       message: "User logged in successfully",
