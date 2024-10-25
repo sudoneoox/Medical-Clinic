@@ -24,17 +24,17 @@ const DashboardCard = ({ title, icon, children }) => (
 const AppointmentList = ({ appointments }) => (
   <div className="space-y-4">
     {appointments.map((apt, i) => (
-      <div key={i} className="flex items-center justify-between border-b pb-2">
+      <div key={i} className="flex items-start justify-between border-b pb-2">
         <div>
           <p className="font-medium">
-            {apt.Patient?.patient_fname} {apt.Patient?.patient_lname}
-            {apt.Doctor?.doctor_fname} {apt.Doctor?.doctor_lname}
+            {apt.patient?.patient_fname} {apt.patient?.patient_lname}
+            {apt.doctor?.doctor_fname} {apt.doctor?.doctor_lname}
           </p>
           <p className="text-sm text-gray-500">
             {new Date(apt.appointment_datetime).toLocaleString()}
           </p>
         </div>
-        <div className="text-sm">{apt.Office?.office_name}</div>
+        <div className="text-sm"><p>{apt.office?.office_name}</p></div>
       </div>
     ))}
   </div>
@@ -94,6 +94,7 @@ const Overview = ({ userData, dashboardData }) => {
         );
 
       case "DOCTOR":
+        console.log(dashboardData);
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DashboardCard
@@ -128,7 +129,6 @@ const Overview = ({ userData, dashboardData }) => {
             </DashboardCard>
           </div>
         );
-
       case "NURSE":
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

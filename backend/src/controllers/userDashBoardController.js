@@ -138,7 +138,7 @@ const populateDashboardForPatient = async (user, patient, res) => {
 
 const populateDashboardForDoctor = async (user, doctor, res) => {
   try {
-    const doctorWithData = await Doctor.findOne({
+    const appointments = await Doctor.findOne({
       where: { doctor_id: doctor.doctor_id },
       include: [
         {
@@ -166,7 +166,7 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
         phone: user.user_phone,
         experience: doctor.years_of_experience,
       },
-      appointments: doctorWithData?.Appointments || [],
+      appointments: appointments?.appointments || [],
     });
   } catch (error) {
     console.error("Error in populateDashboardForDoctor:", error);
