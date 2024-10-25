@@ -81,3 +81,31 @@
       "calt" 1;
   }
 }
+
+.fc {
+  --fc-border-color: theme("colors.gray.200");
+  --fc-button-bg-color: theme("colors.white");
+  --fc-button-border-color: theme("colors.gray.300");
+  --fc-button-text-color: theme("colors.gray.700");
+  --fc-button-hover-bg-color: theme("colors.gray.50");
+  --fc-button-hover-border-color: theme("colors.gray.400");
+  --fc-button-active-bg-color: theme("colors.gray.100");
+  --fc-today-bg-color: theme("colors.blue.50");
+}
+
+.fc .fc-button {
+  @apply rounded-md shadow-sm text-sm font-medium;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  @apply bg-gray-100 border-gray-300 text-gray-700;
+}
+
+.fc .fc-daygrid-day-events {
+  @apply mt-1;
+}
+
+.fc .fc-event {
+  @apply border-none bg-blue-100 text-blue-800;
+}

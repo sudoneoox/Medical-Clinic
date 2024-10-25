@@ -4,7 +4,7 @@ import reportWebVitals from "./reportWebVitals.js";
 import "./styles/tailwindbase.css";
 
 import Homepage from "./routes/Homepage.jsx";
-import ErrorPage from "./components/Error-Page.jsx";
+import ErrorPage from "./routes/Error-Page.jsx";
 import AboutPage from "./routes/About.jsx";
 import LoginPage from "./routes/LoginPage.jsx";
 import ServicesPage from "./routes/Services.jsx";

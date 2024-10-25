@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Bell, UserRound } from "lucide-react";
 import api, { URL } from "../api.js";
-import Overview from "./DashboardCard.jsx";
+import Overview from "./OverviewCards.jsx";
+import Calendar from "./Calendar.jsx";
 import { cn } from "../utils/utils.js";
 
 // Header component to display user details and quick actions
@@ -149,6 +150,11 @@ const MainFrame = ({
     }
   }, []);
 
+  // WARNING: remove during deployment
+  // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
+  // so its stuck at loading
+  const TEST = true;
+
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -161,11 +167,11 @@ const MainFrame = ({
         <Header userFullName={userFullName} userRole={userRole} />
 
         <main className="flex-1 overflow-y-auto p-6">
-          {isLoading ? (
+          {!TEST && isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
             </div>
-          ) : error ? (
+          ) : !TEST && error ? (
             <div className="text-center text-red-600">Error: {error}</div>
           ) : (
             <div className="max-w-7xl mx-auto">
@@ -175,6 +181,9 @@ const MainFrame = ({
                   {/*add specific component rendering logic here based on currentSelected */}
                   {currentSelected === "OVERVIEW" && (
                     <Overview data={contentData} />
+                  )}
+                  {currentSelected === "CALENDAR" && (
+                    <Calendar data={contentData} />
                   )}
                   {/*NOTE: Add other component conditions here*/}
                 </div>
