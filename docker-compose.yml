@@ -63,7 +63,6 @@ services:
       - MARIADB_USER=admin
       - MARIADB_PASSWORD=abc
       - MARIADB_DATABASE=medical_clinic
-      # Add these for better security
       - MARIADB_ROOT_HOST=%
       - MARIADB_MYSQL_LOCALHOST_USER=1
     volumes:

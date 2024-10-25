@@ -1,4 +1,4 @@
-import  DataTypes from '../CompositeTypes/customTypes.js';
+import DataTypes from "../CompositeTypes/customTypes.js";
 import sequelize from "../../config/database.js";
 
 const Doctor = sequelize.define(
@@ -20,11 +20,11 @@ const Doctor = sequelize.define(
     },
     doctor_lname: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
     },
 
     doctor_employee_id: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     years_of_experience: {
@@ -39,7 +39,7 @@ const Doctor = sequelize.define(
   {
     tableName: "doctors",
     timestamps: false,
-  }
+  },
 );
 
 export default Doctor;

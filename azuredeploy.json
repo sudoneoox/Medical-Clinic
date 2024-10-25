@@ -1,0 +1,207 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "acrName": {
+            "type": "string",
+            "defaultValue": "medicalclinicregistry"
+        },
+        "containerAppName": {
+            "type": "string",
+            "defaultValue": "medical-clinic"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "acrLoginServer": "[format('{0}.azurecr.io', parameters('acrName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2021-09-01",
+            "name": "[parameters('containerAppName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "mariadb",
+                        "properties": {
+                            "image": "[format('{0}/mariadb:latest', variables('acrLoginServer'))]",
+                            "ports": [
+                                {
+                                    "port": 3306,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "MARIADB_ROOT_PASSWORD",
+                                    "value": "abc"
+                                },
+                                {
+                                    "name": "MARIADB_USER",
+                                    "value": "admin"
+                                },
+                                {
+                                    "name": "MARIADB_PASSWORD",
+                                    "value": "abc"
+                                },
+                                {
+                                    "name": "MARIADB_DATABASE",
+                                    "value": "medical_clinic"
+                                },
+                                {
+                                    "name": "MARIADB_ROOT_HOST",
+                                    "value": "%"
+                                },
+                                {
+                                    "name": "MARIADB_MYSQL_LOCALHOST_USER",
+                                    "value": "1"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 0.4,
+                                    "memoryInGB": 0.4
+                                }
+                            },
+                            "command": [
+                                "--character-set-server=utf8mb4",
+                                "--collation-server=utf8mb4_unicode_ci",
+                                "--skip-name-resolve",
+                                "--default-authentication-plugin=mysql_native_password"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "migration",
+                        "properties": {
+                            "image": "[format('{0}/medical-clinic-migration:latest', variables('acrLoginServer'))]",
+                            "environmentVariables": [
+                                {
+                                    "name": "DB_HOST",
+                                    "value": "localhost"
+                                },
+                                {
+                                    "name": "DB_USER",
+                                    "value": "admin"
+                                },
+                                {
+                                    "name": "DB_PASSWORD",
+                                    "value": "abc"
+                                },
+                                {
+                                    "name": "DB_NAME",
+                                    "value": "medical_clinic"
+                                },
+                                {
+                                    "name": "DB_PORT",
+                                    "value": "3306"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 0.1,
+                                    "memoryInGB": 0.1
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "backend",
+                        "properties": {
+                            "image": "[format('{0}/medical-clinic-backend:latest', variables('acrLoginServer'))]",
+                            "ports": [
+                                {
+                                    "port": 5000,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "DB_HOST",
+                                    "value": "localhost"
+                                },
+                                {
+                                    "name": "DB_USER",
+                                    "value": "admin"
+                                },
+                                {
+                                    "name": "DB_PASSWORD",
+                                    "value": "abc"
+                                },
+                                {
+                                    "name": "DB_NAME",
+                                    "value": "medical_clinic"
+                                },
+                                {
+                                    "name": "DB_PORT",
+                                    "value": "3306"
+                                },
+                                {
+                                    "name": "NODE_ENV",
+                                    "value": "production"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 0.5,
+                                    "memoryInGB": 0.5
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "frontend",
+                        "properties": {
+                            "image": "[format('{0}/medical-clinic-frontend:latest', variables('acrLoginServer'))]",
+                            "ports": [
+                                {
+                                    "port": 80,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 0.5,
+                                    "memoryInGB": 0.5
+                                }
+                            }
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "ipAddress": {
+                    "type": "Public",
+                    "ports": [
+                        {
+                            "port": 80,
+                            "protocol": "TCP"
+                        },
+                        {
+                            "port": 5000,
+                            "protocol": "TCP"
+                        },
+                        {
+                            "port": 3306,
+                            "protocol": "TCP"
+                        }
+                    ]
+                },
+                "imageRegistryCredentials": [
+                    {
+                        "server": "[variables('acrLoginServer')]",
+                        "username": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2019-05-01').username]",
+                        "password": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2019-05-01').passwords[0].value]"
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "containerIPv4Address": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups', parameters('containerAppName'))).ipAddress.ip]"
+        }
+    }
+}
