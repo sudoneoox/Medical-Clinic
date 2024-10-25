@@ -11,7 +11,7 @@ import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
-import api from "./api.js";
+import api, { URL } from "./api.js";
 
 import {
   createBrowserRouter,
@@ -31,6 +31,7 @@ async function servicesLoader() {
   }
 }
 
+// NOTE: only validates now
 async function portalLoader() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -41,11 +42,11 @@ async function portalLoader() {
   }
   try {
     const response = await api.post(
-      "http://localhost:5000/api/users/dashboard",
+      URL + "/api/users/validate-session",
       { user_id: userId, user_role: userRole },
       { headers: { Authorization: `Bearer ${token}` } },
     );
-    return { dashboardData: response.data };
+    return { authenticated: true };
   } catch (error) {
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.clear();

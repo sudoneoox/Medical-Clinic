@@ -10,8 +10,8 @@ import {
   Settings,
 } from "lucide-react";
 
-const PatientPortal = ({ userFullName, dashboardData }) => {
-  console.log(userFullName, dashboardData);
+const PatientPortal = ({ userFullName }) => {
+  console.log(userFullName);
   const sidebarItems = [
     {
       label: "Overview",
@@ -49,12 +49,7 @@ const PatientPortal = ({ userFullName, dashboardData }) => {
       userFullName={userFullName}
       userRole="Patient"
       sidebarItems={sidebarItems}
-    >
-      <Overview
-        userData={{ user_role: "PATIENT" }}
-        dashboardData={dashboardData}
-      />
-    </MainFrame>
+    ></MainFrame>
   );
 };
 

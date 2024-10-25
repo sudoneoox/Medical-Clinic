@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
-import api from "../api.js";
+import api, { URL } from "../api.js";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
@@ -34,10 +34,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post(
-        "http://localhost:5000/api/users/login",
-        formData,
-      );
+      const response = await api.post(URL + "/api/users/login", formData);
       console.log("Login successful:", response.data);
 
       // Store the token and user info in localStorage

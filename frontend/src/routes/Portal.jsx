@@ -10,11 +10,11 @@ import PatientPortal from "../components/Portals/PatientPortal.jsx";
 //INFO: basically this function is what decides what portal is rendered after
 // the user logs in backend logic for this is in index.jsx root dir
 export default function Portal() {
-  const { dashboardData } = useLoaderData();
+  const { authenticated } = useLoaderData();
   const userRole = localStorage.getItem("userRole");
   const userFullName = localStorage.getItem("userFullName");
 
-  if (!userRole || !userFullName) {
+  if (!userRole || !userFullName || !authenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -39,10 +39,5 @@ export default function Portal() {
       return <Navigate to="/login" replace />;
   }
 
-  return (
-    <PortalComponent
-      userFullName={userFullName}
-      dashboardData={dashboardData}
-    />
-  );
+  return <PortalComponent userFullName={userFullName} />;
 }

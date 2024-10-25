@@ -34,7 +34,9 @@ const AppointmentList = ({ appointments }) => (
             {new Date(apt.appointment_datetime).toLocaleString()}
           </p>
         </div>
-        <div className="text-sm"><p>{apt.office?.office_name}</p></div>
+        <div className="text-sm">
+          <p>{apt.office?.office_name}</p>
+        </div>
       </div>
     ))}
   </div>
@@ -58,8 +60,14 @@ const MedicalRecordList = ({ records }) => (
   </div>
 );
 
-const Overview = ({ userData, dashboardData }) => {
-  if (!userData || !dashboardData) return <div>Loading...</div>;
+const Overview = ({ data }) => {
+  const userData = {
+    user_role: localStorage.getItem("userRole"),
+  };
+  console.log(data);
+  // WARNING:
+  // TODO: loading is now handled in mainframe do something else here if this error occurs
+  if (!userData || !data) return <div>Loading...</div>;
 
   const renderDashboard = () => {
     switch (userData.user_role) {
@@ -71,9 +79,9 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {dashboardData.patientInfo.name}</p>
-                <p>Email: {dashboardData.patientInfo.email}</p>
-                <p>Phone: {dashboardData.patientInfo.phone}</p>
+                <p>Name: {data.patientInfo.name}</p>
+                <p>Email: {data.patientInfo.email}</p>
+                <p>Phone: {data.patientInfo.phone}</p>
               </div>
             </DashboardCard>
 
@@ -81,20 +89,20 @@ const Overview = ({ userData, dashboardData }) => {
               title="Upcoming Appointments"
               icon={<Calendar className="h-4 w-4 text-gray-500" />}
             >
-              <AppointmentList appointments={dashboardData.appointments} />
+              <AppointmentList appointments={data.appointments} />
             </DashboardCard>
 
             <DashboardCard
               title="Recent Medical Records"
               icon={<FileText className="h-4 w-4 text-gray-500" />}
             >
-              <MedicalRecordList records={dashboardData.medicalRecords} />
+              <MedicalRecordList records={data.medicalRecords} />
             </DashboardCard>
           </div>
         );
 
       case "DOCTOR":
-        console.log(dashboardData);
+        console.log(data);
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DashboardCard
@@ -102,9 +110,9 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {dashboardData.doctorInfo.name}</p>
-                <p>Email: {dashboardData.doctorInfo.email}</p>
-                <p>Experience: {dashboardData.doctorInfo.experience} years</p>
+                <p>Name: {data.doctorInfo.name}</p>
+                <p>Email: {data.doctorInfo.email}</p>
+                <p>Experience: {data.doctorInfo.experience} years</p>
               </div>
             </DashboardCard>
 
@@ -113,7 +121,7 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<Clock className="h-4 w-4 text-gray-500" />}
             >
               <AppointmentList
-                appointments={dashboardData.appointments.filter(
+                appointments={data.appointments.filter(
                   (apt) =>
                     new Date(apt.appointment_datetime).toDateString() ===
                     new Date().toDateString(),
@@ -125,7 +133,7 @@ const Overview = ({ userData, dashboardData }) => {
               title="Upcoming Appointments"
               icon={<Calendar className="h-4 w-4 text-gray-500" />}
             >
-              <AppointmentList appointments={dashboardData.appointments} />
+              <AppointmentList appointments={data.appointments} />
             </DashboardCard>
           </div>
         );
@@ -137,9 +145,9 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {dashboardData.nurseInfo.name}</p>
-                <p>Email: {dashboardData.nurseInfo.email}</p>
-                <p>Specialization: {dashboardData.nurseInfo.specialization}</p>
+                <p>Name: {data.nurseInfo.name}</p>
+                <p>Email: {data.nurseInfo.email}</p>
+                <p>Specialization: {data.nurseInfo.specialization}</p>
               </div>
             </DashboardCard>
 
@@ -148,7 +156,7 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<Activity className="h-4 w-4 text-gray-500" />}
             >
               <AppointmentList
-                appointments={dashboardData.appointments.filter(
+                appointments={data.appointments.filter(
                   (apt) =>
                     new Date(apt.appointment_datetime).toDateString() ===
                     new Date().toDateString(),
@@ -166,8 +174,8 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {dashboardData.receptionistInfo.name}</p>
-                <p>Email: {dashboardData.receptionistInfo.email}</p>
+                <p>Name: {data.receptionistInfo.name}</p>
+                <p>Email: {data.receptionistInfo.email}</p>
               </div>
             </DashboardCard>
 
@@ -176,7 +184,7 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<Hospital className="h-4 w-4 text-gray-500" />}
             >
               <AppointmentList
-                appointments={dashboardData.appointments.filter(
+                appointments={data.appointments.filter(
                   (apt) =>
                     new Date(apt.appointment_datetime).toDateString() ===
                     new Date().toDateString(),
@@ -189,7 +197,7 @@ const Overview = ({ userData, dashboardData }) => {
               icon={<AlertCircle className="h-4 w-4 text-gray-500" />}
             >
               <AppointmentList
-                appointments={dashboardData.appointments.filter(
+                appointments={data.appointments.filter(
                   (apt) => new Date(apt.appointment_datetime) > new Date(),
                 )}
               />

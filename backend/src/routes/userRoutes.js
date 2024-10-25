@@ -27,10 +27,12 @@ const router = express.Router();
 
 router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
-router.post(
-  "/dashboard",
-  verifyToken,
-  dashBoardControllerFuncs.populateDashboard,
-);
+
+router.post("/portal/overview", dashBoardControllerFuncs.populateDashboard);
+
+router.post("/validate-session", verifyToken, (req, res) => {
+  // if middlewaire verifyToken didnt fail return success
+  res.json({ message: "Session valid" });
+});
 
 export default router;
