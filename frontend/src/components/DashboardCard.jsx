@@ -47,7 +47,7 @@ const MedicalRecordList = ({ records }) => (
         <div>
           <p className="font-medium">{record.diagnosis}</p>
           <p className="text-sm text-gray-500">
-            Dr. {record.Doctor?.doctor_fname} {record.Doctor?.doctor_lname}
+            Dr. {record.doctor?.doctor_fname} {record.doctor?.doctor_lname}
           </p>
         </div>
         <div className="text-sm">

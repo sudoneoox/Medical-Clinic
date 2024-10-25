@@ -18,7 +18,7 @@ const PatientDoctor = sequelize.define(
     },
   },
   {
-    tableName: "patient_doctor",
+    tableName: "patient_doctor_junction",
     timestamps: false,
   }
 );
