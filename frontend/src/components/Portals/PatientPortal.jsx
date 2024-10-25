@@ -1,6 +1,5 @@
 import React from "react";
 import MainFrame from "../Mainframe.jsx";
-import Overview from "../DashboardCard.jsx";
 import {
   CalendarDays,
   ClipboardPlus,
@@ -26,7 +25,6 @@ const PatientPortal = ({ userFullName }) => {
     {
       label: "My Appointments",
       path: "/portal/my-appointments",
-      backendRequest: "",
       icon: <Clock9 />,
     },
     {
@@ -40,7 +38,6 @@ const PatientPortal = ({ userFullName }) => {
       path: "/portal/settings",
       icon: <Settings />,
     },
-    // FOR LOG OUT you could just clear JWT and send them back to /login
     { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 

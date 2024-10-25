@@ -4,7 +4,7 @@ import MainFrame from "../Mainframe.jsx";
 
 const ReceptionistPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.commonSidebarItems,
+    ...PortalConstants.SidebarItems,
     { label: "Appointments", path: "/appointments", icon: "" },
     { label: "Patient Records", path: "/records", icon: "" },
   ];

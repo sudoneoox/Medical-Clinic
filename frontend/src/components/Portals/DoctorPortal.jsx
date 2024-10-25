@@ -4,7 +4,7 @@ import MainFrame from "../Mainframe.jsx";
 
 const DoctorPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.commonSidebarItems,
+    ...PortalConstants.SidebarItems,
     { label: "Patients", path: "/patients", icon: "" },
     { label: "Prescriptions", path: "/prescriptions", icon: "" },
   ];

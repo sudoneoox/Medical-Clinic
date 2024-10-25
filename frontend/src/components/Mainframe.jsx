@@ -172,11 +172,11 @@ const MainFrame = ({
               {/* Render the appropriate component based on contentData */}
               {contentData && (
                 <div className="bg-white rounded-lg shadow p-6">
-                  {/* You can add specific component rendering logic here based on currentSelected */}
+                  {/*add specific component rendering logic here based on currentSelected */}
                   {currentSelected === "OVERVIEW" && (
                     <Overview data={contentData} />
                   )}
-                  {/* Add other component conditions as needed */}
+                  {/*NOTE: Add other component conditions here*/}
                 </div>
               )}
             </div>

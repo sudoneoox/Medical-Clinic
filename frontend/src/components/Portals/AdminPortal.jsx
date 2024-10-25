@@ -5,7 +5,7 @@ import MainFrame from "../Mainframe.jsx";
 // TODO: also create admin entity and etc
 const AdminPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.commonSidebarItems,
+    ...PortalConstants.sidebarItems,
     { label: "User Management", path: "/users", icon: "" },
     { label: "Analytics", path: "/analytics", icon: "" },
   ];

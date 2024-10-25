@@ -4,7 +4,7 @@ import PortalConstants from "./PortalConstants.jsx";
 
 const NursePortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.commonSidebarItems,
+    ...PortalConstants.SidebarItems,
     { label: "Patient Care", path: "/patient-care", icon: "" },
     { label: "Medications", path: "/medications", icon: "" },
   ];
