@@ -13,21 +13,17 @@ import jwt from "jsonwebtoken";
 const registerUser = async (req, res) => {
   try {
     const userData = req.body;
-    // console.log(req.body);
 
     // get corresponding demographic data
     const raceCode = await RaceCode.findOne({
       where: { race_text: userData.race },
     });
-    // console.log('found race data ', raceCode.dataValues.race_code);
     const genderCode = await GenderCode.findOne({
       where: { gender_text: userData.gender },
     });
-    // console.log('found gender data', genderCode);
     const ethnicityCode = await EthnicityCode.findOne({
       where: { ethnicity_text: userData.ethnicity },
     });
-    // console.log('found ethnicity data', ethnicityCode);
     // crate demographic entry
     const demographic = await Demographics.create({
       ethnicity_id: ethnicityCode.dataValues.ethnicity_code,
@@ -35,8 +31,6 @@ const registerUser = async (req, res) => {
       gender_id: genderCode.dataValues.gender_code,
       dob: userData.dob,
     });
-
-    // console.log('created demographics table ', demographic)
 
     // other information
     let userRole = userData.role;
@@ -52,14 +46,11 @@ const registerUser = async (req, res) => {
     const empNo = await EmployeeNo.findOne({
       where: { employee_no: userData.employeeId },
     });
-    // console.log("EMPNO: ", empNo);
     if (empNo == null && userRole.toUpperCase() !== "PATIENT") {
       if (empNo == null) {
         throw new Error("NOT A VALID EMPLOYEE NO");
       } else if (empNo.employee_role !== user.user_role.toUpperCase()) {
         throw new Error("Invalid employee number");
-      } else {
-        console.log("found valid employee no: ", empNo);
       }
     }
 
@@ -155,8 +146,6 @@ const loginUser = async (req, res) => {
       where: { user_email: email.toLowerCase() },
     });
 
-    console.log(user);
-
     const validPassword = user.user_password === password ? true : false;
     if (!user) {
       return res.status(401).json({ message: "Email does not exist" });
@@ -217,9 +206,6 @@ const loginUser = async (req, res) => {
       JWT_SECRET,
       { expiresIn: "24h" },
     );
-
-    console.error("\n\n\n\nfound associatedEntity: \n\n ", associatedEntity);
-    console.log("Entity Full Name ", entityFullName);
 
     res.status(200).json({
       message: "User logged in successfully",

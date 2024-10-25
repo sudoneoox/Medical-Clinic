@@ -28,7 +28,7 @@ const router = express.Router();
 router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
 
-router.post("/portal/overview", dashBoardControllerFuncs.populateDashboard);
+router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
 
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success

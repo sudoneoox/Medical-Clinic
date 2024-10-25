@@ -7,12 +7,15 @@ import User from "../models/Tables/Users.js";
 import Appointment from "../models/Tables/Appointment.js";
 import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
-import PatientDoctor from "../models/Tables/PatientDoctor.js"
+import PatientDoctor from "../models/Tables/PatientDoctor.js";
 
-const populateDashboard = async (req, res) => {
+// TODO: break up into multiple files pass onto portal role swithcher from the frontend
+// the sidebar item and then from the sidebar item it depends on what function is going to be called
+// general name guidelines populate{sidebarItemName.toUpperCase()}For{ROLE}
+
+const portalRoleSwitcher = async (req, res) => {
   try {
     const { user_id, user_role } = req.body;
-    console.log("received from populateDashboard: ", user_id, user_role);
 
     const user = await User.findOne({ where: { user_id: user_id } });
     if (!user) {
@@ -30,25 +33,25 @@ const populateDashboard = async (req, res) => {
         });
         if (!relatedEntity)
           return res.status(404).json({ message: "Receptionist not found" });
-        return await populateDashboardForReceptionist(user, relatedEntity, res);
+        return await populateOVERVIEWForReceptionist(user, relatedEntity, res);
 
       case "NURSE":
         relatedEntity = await Nurse.findOne({ where: { user_id: user_id } });
         if (!relatedEntity)
           return res.status(404).json({ message: "Nurse not found" });
-        return await populateDashboardForNurse(user, relatedEntity, res);
+        return await populateOVERVIEWForNurse(user, relatedEntity, res);
 
       case "PATIENT":
         relatedEntity = await Patient.findOne({ where: { user_id: user_id } });
         if (!relatedEntity)
           return res.status(404).json({ message: "Patient not found" });
-        return await populateDashboardForPatient(user, relatedEntity, res);
+        return await populateOVERVIEWForPatient(user, relatedEntity, res);
 
       case "DOCTOR":
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
         if (!relatedEntity)
           return res.status(404).json({ message: "Doctor not found" });
-        return await populateDashboardForDoctor(user, relatedEntity, res);
+        return await populateOVERVIEWForDoctor(user, relatedEntity, res);
 
       case "ADMIN":
         return res
@@ -69,7 +72,7 @@ const populateDashboard = async (req, res) => {
 // TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
 // could use this if we had a more descriptive medicalrecord entity or maybe add a score attribute to make a graph
 // like the inspiration were taking from to make an overall health graph
-const populateDashboardForPatient = async (user, patient, res) => {
+const populateOVERVIEWForPatient = async (user, patient, res) => {
   try {
     // Get appointments with associations
     const appointments = await Patient.findOne({
@@ -94,7 +97,6 @@ const populateDashboardForPatient = async (user, patient, res) => {
     });
 
     // Get medical records
-
     const medicalRecords = await Patient.findOne({
       where: { patient_id: patient.patient_id },
       include: [
@@ -111,12 +113,6 @@ const populateDashboardForPatient = async (user, patient, res) => {
         },
       ],
     });
-    console.log(
-      `inside populatePatientDashboardForPatient received data ${user}\n\n\n ${patient}\n\n\n`,
-    );
-
-    console.log("found medicalRecords", medicalRecords);
-    console.log("\n\n\n found appointments", appointments.appointments);
 
     return res.json({
       patientInfo: {
@@ -129,7 +125,7 @@ const populateDashboardForPatient = async (user, patient, res) => {
       medicalRecords: medicalRecords?.medicalRecords || [],
     });
   } catch (error) {
-    console.error("Error in populateDashboardForPatient:", error);
+    console.error("Error in populateOVERVIEWForPatient:", error);
     res.status(500).json({
       message: "Error loading patient dashboard",
       error: error.message,
@@ -137,7 +133,7 @@ const populateDashboardForPatient = async (user, patient, res) => {
   }
 };
 
-const populateDashboardForDoctor = async (user, doctor, res) => {
+const populateOVERVIEWForDoctor = async (user, doctor, res) => {
   try {
     const appointments = await Doctor.findOne({
       where: { doctor_id: doctor.doctor_id },
@@ -159,39 +155,11 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
         },
       ],
     });
-    // const patients = await Doctor.findOne({
-    //   where: { doctor_id: doctor.doctor_id },
-    //   include: [
-    //     {
-    //       model: MedicalRecord,
-    //       where: {doctor_id: doctor.doctor_id},
-    //       include: [
-    //         {
-    //           model: Patient,
-    //           attributes: ["patient_fname", "patient_lname"],
-    //         },
-    //       ]
-    //     },
-    //   ],
-    // });
+
     const patients = await PatientDoctor.findAll({
-      // where: { doctor_id: doctor.doctor_id },
-      // include: [
-      //   {
-      //     model: Patient,
-      //     attributes: ["patient_fname", "patient_lname"],
-      //     required:false,
-      //     include: [
-      //       {
-      //         model: MedicalRecord,
-      //         required: false,
-      //         where: { is_deleted:0},
-      //       },
-      //     ],
-      //   },
-      // ],
+      where: { doctor_id: doctor.doctor_id },
     });
-    
+
     return res.json({
       doctorInfo: {
         name: `${doctor.doctor_fname} ${doctor.doctor_lname}`,
@@ -203,7 +171,7 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
       patients: patients?.patients || [],
     });
   } catch (error) {
-    console.error("Error in populateDashboardForDoctor:", error);
+    console.error("Error in populateOVERVIEWForDoctor:", error);
     res.status(500).json({
       message: "Error loading doctor dashboard",
       error: error.message,
@@ -211,7 +179,7 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
   }
 };
 
-const populateDashboardForNurse = async (user, nurse, res) => {
+const populateOVERVIEWForNurse = async (user, nurse, res) => {
   try {
     const nurseWithData = await Nurse.findOne({
       where: { nurse_id: nurse.nurse_id },
@@ -248,14 +216,14 @@ const populateDashboardForNurse = async (user, nurse, res) => {
       appointments: nurseWithData?.Appointments || [],
     });
   } catch (error) {
-    console.error("Error in populateDashboardForNurse:", error);
+    console.error("Error in populateOVERVIEWForNurse:", error);
     res
       .status(500)
       .json({ message: "Error loading nurse dashboard", error: error.message });
   }
 };
 
-const populateDashboardForReceptionist = async (user, receptionist, res) => {
+const populateOVERVIEWForReceptionist = async (user, receptionist, res) => {
   try {
     const receptionistWithData = await Receptionist.findOne({
       where: { receptionist_id: receptionist.receptionist_id },
@@ -290,7 +258,7 @@ const populateDashboardForReceptionist = async (user, receptionist, res) => {
       appointments: receptionistWithData?.Appointments || [],
     });
   } catch (error) {
-    console.error("Error in populateDashboardForReceptionist:", error);
+    console.error("Error in populateOVERVIEWForReceptionist:", error);
     res.status(500).json({
       message: "Error loading receptionist dashboard",
       error: error.message,
@@ -299,5 +267,5 @@ const populateDashboardForReceptionist = async (user, receptionist, res) => {
 };
 
 export default {
-  populateDashboard,
+  portalRoleSwitcher,
 };
