@@ -1,6 +1,6 @@
 import React from "react";
 import MainFrame from "../Mainframe.jsx";
-import Dashboard from "../DashboardCard.jsx";
+import Overview from "../DashboardCard.jsx";
 import {
   CalendarDays,
   ClipboardPlus,
@@ -50,8 +50,7 @@ const PatientPortal = ({ userFullName, dashboardData }) => {
       userRole="Patient"
       sidebarItems={sidebarItems}
     >
-      {/* TODO: MAKE THIS CONDITINAL IE A CHECK FLAG TO CHANGE  */}
-      <Dashboard
+      <Overview
         userData={{ user_role: "PATIENT" }}
         dashboardData={dashboardData}
       />

@@ -58,7 +58,7 @@ const MedicalRecordList = ({ records }) => (
   </div>
 );
 
-const Dashboard = ({ userData, dashboardData }) => {
+const Overview = ({ userData, dashboardData }) => {
   if (!userData || !dashboardData) return <div>Loading...</div>;
 
   const renderDashboard = () => {
@@ -214,4 +214,4 @@ const Dashboard = ({ userData, dashboardData }) => {
   );
 };
 
-export default Dashboard;
+export default Overview;
