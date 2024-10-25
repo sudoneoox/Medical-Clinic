@@ -7,6 +7,7 @@ import User from "../models/Tables/Users.js";
 import Appointment from "../models/Tables/Appointment.js";
 import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
+import PatientDoctor from "../models/Tables/PatientDoctor.js"
 
 const populateDashboard = async (req, res) => {
   try {
@@ -158,7 +159,39 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
         },
       ],
     });
-
+    // const patients = await Doctor.findOne({
+    //   where: { doctor_id: doctor.doctor_id },
+    //   include: [
+    //     {
+    //       model: MedicalRecord,
+    //       where: {doctor_id: doctor.doctor_id},
+    //       include: [
+    //         {
+    //           model: Patient,
+    //           attributes: ["patient_fname", "patient_lname"],
+    //         },
+    //       ]
+    //     },
+    //   ],
+    // });
+    const patients = await PatientDoctor.findAll({
+      // where: { doctor_id: doctor.doctor_id },
+      // include: [
+      //   {
+      //     model: Patient,
+      //     attributes: ["patient_fname", "patient_lname"],
+      //     required:false,
+      //     include: [
+      //       {
+      //         model: MedicalRecord,
+      //         required: false,
+      //         where: { is_deleted:0},
+      //       },
+      //     ],
+      //   },
+      // ],
+    });
+    
     return res.json({
       doctorInfo: {
         name: `${doctor.doctor_fname} ${doctor.doctor_lname}`,
@@ -167,6 +200,7 @@ const populateDashboardForDoctor = async (user, doctor, res) => {
         experience: doctor.years_of_experience,
       },
       appointments: appointments?.appointments || [],
+      patients: patients?.patients || [],
     });
   } catch (error) {
     console.error("Error in populateDashboardForDoctor:", error);
