@@ -64,7 +64,6 @@ const Overview = ({ data }) => {
   const userData = {
     user_role: localStorage.getItem("userRole"),
   };
-  console.log(data);
   // WARNING:
   // TODO: loading is now handled in mainframe do something else here if this error occurs
   if (!userData || !data) return <div>Loading...</div>;
@@ -102,7 +101,6 @@ const Overview = ({ data }) => {
         );
 
       case "DOCTOR":
-        console.log(data);
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DashboardCard

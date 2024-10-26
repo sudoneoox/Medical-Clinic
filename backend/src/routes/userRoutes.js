@@ -11,7 +11,7 @@ const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ message: "no token provided" });
-    console.log("error in verifyToken token");
+    console.error("error in verifyToken token");
   }
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -29,6 +29,15 @@ router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
 
 router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/calendar", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post(
+  "/portal/medical-records",
+  dashBoardControllerFuncs.portalRoleSwitcher,
+);
+router.post(
+  "/portal/my-appointments",
+  dashBoardControllerFuncs.portalRoleSwitcher,
+);
 
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success

@@ -113,10 +113,12 @@ const MainFrame = ({
       const user_id = localStorage.getItem("userId");
       const user_role = localStorage.getItem("userRole");
       const API_PATH = URL + "/api/users" + path;
-      console.log(API_PATH);
+      console.log("API_PATH inside fetchdata inside mainframe", API_PATH);
+      const sidebarItem = path.split("/").pop().toUpperCase();
       const response = await api.post(API_PATH, {
         user_id,
         user_role,
+        sidebarItem,
       });
 
       setContentData(response.data);
@@ -145,6 +147,7 @@ const MainFrame = ({
     const defaultItem = sidebarItems.find(
       (item) => item.label.toUpperCase() === currentSelected,
     );
+
     if (defaultItem) {
       fetchData(defaultItem.path);
     }

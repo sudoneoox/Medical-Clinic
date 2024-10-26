@@ -1,8 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import reportWebVitals from "./reportWebVitals.js";
-import "./styles/tailwindbase.css";
-
 import Homepage from "./routes/Homepage.jsx";
 import ErrorPage from "./routes/Error-Page.jsx";
 import AboutPage from "./routes/About.jsx";
@@ -12,6 +9,7 @@ import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
 import api, { URL } from "./api.js";
+import "./styles/tailwindbase.css";
 
 import {
   createBrowserRouter,
@@ -21,9 +19,7 @@ import {
 
 async function servicesLoader() {
   try {
-    const response = await api.post(
-      "http://localhost:5000/api/homepage/specialities",
-    );
+    const response = await api.post(URL + "/api/homepage/specialities");
     return { specialties: response.data };
   } catch (error) {
     console.error("Error fetching specialties:", error);
@@ -46,6 +42,7 @@ async function portalLoader() {
       { user_id: userId, user_role: userRole },
       { headers: { Authorization: `Bearer ${token}` } },
     );
+
     return { authenticated: true };
   } catch (error) {
     if (error.response?.status === 401 || error.response?.status === 403) {
@@ -102,8 +99,3 @@ root.render(
     <RouterProvider router={router} />
   </React.StrictMode>,
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

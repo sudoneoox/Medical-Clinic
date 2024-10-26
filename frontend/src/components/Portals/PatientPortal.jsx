@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 
 const PatientPortal = ({ userFullName }) => {
-  console.log(userFullName);
   const sidebarItems = [
     {
       label: "Overview",

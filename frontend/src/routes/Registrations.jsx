@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
 import { useNavigate } from "react-router-dom";
 import FormField from "../components/FormField";
-import api from "../api.js";
+import api, { URL } from "../api.js";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -58,16 +58,10 @@ export default function SignUp() {
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      console.log("Getting demographic data");
       setStep(3);
     } else if (step === 3 && formData.role === "Patient") {
-      console.log("Enrolling patient:", formData);
       try {
-        const response = await api.post(
-          "http://localhost:5000/api/users/register",
-          formData,
-        );
-        console.log("User Patient registration successful: ", response.data);
+        const response = await api.post(URL + "/api/users/register", formData);
         navigate("/login");
       } catch (err) {
         if (err.response) {
@@ -81,13 +75,8 @@ export default function SignUp() {
     } else if (step === 3 && formData.role === "Provider") {
       setStep(4);
     } else if (step === 4) {
-      console.log("Submitting provider data:", formData);
       try {
-        const response = await api.post(
-          "http://localhost:5000/api/users/register",
-          formData,
-        );
-        console.log("User Provider Registration successful: ", response.data);
+        const response = await api.post(URL + "/api/users/register", formData);
         navigate("/login");
       } catch (err) {
         if (err.response) {

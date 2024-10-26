@@ -35,14 +35,12 @@ export default function LoginPage() {
 
     try {
       const response = await api.post(URL + "/api/users/login", formData);
-      console.log("Login successful:", response.data);
 
       // Store the token and user info in localStorage
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userId", response.data.userId);
       localStorage.setItem("userRole", response.data.role);
       localStorage.setItem("userFullName", response.data.userFullName);
-      console.log(response.data);
       // Redirect based on user role
       navigate("/portal");
     } catch (err) {

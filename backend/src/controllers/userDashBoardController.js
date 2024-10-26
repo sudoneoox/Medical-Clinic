@@ -8,14 +8,12 @@ import Appointment from "../models/Tables/Appointment.js";
 import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
 import PatientDoctor from "../models/Tables/PatientDoctor.js";
+import patientDashboard from "./util/patientDashboard.js";
 
-// TODO: break up into multiple files pass onto portal role swithcher from the frontend
-// the sidebar item and then from the sidebar item it depends on what function is going to be called
-// general name guidelines populate{sidebarItemName.toUpperCase()}For{ROLE}
-
+// switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
   try {
-    const { user_id, user_role } = req.body;
+    const { user_id, user_role, sidebarItem } = req.body;
 
     const user = await User.findOne({ where: { user_id: user_id } });
     if (!user) {
@@ -31,26 +29,51 @@ const portalRoleSwitcher = async (req, res) => {
         relatedEntity = await Receptionist.findOne({
           where: { user_id: user_id },
         });
-        if (!relatedEntity)
-          return res.status(404).json({ message: "Receptionist not found" });
         return await populateOVERVIEWForReceptionist(user, relatedEntity, res);
 
       case "NURSE":
         relatedEntity = await Nurse.findOne({ where: { user_id: user_id } });
-        if (!relatedEntity)
-          return res.status(404).json({ message: "Nurse not found" });
         return await populateOVERVIEWForNurse(user, relatedEntity, res);
 
       case "PATIENT":
         relatedEntity = await Patient.findOne({ where: { user_id: user_id } });
-        if (!relatedEntity)
-          return res.status(404).json({ message: "Patient not found" });
-        return await populateOVERVIEWForPatient(user, relatedEntity, res);
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await patientDashboard.populateOVERVIEW(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "CALENDAR":
+            return await patientDashboard.populateCALENDAR(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "MY-APPOINTMENTS":
+            return await patientDashboard.populateAPPOINTMENTS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "MEDICAL-RECORDS":
+            return await patientDashboard.populateMEDICALRECORDS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          default:
+            return res.status(401).json({
+              message: "Invalid sidebarItem not found in portalRoleSwitcher",
+            });
+        }
 
       case "DOCTOR":
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
-        if (!relatedEntity)
-          return res.status(404).json({ message: "Doctor not found" });
         return await populateOVERVIEWForDoctor(user, relatedEntity, res);
 
       case "ADMIN":
@@ -66,70 +89,6 @@ const portalRoleSwitcher = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching dashboard data", error: error.message });
-  }
-};
-
-// TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
-// could use this if we had a more descriptive medicalrecord entity or maybe add a score attribute to make a graph
-// like the inspiration were taking from to make an overall health graph
-const populateOVERVIEWForPatient = async (user, patient, res) => {
-  try {
-    // Get appointments with associations
-    const appointments = await Patient.findOne({
-      where: { patient_id: patient.patient_id },
-      include: [
-        {
-          model: Appointment,
-          where: { status: "CONFIRMED" },
-          required: false,
-          include: [
-            {
-              model: Doctor,
-              attributes: ["doctor_fname", "doctor_lname"],
-            },
-            {
-              model: Office,
-              attributes: ["office_name", "office_address"],
-            },
-          ],
-        },
-      ],
-    });
-
-    // Get medical records
-    const medicalRecords = await Patient.findOne({
-      where: { patient_id: patient.patient_id },
-      include: [
-        {
-          model: MedicalRecord,
-          where: { is_deleted: 0 },
-          required: false,
-          include: [
-            {
-              model: Doctor,
-              attributes: ["doctor_fname", "doctor_lname"],
-            },
-          ],
-        },
-      ],
-    });
-
-    return res.json({
-      patientInfo: {
-        name: `${patient.patient_fname} ${patient.patient_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-        emergencyContacts: patient.emergency_contacts,
-      },
-      appointments: appointments?.appointments || [],
-      medicalRecords: medicalRecords?.medicalRecords || [],
-    });
-  } catch (error) {
-    console.error("Error in populateOVERVIEWForPatient:", error);
-    res.status(500).json({
-      message: "Error loading patient dashboard",
-      error: error.message,
-    });
   }
 };
 
