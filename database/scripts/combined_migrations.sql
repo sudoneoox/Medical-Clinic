@@ -1,15 +1,9 @@
--- strict mode 
 SET sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- foreign key checks = true
 SET FOREIGN_KEY_CHECKS = 1;
-
-
--- base table for authentication and logging in 
+;
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_username VARCHAR(50) UNIQUE NOT NULL,
-    -- long passwd in case we want to hash? 
     user_password VARCHAR(200) NOT NULL,
     user_email VARCHAR(50) UNIQUE NOT NULL,
     user_phone VARCHAR(20) UNIQUE NOT NULL,
@@ -28,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE(user_email),
     UNIQUE(user_username)
 );
--- Doctor table, extends user
+;
 CREATE TABLE IF NOT EXISTS doctors (
     doctor_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     doctor_employee_id INTEGER NOT NULL,
@@ -36,13 +30,10 @@ CREATE TABLE IF NOT EXISTS doctors (
     doctor_lname VARCHAR(50) NOT NULL,
     user_id INTEGER UNIQUE NOT NULL,
     years_of_experience TINYINT NOT NULL,
-    -- CONSTRAINT chk_years_experience CHECK (years_of_experience > 0 AND years_of_experience < 90)
     UNIQUE(doctor_employee_id),
     UNIQUE(user_id)
 ); 
--- holds a ptr to the user_id to distinguish between patients and doctors
--- we could maybe do a boolcase ? ie ids larger than 1000 are doctors ? 
--- patient table, extends user
+;
 CREATE TABLE IF NOT EXISTS patients (
     patient_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
@@ -51,14 +42,14 @@ CREATE TABLE IF NOT EXISTS patients (
     emergency_contacts JSON,
     UNIQUE(user_id)
 );
+;
 CREATE TABLE IF NOT EXISTS patient_doctor_junction (
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
     is_primary TINYINT DEFAULT 0,
     PRIMARY KEY (patient_id, doctor_id)
 );
-
--- specialist approval requests
+;
 CREATE TABLE IF NOT EXISTS specialist_approvals (
     approval_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -67,7 +58,8 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     patient_id INTEGER NOT NULL,
     reffered_doctor_id INTEGER NOT NULL,
     specialist_id INTEGER NOT NULL
-);--office locatios
+);
+;
 CREATE TABLE IF NOT EXISTS office (
     office_id INT NOT NULL auto_increment primary key,
     office_name VARCHAR(50) NOT NULL,
@@ -79,15 +71,14 @@ CREATE TABLE IF NOT EXISTS office (
     UNIQUE(office_address),
     UNIQUE(office_name)
 );
-
--- Doctor-Office Relationship
 CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     PRIMARY KEY (doctor_id, office_id)
-);--appointments linking patients, doctors, and offices
+);
+;
 CREATE TABLE IF NOT EXISTS appointments (
     appointment_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     patient_id INTEGER NOT NULL,
@@ -99,10 +90,10 @@ CREATE TABLE IF NOT EXISTS appointments (
     attending_nurse INTEGER NULL,
     reason VARCHAR(100),
     status ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW') NOT NULL,
-    -- Changed to ENUM
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);-- Billing table to keep track of payments for appointments
+);
+;
 CREATE TABLE IF NOT EXISTS billing (
     billing_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     patient_id INTEGER NOT NULL,
@@ -121,32 +112,30 @@ CREATE TABLE IF NOT EXISTS billing (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     handled_by INTEGER,
     UNIQUE(billing_id)
-);-- patient insurance information linked with patient id to identify
+);
+;
 CREATE TABLE IF NOT EXISTS insurances (
     insurance_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     patient_id INTEGER NOT NULL,
     insurance_info JSON,
     is_active TINYINT DEFAULT (1),
     UNIQUE(insurance_id)
-);-- medical records linking patients, doctors, and appointments (not required)
+);
+;
 CREATE TABLE IF NOT EXISTS medical_records (
-    -- primary keys
     record_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- dateissued
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- in case of any updates on diagnosis or changes 
     diagnosis VARCHAR(100),
     is_deleted TINYINT DEFAULT (0),
     deleted_at TIMESTAMP NULL,
-    -- foreign keys other entities
     prescription_id INTEGER NULL,
     patient_id INTEGER NOT NULL,
     doctor_id INTEGER NOT NULL,
     appointment_id INTEGER,
     UNIQUE(record_id)
 );
--- prescription information linked to a medical record
+;
 CREATE TABLE IF NOT EXISTS prescription (
     prescription_id INTEGER PRIMARY KEY AUTO_INCREMENT,
     medical_record_id INTEGER NOT NULL,
@@ -157,14 +146,15 @@ CREATE TABLE IF NOT EXISTS prescription (
     date_issued TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     pharmacy_details JSON,
     UNIQUE(prescription_id)
-);CREATE TABLE IF NOT EXISTS race_code (
+);
+;
+CREATE TABLE IF NOT EXISTS race_code (
     race_code TINYINT NOT NULL ,
     race_text VARCHAR(50) NOT NULL ,
     UNIQUE(race_code),
     UNIQUE(race_text),
     PRIMARY KEY(race_code, race_text)
 );
-
 CREATE TABLE IF NOT EXISTS gender_code (
     gender_code TINYINT NOT NULL ,
     gender_text VARCHAR(50) NOT NULL ,
@@ -172,7 +162,6 @@ CREATE TABLE IF NOT EXISTS gender_code (
     UNIQUE(gender_text),
     PRIMARY KEY (gender_code, gender_text)
 );
-
 CREATE TABLE IF NOT EXISTS ethnicity_code (
     ethnicity_code TINYINT NOT NULL ,
     ethnicity_text VARCHAR(50) NOT NULL ,
@@ -180,7 +169,6 @@ CREATE TABLE IF NOT EXISTS ethnicity_code (
     UNIQUE(ethnicity_text),
     PRIMARY KEY (ethnicity_code, ethnicity_text)
 );
-
 CREATE TABLE IF NOT EXISTS demographics (
     demographics_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     ethnicity_id TINYINT NULL,
@@ -191,13 +179,16 @@ CREATE TABLE IF NOT EXISTS demographics (
     updated_by INTEGER,
     updated_at DATE
 ); 
+;
 CREATE TABLE IF NOT EXISTS specialties_code (
     specialty_code TINYINT NOT NULL PRIMARY KEY,
     specialty_name VARCHAR(30) NOT NULL,
     specialty_desc VARCHAR(500),
     UNIQUE(specialty_code),
     UNIQUE(specialty_name)
-);CREATE TABLE IF NOT EXISTS receptionists (
+);
+;
+CREATE TABLE IF NOT EXISTS receptionists (
     receptionist_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     receptionist_employee_id INTEGER NOT NULL,
     receptionist_fname VARCHAR(50) NOT NULL,
@@ -206,6 +197,7 @@ CREATE TABLE IF NOT EXISTS specialties_code (
     UNIQUE(receptionist_id),
     UNIQUE(user_id)
 );
+;
 CREATE TABLE IF NOT EXISTS nurses (
     nurse_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
@@ -217,13 +209,15 @@ CREATE TABLE IF NOT EXISTS nurses (
     UNIQUE(nurse_id),
     UNIQUE(user_id)
 );
+;
 CREATE TABLE IF NOT EXISTS nurse_offices (
     nurse_id INT NOT NULL,
     office_id INT NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     PRIMARY KEY (nurse_id, office_id)
-);-- nurses and receptionist can modify this when they set up an appointmetn
+);
+;
 CREATE TABLE IF NOT EXISTS appointment_notes (
     note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     appointment_id INTEGER NOT NULL,
@@ -232,26 +226,32 @@ CREATE TABLE IF NOT EXISTS appointment_notes (
     created_by_nurse INTEGER,
     created_by_receptionist INTEGER,
     UNIQUE(note_id)
-);-- many to many relationship between doctors and specialties
+);
+;
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
     specialty_code TINYINT NOT NULL,
     PRIMARY KEY (doctor_id, specialty_code)
-);CREATE TABLE IF NOT EXISTS appointment_cancellations (
+);
+;
+CREATE TABLE IF NOT EXISTS appointment_cancellations (
     cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
     appointment_id INT NOT NULL,
     canceled_reason TEXT,
     canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(cancellation_id),
     UNIQUE(appointment_id)
-);CREATE TABLE IF NOT EXISTS receptionist_offices (
+);
+;
+CREATE TABLE IF NOT EXISTS receptionist_offices (
     receptionist_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
     shift_start TIME,
     shift_end TIME,
     PRIMARY KEY (receptionist_id, office_id)
-);CREATE TABLE IF NOT EXISTS test_results (
-    -- primary keys
+);
+;
+CREATE TABLE IF NOT EXISTS test_results (
     test_results_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     test_type ENUM('BLOOD', 'XRAY', 'URINE'),
     test_name VARCHAR(30),
@@ -260,17 +260,20 @@ CREATE TABLE IF NOT EXISTS doctor_specialties (
     test_units VARCHAR(10),
     test_interpretation ENUM("BELOW", "NORMAL", "ABOVE"),
     test_status ENUM("PENDING", "COMPLETED"),
-    -- foreign keys
     test_performed_by INTEGER NOT NULL,
     medical_record_id INTEGER NOT NULL,
     UNIQUE(test_results_id)
-);CREATE TABLE IF NOT EXISTS appointment_reminders (
+);
+;
+CREATE TABLE IF NOT EXISTS appointment_reminders (
     reminder_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     appointment_id INTEGER NOT NULL,
     reminder_status ENUM('Pending', 'Sent', 'Failed') NOT NULL,
     scheduled_time TIMESTAMP NOT NULL,
     sent_time TIMESTAMP NOT NULL
-);CREATE TABLE IF NOT EXISTS detailed_allergies (
+);
+;
+CREATE TABLE IF NOT EXISTS detailed_allergies (
     allergy_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     medical_record_id INTEGER NOT NULL,
     allergy_type ENUM('FOOD', 'MEDICATION', 'ENVIRONMENTAL') NOT NULL,
@@ -278,20 +281,20 @@ CREATE TABLE IF NOT EXISTS doctor_specialties (
     reaction TEXT,
     severity ENUM('MILD', 'MODERATE', 'SEVERE') NOT NULL,
     onset_date DATE
-);CREATE TABLE IF NOT EXISTS appointment_cancellations (
+);
+;
+CREATE TABLE IF NOT EXISTS appointment_cancellations (
     cancellation_id INT PRIMARY KEY AUTO_INCREMENT,
     appointment_id INT NOT NULL,
     canceled_reason TEXT,
     canceled_at DATETIME DEFAULT CURRENT_TIMESTAMP-- ,
---     DATETIME does not support time zones, should manage timezonesa at the application level?
---     CONSTRAINT fk_cancellation_appointment
---         FOREIGN KEY (appointment_id)
---         REFERENCES appointments(appointment_id)
---         ON DELETE CASCADE
-);CREATE TABLE IF NOT EXISTS valid_employees (
+);
+;
+CREATE TABLE IF NOT EXISTS valid_employees (
   employee_no INT NOT NULL UNIQUE PRIMARY KEY,
   employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN') NOT NULL
 );
+;
 CREATE TABLE IF NOT EXISTS notes (
     note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -302,7 +305,9 @@ CREATE TABLE IF NOT EXISTS notes (
     deleted_at TIMESTAMP NULL,
     medical_record_id INTEGER NOT NULL,
     UNIQUE(note_id)
-);INSERT INTO race_code (race_code, race_text) VALUES
+);
+;
+INSERT INTO race_code (race_code, race_text) VALUES
 (1, 'American Indian or Alaska Native'),
 (2, 'Asian'),
 (3, 'Black or African American'),
@@ -310,19 +315,17 @@ CREATE TABLE IF NOT EXISTS notes (
 (5, 'White'),
 (6, 'Other'),
 (7, 'Prefer not to say');
-
 INSERT INTO gender_code (gender_code, gender_text) VALUES
 (1, 'Male'),
 (2, 'Female'),
 (3, 'Non-binary'),
 (4, 'Prefer not to say'),
 (5, 'Other');
-
 INSERT INTO ethnicity_code (ethnicity_code, ethnicity_text) VALUES
 (1, 'Hispanic or Latino'),
 (2, 'Not Hispanic or Latino'),
 (3, 'Prefer not to say');
--- doctor spceialties
+;
 INSERT INTO specialties_code (specialty_code, specialty_name, specialty_desc) VALUES 
 (1, 'Family Medicine', 'Comprehensive care for all ages, focusing on prevention, diagnosis, and treatment of a wide range of health conditions'),
 (2, 'Internal Medicine', 'Expert care in diagnosing, treating, and preventing complex adult diseases and chronic conditions'),
@@ -339,13 +342,8 @@ INSERT INTO specialties_code (specialty_code, specialty_name, specialty_desc) VA
 (13, 'Gastroenterology','Specialized gastroenterology services focused on diagnosing and treating digestive disorders with a patient-centered approach and advanced therapeutic options'),
 (14, 'Endocrinology','Expert endocrinology services dedicated to diagnosing and managing hormonal disorders, ensuring personalized treatment plans for optimal health'),
 (15, 'Urology','Comprehensive urology services providing expert diagnosis and treatment for a wide range of urinary and reproductive health conditions');
-
-
-
-
+;
 DELIMITER //
-
--- Helper function to generate random phone numbers
 CREATE FUNCTION generate_phone() 
 RETURNS VARCHAR(20)
 DETERMINISTIC
@@ -358,30 +356,23 @@ BEGIN
         FLOOR(RAND() * 9000 + 1000)
     );
 END //
-
--- Helper function to generate random date between two dates
 CREATE FUNCTION random_date(start_date DATE, end_date DATE)
 RETURNS DATE
 DETERMINISTIC
 BEGIN
     RETURN DATE_ADD(start_date, INTERVAL FLOOR(RAND() * DATEDIFF(end_date, start_date)) DAY);
 END //
-
--- Helper function to generate random time between two times
 CREATE FUNCTION random_time(start_time TIME, end_time TIME)
 RETURNS TIME
 DETERMINISTIC
 BEGIN
     RETURN ADDTIME(start_time, SEC_TO_TIME(FLOOR(RAND() * TIME_TO_SEC(TIMEDIFF(end_time, start_time)))));
 END //
-
--- Create demographics 
 CREATE FUNCTION create_demographics(
     p_dob DATE
 ) RETURNS INT
 BEGIN
     DECLARE new_demo_id INT;
-    
     INSERT INTO demographics (
         ethnicity_id,
         race_id,
@@ -393,12 +384,9 @@ BEGIN
         1 + FLOOR(RAND() * 5),  -- Random gender 1-5
         p_dob
     );
-    
     SET new_demo_id = LAST_INSERT_ID();
     RETURN new_demo_id;
 END //
-
--- Create user function
 CREATE FUNCTION create_user(
     p_username VARCHAR(50),
     p_password VARCHAR(200),
@@ -409,7 +397,6 @@ CREATE FUNCTION create_user(
 ) RETURNS INT
 BEGIN
     DECLARE new_user_id INT;
-    
     INSERT INTO users (
         user_username, 
         user_password, 
@@ -425,12 +412,9 @@ BEGIN
         p_role,
         p_demographics_id
     );
-    
     SET new_user_id = LAST_INSERT_ID();
     RETURN new_user_id;
 END //
-
--- Create patient function
 CREATE FUNCTION create_patient(
     p_user_id INT,
     p_fname VARCHAR(50),
@@ -438,7 +422,6 @@ CREATE FUNCTION create_patient(
 ) RETURNS INT
 BEGIN
     DECLARE new_patient_id INT;
-    
     INSERT INTO patients (
         user_id,
         patient_fname,
@@ -454,12 +437,9 @@ BEGIN
             'phone', generate_phone()
         )
     );
-    
     SET new_patient_id = LAST_INSERT_ID();
     RETURN new_patient_id;
 END //
-
--- Create doctor function
 CREATE FUNCTION create_doctor(
     p_user_id INT,
     p_employee_id INT,
@@ -469,7 +449,6 @@ CREATE FUNCTION create_doctor(
 ) RETURNS INT
 BEGIN
     DECLARE new_doctor_id INT;
-    
     INSERT INTO doctors (
         doctor_employee_id,
         doctor_fname,
@@ -483,12 +462,9 @@ BEGIN
         p_user_id,
         p_experience
     );
-    
     SET new_doctor_id = LAST_INSERT_ID();
     RETURN new_doctor_id;
 END //
-
--- Create nurse function
 CREATE FUNCTION create_nurse(
     p_user_id INT,
     p_employee_id INT,
@@ -497,7 +473,6 @@ CREATE FUNCTION create_nurse(
 ) RETURNS INT
 BEGIN
     DECLARE new_nurse_id INT;
-    
     INSERT INTO nurses (
         nurse_employee_id,
         nurse_fname,
@@ -513,12 +488,9 @@ BEGIN
         ELT(FLOOR(1 + RAND() * 5), 'Pediatrics', 'Emergency', 'ICU', 'Surgery', 'General'),
         FLOOR(1 + RAND() * 20)
     );
-    
     SET new_nurse_id = LAST_INSERT_ID();
     RETURN new_nurse_id;
 END //
-
--- Create receptionist function
 CREATE FUNCTION create_receptionist(
     p_user_id INT,
     p_employee_id INT,
@@ -527,7 +499,6 @@ CREATE FUNCTION create_receptionist(
 ) RETURNS INT
 BEGIN
     DECLARE new_receptionist_id INT;
-    
     INSERT INTO receptionists (
         receptionist_employee_id,
         receptionist_fname,
@@ -539,12 +510,9 @@ BEGIN
         p_lname,
         p_user_id
     );
-    
     SET new_receptionist_id = LAST_INSERT_ID();
     RETURN new_receptionist_id;
 END //
-
--- Create appointment function
 CREATE FUNCTION create_appointment(
     p_patient_id INT,
     p_doctor_id INT,
@@ -555,7 +523,6 @@ CREATE FUNCTION create_appointment(
 ) RETURNS INT
 BEGIN
     DECLARE new_appointment_id INT;
-    
     INSERT INTO appointments (
         patient_id,
         doctor_id,
@@ -577,12 +544,9 @@ BEGIN
         ELT(FLOOR(1 + RAND() * 5), 'Regular Checkup', 'Follow-up', 'Consultation', 'Vaccination', 'Prescription Renewal'),
         'CONFIRMED'
     );
-    
     SET new_appointment_id = LAST_INSERT_ID();
     RETURN new_appointment_id;
 END //
-
--- Create medical record function
 CREATE FUNCTION create_medical_record(
     p_patient_id INT,
     p_doctor_id INT,
@@ -590,7 +554,6 @@ CREATE FUNCTION create_medical_record(
 ) RETURNS INT
 BEGIN
     DECLARE new_record_id INT;
-    
     INSERT INTO medical_records (
         diagnosis,
         patient_id,
@@ -613,12 +576,9 @@ BEGIN
         p_doctor_id,
         p_appointment_id
     );
-    
     SET new_record_id = LAST_INSERT_ID();
     RETURN new_record_id;
 END //
-
--- Create billing function
 CREATE FUNCTION create_billing(
     p_patient_id INT,
     p_appointment_id INT,
@@ -627,9 +587,7 @@ CREATE FUNCTION create_billing(
 BEGIN
     DECLARE new_billing_id INT;
     DECLARE amount DECIMAL(7,2);
-    
     SET amount = FLOOR(50 + RAND() * 450) + 0.99;
-    
     INSERT INTO billing (
         patient_id,
         appointment_id,
@@ -647,12 +605,9 @@ BEGIN
         DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY),
         p_handled_by
     );
-    
     SET new_billing_id = LAST_INSERT_ID();
     RETURN new_billing_id;
 END //
-
--- Main procedure to populate all tables
 CREATE PROCEDURE populate_test_data(
     IN num_doctors INT,
     IN num_nurses INT,
@@ -665,43 +620,25 @@ BEGIN
     DECLARE curr_doctor_id, curr_nurse_id, curr_receptionist_id, curr_patient_id, curr_appointment_id INT;
     DECLARE curr_user_id, curr_demo_id INT;
     DECLARE curr_employee_id INT;
-      
-    -- temp fnames
     DECLARE first_names VARCHAR(1000) DEFAULT 'James,John,Robert,Michael,William,David,Richard,Joseph,Thomas,Charles,Christopher,Daniel,Matthew,Anthony,Donald,Mark,Paul,Steven,Andrew,Kenneth,Emma,Olivia,Ava,Isabella,Sophia,Charlotte,Mia,Amelia,Harper,Evelyn,Abigail,Emily,Elizabeth,Sofia,Madison,Avery,Ella,Scarlett,Victoria,Grace';
-    -- temp lnames
     DECLARE last_names VARCHAR(1000) DEFAULT 'Smith,Johnson,Williams,Brown,Jones,Garcia,Miller,Davis,Rodriguez,Martinez,Hernandez,Lopez,Gonzalez,Wilson,Anderson,Thomas,Taylor,Moore,Jackson,Martin,Lee,Perez,Thompson,White,Harris,Sanchez,Clark,Ramirez,Lewis,Robinson,Walker,Young,Allen,King,Wright,Scott,Torres,Nguyen,Hill,Flores,Green,Adams,Nelson,Baker,Hall,Rivera,Campbell,Mitchell,Carter,Roberts';
-    
-    -- Create temporary tables for names
     CREATE TEMPORARY TABLE temp_first_names (name VARCHAR(50));
     CREATE TEMPORARY TABLE temp_last_names (name VARCHAR(50));
-
-
-    -- Populate temporary name tables
     SET @sql = CONCAT("INSERT INTO temp_first_names VALUES ('", REPLACE(first_names, ",", "'),('"), "')");
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-    
     SET @sql = CONCAT("INSERT INTO temp_last_names VALUES ('", REPLACE(last_names, ",", "'),('"), "')");
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-
-
-
-    -- Create offices if they don't exist
     INSERT IGNORE INTO office (office_name, office_address, office_phone, office_email) VALUES
     ('Main Clinic', '123 Medical Ave', generate_phone(), 'main@clinic.com'),
     ('North Branch', '456 Health St', generate_phone(), 'north@clinic.com'),
     ('South Branch', '789 Care Rd', generate_phone(), 'south@clinic.com');
-
-    -- Create doctors
     SET i = 0;
     WHILE i < num_doctors DO
-        -- Create demographics
         SET curr_demo_id = create_demographics(DATE_SUB(CURRENT_DATE, INTERVAL (30 + FLOOR(RAND() * 30)) YEAR));
-        
-        -- Create user
         SET curr_user_id = create_user(
             CONCAT('doc', i),
             'abc',
@@ -710,13 +647,10 @@ BEGIN
             'DOCTOR',
             curr_demo_id
         );
-        
-        -- Create valid employee number
         SET curr_employee_id = 1200 + i;
         INSERT INTO valid_employees (employee_no, employee_role) VALUES (curr_employee_id, 'DOCTOR');
         SELECT name into @random_fname FROM temp_first_names ORDER BY RAND() LIMIT 1;
         SELECT name into @random_lname FROM temp_last_names ORDER BY RAND() LIMIT 1;
-        -- Create doctor
         SET curr_doctor_id = create_doctor(
             curr_user_id,
             curr_employee_id,
@@ -724,12 +658,8 @@ BEGIN
             @random_lname,
             FLOOR(5 + RAND() * 25)
         );
-        
-        -- Assign specialties
         INSERT INTO doctor_specialties (doctor_id, specialty_code)
         VALUES (curr_doctor_id, 1 + FLOOR(RAND() * 15));
-        
-        -- Assign to offices
         INSERT INTO doctor_offices (doctor_id, office_id, shift_start, shift_end)
         SELECT 
             curr_doctor_id,
@@ -738,17 +668,11 @@ BEGIN
             '17:00:00'
         FROM office
         WHERE RAND() < 0.7;
-        
         SET i = i + 1;
     END WHILE;
-
-    -- Create nurses
     SET i = 0;
     WHILE i < num_nurses DO
-        -- Create demographics
         SET curr_demo_id = create_demographics(DATE_SUB(CURRENT_DATE, INTERVAL (25 + FLOOR(RAND() * 30)) YEAR));
-        
-        -- Create user
         SET curr_user_id = create_user(
             CONCAT('nurse', i),
             'abc',
@@ -757,22 +681,16 @@ BEGIN
             'NURSE',
             curr_demo_id
         );
-        
-        -- Create valid employee number
         SET curr_employee_id = 1400 + i;
         INSERT INTO valid_employees (employee_no, employee_role) VALUES (curr_employee_id, 'NURSE');
         SELECT name into @random_fname FROM temp_first_names ORDER BY RAND() LIMIT 1;
         SELECT name into @random_lname FROM temp_last_names ORDER BY RAND() LIMIT 1;
-
-        -- Create nurse
         SET curr_nurse_id = create_nurse(
             curr_user_id,
             curr_employee_id,
             @random_fname,
             @random_lname
         );
-        
-        -- Assign to offices
         INSERT INTO nurse_offices (nurse_id, office_id, shift_start, shift_end)
         SELECT 
             curr_nurse_id,
@@ -781,17 +699,11 @@ BEGIN
             '17:00:00'
         FROM office
         WHERE RAND() < 0.7;
-        
         SET i = i + 1;
     END WHILE;
-
-    -- Create receptionists
     SET i = 0;
     WHILE i < num_receptionists DO
-        -- Create demographics
         SET curr_demo_id = create_demographics(DATE_SUB(CURRENT_DATE, INTERVAL (20 + FLOOR(RAND() * 40)) YEAR));
-        
-        -- Create user
         SET curr_user_id = create_user(
             CONCAT('receptionist', i),
             'abc',
@@ -800,21 +712,16 @@ BEGIN
             'RECEPTIONIST',
             curr_demo_id
         );
-        
-        -- Create valid employee number
         SET curr_employee_id = 1000 + i;
         INSERT INTO valid_employees (employee_no, employee_role) VALUES (curr_employee_id, 'RECEPTIONIST');
         SELECT name into @random_fname FROM temp_first_names ORDER BY RAND() LIMIT 1;
         SELECT name into @random_lname FROM temp_last_names ORDER BY RAND() LIMIT 1;
-        -- Create receptionist
         SET curr_receptionist_id = create_receptionist(
             curr_user_id,
             curr_employee_id,
             @random_fname,
             @random_lname
         );
-        
-        -- Assign to offices
         INSERT INTO receptionist_offices (receptionist_id, office_id, shift_start, shift_end)
         SELECT 
             curr_receptionist_id,
@@ -823,17 +730,11 @@ BEGIN
             '17:00:00'
         FROM office
         WHERE RAND() < 0.7;
-        
         SET i = i + 1;
     END WHILE;
-
-    -- Create patients and their appointments
     SET i = 0;
     WHILE i < num_patients DO
-        -- Create demographics
         SET curr_demo_id = create_demographics(DATE_SUB(CURRENT_DATE, INTERVAL (18 + FLOOR(RAND() * 60)) YEAR));
-        
-        -- Create user
         SET curr_user_id = create_user(
             CONCAT('patient', i),
             'abc',
@@ -842,39 +743,29 @@ BEGIN
             'PATIENT',
             curr_demo_id
         );
-        
         SELECT name into @random_fname FROM temp_first_names ORDER BY RAND() LIMIT 1;
         SELECT name into @random_lname FROM temp_last_names ORDER BY RAND() LIMIT 1;
-        -- Create patient
         SET curr_patient_id = create_patient(
             curr_user_id,
             @random_fname,
             @random_lname
         );
-
-                
-        -- Create appointments for this patient
         SET j = 0;
         WHILE j < num_appointments_per_patient DO
-            -- Get random doctor, nurse, receptionist, and office
             SELECT doctor_id, office_id INTO @doc_id, @off_id 
             FROM doctor_offices 
             ORDER BY RAND() 
             LIMIT 1;
-            
             SELECT receptionist_id INTO @recep_id 
             FROM receptionist_offices 
             WHERE office_id = @off_id 
             ORDER BY RAND() 
             LIMIT 1;
-            
             SELECT nurse_id INTO @nurse_id 
             FROM nurse_offices 
             WHERE office_id = @off_id 
             ORDER BY RAND() 
             LIMIT 1;
-            
-            -- Create appointment
             SET curr_appointment_id = create_appointment(
                 curr_patient_id,
                 @doc_id,
@@ -883,22 +774,16 @@ BEGIN
                 @recep_id,
                 @nurse_id
             );
-            
-            -- Create medical record
             SET @record_id = create_medical_record(
                 curr_patient_id,
                 @doc_id,
                 curr_appointment_id
             );
-            
-            -- Create billing
             SET @billing_id = create_billing(
                 curr_patient_id,
                 curr_appointment_id,
                 @recep_id
             );
-            
-            -- Create insurance record (70% chance)
             IF RAND() < 0.7 THEN
                 INSERT INTO insurances (
                     patient_id,
@@ -916,8 +801,6 @@ BEGIN
                     1
                 );
             END IF;
-            
-            -- Create prescription (40% chance)
             IF RAND() < 0.4 THEN
                 INSERT INTO prescription (
                     medical_record_id,
@@ -939,8 +822,6 @@ BEGIN
                     )
                 );
             END IF;
-            
-            -- Create test results (30% chance)
             IF RAND() < 0.3 THEN
                 INSERT INTO test_results (
                     test_type,
@@ -967,8 +848,6 @@ BEGIN
                     @record_id
                 );
             END IF;
-            
-            -- Create allergies (20% chance)
             IF RAND() < 0.2 THEN
                 INSERT INTO detailed_allergies (
                     medical_record_id,
@@ -986,8 +865,6 @@ BEGIN
                     DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 3650) DAY)
                 );
             END IF;
-            
-            -- Create appointment notes (50% chance)
             IF RAND() < 0.5 THEN
                 INSERT INTO appointment_notes (
                     appointment_id,
@@ -1005,11 +882,8 @@ BEGIN
                     IF(RAND() >= 0.5, @recep_id, NULL)
                 );
             END IF;
-            
             SET j = j + 1;
         END WHILE;
-        
-        -- Create patient-doctor relationships
         INSERT INTO patient_doctor_junction (
             patient_id,
             doctor_id,
@@ -1022,16 +896,11 @@ BEGIN
         FROM doctors
         WHERE RAND() < 0.3
         LIMIT 3;
-        
         SET i = i + 1;
     END WHILE;
-    
-    -- Create some cancelled appointments (20% of total)
     UPDATE appointments 
     SET status = 'CANCELLED'
     WHERE RAND() < 0.2;
-    
-    -- Create cancellation records for cancelled appointments
     INSERT INTO appointment_cancellations (
         appointment_id,
         canceled_reason,
@@ -1043,23 +912,15 @@ BEGIN
         CURRENT_TIMESTAMP
     FROM appointments
     WHERE status = 'CANCELLED';
-    
-    -- Create some completed appointments (30% of non-cancelled)
     UPDATE appointments 
     SET status = 'COMPLETED'
     WHERE status = 'CONFIRMED' AND RAND() < 0.3;
-    
-    -- Create some no-shows (10% of remaining confirmed)
     UPDATE appointments 
     SET status = 'NO SHOW'
     WHERE status = 'CONFIRMED' AND RAND() < 0.1;
-    
 END //
-
 DELIMITER ;
-
-
-
+;
 CALL populate_test_data(
     10,  -- 10 doctors
     20,  -- 20 nurses
@@ -1067,29 +928,25 @@ CALL populate_test_data(
     100, -- 100 patients
     4    -- 4 appointments per patient
 );
+;
 DELIMITER //
-
 CREATE TRIGGER check_daily_appointment_limit
 BEFORE INSERT ON appointments
 FOR EACH ROW
 BEGIN
     DECLARE daily_count INT;
-    
     SELECT COUNT(*) INTO daily_count
     FROM appointments
     WHERE doctor_id = NEW.doctor_id
     AND DATE(appointment_datetime) = DATE(NEW.appointment_datetime)
     AND status != 'CANCELLED';
-    
     IF daily_count >= 10 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Daily appointment limit reached for this doctor';
     END IF;
 END //
-
 DELIMITER ;
-
--- Schedule an appointment
+;
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(
     IN p_patient_id INT,
@@ -1102,14 +959,11 @@ CREATE PROCEDURE schedule_appointment(
 )
 BEGIN
     DECLARE doctor_available INT;
-    
-    -- check if doctor is available for time chosen
     SELECT COUNT(*) INTO doctor_available
     FROM appointments
     WHERE doctor_id = p_doctor_id
     AND appointment_datetime = p_appointment_datetime
     AND status = 'CONFIRMED';
-    
     IF doctor_available = 0 THEN
         INSERT INTO appointments (
             patient_id, doctor_id, office_id, appointment_datetime, 
@@ -1124,9 +978,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
-
--- cancel appointment
 DELIMITER //
 CREATE PROCEDURE cancel_appointment(
     IN p_appointment_id INT,
@@ -1134,35 +985,26 @@ CREATE PROCEDURE cancel_appointment(
 )
 BEGIN
     DECLARE appointment_exists INT;
-    
-    -- Check if the appointment exists and is not already cancelled
     SELECT COUNT(*) INTO appointment_exists
     FROM appointments
     WHERE appointment_id = p_appointment_id AND status != 'CANCELLED';
-    
     IF appointment_exists > 0 THEN
         START TRANSACTION;
-        
         UPDATE appointments 
         SET status = 'CANCELLED' 
         WHERE appointment_id = p_appointment_id;
-        
         INSERT INTO appointment_cancellations (
             appointment_id, canceled_reason, canceled_at
         ) VALUES (
             p_appointment_id, p_cancellation_reason, NOW()
         );
-        
         COMMIT;
-        
         SELECT 'Appointment cancelled successfully' AS result;
     ELSE
         SELECT 'Appointment not found or already cancelled' AS result;
     END IF;
 END //
 DELIMITER ;
-
--- get patients upcoming appointments
 DELIMITER //
 CREATE PROCEDURE get_patient_upcoming_appointments(
     IN p_patient_id INT
@@ -1192,94 +1034,54 @@ BEGIN
         a.appointment_datetime;
 END //
 DELIMITER ;
--- Users table indexes
+;
 CREATE INDEX idx_users_role ON users(user_role);
 CREATE INDEX idx_users_email ON users(user_email);
-
--- Doctors table indexes
 CREATE INDEX idx_doctors_fname ON doctors(doctor_fname);
 CREATE INDEX idx_doctors_lname ON doctors(doctor_lname);
-
--- Patients table indexes
 CREATE INDEX idx_patients_fname ON patients(patient_fname);
 CREATE INDEX idx_patients_lname ON patients(patient_lname);
-
--- nurse table idx
 CREATE INDEX idx_nurse_fname ON nurses(nurse_fname);
 CREATE INDEX idx_nurse_lname ON nurses(nurse_lname);
-
--- receptinoist table idx
 CREATE INDEX idx_receptionist_fname ON receptionists(receptionist_fname);
 CREATE INDEX idx_receptionist_lname ON receptionists(receptionist_lname);
-
--- Appointments table indexes
 CREATE INDEX idx_appointments_datetime ON appointments(appointment_datetime);
 CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_appointments_patient_doctor ON appointments(patient_id, doctor_id);
-
--- Medical records table indexes
 CREATE INDEX idx_medical_records_patient ON medical_records(patient_id);
 CREATE INDEX idx_medical_records_doctor ON medical_records(doctor_id);
 CREATE INDEX idx_medical_records_date ON medical_records(created_at);
-
--- Prescription table indexes
 CREATE INDEX idx_prescription_medication ON prescription(medication_name);
-
--- Billing table indexes
 CREATE INDEX idx_billing_patient ON billing(patient_id);
 CREATE INDEX idx_billing_status ON billing(payment_status);
-
--- Insurances table indexes
 CREATE INDEX idx_insurances_patient ON insurances(patient_id);
 CREATE INDEX idx_insurances_active ON insurances(is_active);
-
--- Office table indexes
 CREATE INDEX idx_office_name ON office(office_name);
-
--- Specialist approvals table indexes
 CREATE INDEX idx_specialist_approvals_status ON specialist_approvals(specialist_status);
 CREATE INDEX idx_specialist_approvals_patient ON specialist_approvals(patient_id);
-
--- Appointment reminders table indexes
 CREATE INDEX idx_appointment_reminders_status ON appointment_reminders(reminder_status);
 CREATE INDEX idx_appointment_reminders_scheduled ON appointment_reminders(scheduled_time);
-
--- Detailed allergies table indexes
 CREATE INDEX idx_detailed_allergies_type ON detailed_allergies(allergy_type);
 CREATE INDEX idx_detailed_allergies_allergen ON detailed_allergies(allergen);
-
--- Test results table indexes
 CREATE INDEX idx_test_results_type ON test_results(test_type);
 CREATE INDEX idx_test_results_status ON test_results(test_status);
 CREATE INDEX idx_test_results_date ON test_results(test_conducted_date);
-
--- Demographics table indexes
 CREATE INDEX idx_demographics_dob ON demographics(dob);
-
--- indexes for junction tables
 CREATE INDEX idx_patient_doctor_junction ON patient_doctor_junction(patient_id, doctor_id);
 CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_code);
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
-
+;
 ALTER TABLE appointments
 ADD CONSTRAINT chk_appointment_duration 
 CHECK (TIME_TO_SEC(duration) > 0);
-
--- doctors yoe is within a range
 ALTER TABLE doctors
 ADD CONSTRAINT chk_doctor_experience 
 CHECK (years_of_experience >= 0 AND years_of_experience <= 70);
-
--- billing amts are non negative
 ALTER TABLE billing
 ADD CONSTRAINT chk_billing_amounts 
 CHECK (amount_due >= 0 AND amount_paid >= 0);
-
--- delimeter constraints
-
--- appointments are in the future not before present (insert constraint)
 DELIMITER //
 CREATE TRIGGER before_appointment_insert 
 BEFORE INSERT ON appointments
@@ -1291,8 +1093,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
--- notes only created by nurse or receptionist 
 DELIMITER //
 CREATE TRIGGER check_appointment_notes_creator
 BEFORE INSERT ON appointment_notes
@@ -1305,28 +1105,22 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
--- user table relations I dont think it has any but id have to check?
+;
 ALTER TABLE users
 ADD CONSTRAINT fk_user_demographics_id
     FOREIGN KEY (demographics_id)
     REFERENCES demographics(demographics_id)
     ON DELETE CASCADE;
-
--- Doctor table relations
 ALTER TABLE doctors
 ADD CONSTRAINT fk_doctor_user 
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
-
--- Patient table relations
 ALTER TABLE patients
 ADD CONSTRAINT fk_patient_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
-
--- Patient_Doctor junction table relations
 ALTER TABLE patient_doctor_junction
 ADD CONSTRAINT fk_patient_doctor_patient
     FOREIGN KEY (patient_id) 
@@ -1336,8 +1130,6 @@ ADD CONSTRAINT fk_patient_doctor_doctor
     FOREIGN KEY (doctor_id) 
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE;
-
--- Specialist approvals table relations
 ALTER TABLE specialist_approvals
 ADD CONSTRAINT fk_approval_patient
     FOREIGN KEY (patient_id) 
@@ -1351,8 +1143,6 @@ ADD CONSTRAINT fk_approval_specialist
     FOREIGN KEY (specialist_id) 
     REFERENCES doctors(doctor_id)
     ON DELETE CASCADE;
-
--- Appointments table relations
 ALTER TABLE appointments
 ADD CONSTRAINT fk_appointment_patient 
     FOREIGN KEY (patient_id) 
@@ -1374,17 +1164,11 @@ ADD CONSTRAINT fk_appointment_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-
-
--- Appointmnent Reminder relations
 ALTER TABLE appointment_reminders
 ADD CONSTRAINT fk_appointment_reminder_appointment_id
     FOREIGN KEY(appointment_id)
     REFERENCES appointments(appointment_id)
     ON DELETE CASCADE;
-
-
--- Billing table relations
 ALTER TABLE billing
 ADD CONSTRAINT fk_billing_patient 
     FOREIGN KEY (patient_id) 
@@ -1398,15 +1182,11 @@ ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
     REFERENCES receptionists(receptionist_id)
     ON DELETE SET NULL;
-
--- Insurances table relations
 ALTER TABLE insurances
 ADD CONSTRAINT fk_insurance_patient
     FOREIGN KEY (patient_id) 
     REFERENCES patients(patient_id)
     ON DELETE CASCADE;
-
--- Medical records table relations
 ALTER TABLE medical_records
 ADD CONSTRAINT fk_medical_record_patient 
     FOREIGN KEY (patient_id) 
@@ -1420,15 +1200,11 @@ ADD CONSTRAINT fk_medical_record_appointment
     FOREIGN KEY (appointment_id) 
     REFERENCES appointments(appointment_id)
     ON DELETE SET NULL;
-
--- prescription table relations
 ALTER TABLE prescription
 ADD CONSTRAINT fk_prescription_medical_record_id
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
-
--- test results table relations
 ALTER TABLE test_results
 ADD CONSTRAINT fk_test_results_medical_record_id
     FOREIGN KEY (medical_record_id)
@@ -1438,22 +1214,16 @@ ADD CONSTRAINT fk_test_results_performed_by_id
     FOREIGN KEY (test_performed_by)
     REFERENCES nurses(nurse_id)
     ON DELETE CASCADE;
-
--- Allergens table relations
 ALTER TABLE detailed_allergies
     ADD CONSTRAINT fk_detailed_allergens_record
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
-
--- Notes table relations
 ALTER TABLE notes
     ADD CONSTRAINT fk_notes_medical_record
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
-
--- Demographics table relations
 ALTER TABLE demographics
 ADD CONSTRAINT fk_demographics_race_code 
     FOREIGN KEY (race_id) 
@@ -1467,22 +1237,16 @@ ADD CONSTRAINT fk_demographics_ethnicity_code
     FOREIGN KEY (ethnicity_id) 
     REFERENCES ethnicity_code(ethnicity_code)
     ON DELETE SET NULL;
-
--- Receptionist table relations
 ALTER TABLE receptionists
 ADD CONSTRAINT fk_receptionist_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
-
--- Nurse table relations
 ALTER TABLE nurses
 ADD CONSTRAINT fk_nurse_user
     FOREIGN KEY (user_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
-
--- Doctor-office junction table relations
 ALTER TABLE doctor_offices
 ADD CONSTRAINT fk_doctor_offices_doctor
     FOREIGN KEY (doctor_id)
@@ -1492,10 +1256,6 @@ ADD CONSTRAINT fk_doctor_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-
-
-
--- Nurse-Office junction table relations
 ALTER TABLE nurse_offices
 ADD CONSTRAINT fk_nurse_offices_nurse
     FOREIGN KEY (nurse_id) 
@@ -1505,8 +1265,6 @@ ADD CONSTRAINT fk_nurse_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-
--- Appointment_notes table relations
 ALTER TABLE appointment_notes
 ADD CONSTRAINT fk_appointment_notes_appointment
     FOREIGN KEY (appointment_id)
@@ -1520,8 +1278,6 @@ ADD CONSTRAINT fk_appointment_notes_receptionist
     FOREIGN KEY (created_by_receptionist)
     REFERENCES receptionists(receptionist_id)
     ON DELETE SET NULL;
-
--- Doctor-Specialties junction table relations
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor
     FOREIGN KEY (doctor_id) 
@@ -1531,15 +1287,11 @@ ADD CONSTRAINT fk_doctor_specialties_specialty
     FOREIGN KEY (specialty_code)
     REFERENCES specialties_code(specialty_code)
     ON DELETE CASCADE;
-
--- Appointment cancellations table relations
 ALTER TABLE appointment_cancellations
 ADD CONSTRAINT fk_cancellation_appointment
     FOREIGN KEY (appointment_id)
     REFERENCES appointments(appointment_id)
     ON DELETE CASCADE;
-
--- Receptionist_Office junction table relations
 ALTER TABLE receptionist_offices
 ADD CONSTRAINT fk_receptionist_offices_receptionist
     FOREIGN KEY (receptionist_id) 
@@ -1549,31 +1301,22 @@ ADD CONSTRAINT fk_receptionist_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-
-
-
--- valid nos
 ALTER TABLE doctors
 ADD CONSTRAINT fk_valid_employee_no_doctor
     FOREIGN KEY (doctor_employee_id)
     REFERENCES valid_employees(employee_no)
     ON DELETE CASCADE;
-
 ALTER TABLE nurses
 ADD CONSTRAINT fk_valid_employee_no_nurse
     FOREIGN KEY (nurse_employee_id)
     REFERENCES valid_employees(employee_no)
     ON DELETE CASCADE;
-
 ALTER TABLE receptionists
 ADD CONSTRAINT fk_valid_employee_no_receptionist
     FOREIGN KEY (receptionist_employee_id)
     REFERENCES valid_employees(employee_no)
     ON DELETE CASCADE;
-
-
--- do complex views here
--- Doctor Schedule View
+;
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
     d.doctor_id,
@@ -1596,8 +1339,6 @@ WHERE
     a.status = 'CONFIRMED'
 ORDER BY
     d.doctor_id, a.appointment_datetime;
-
--- Pateint medical history view
 CREATE OR REPLACE VIEW patient_medical_history AS
 SELECT 
     p.patient_id,
@@ -1623,8 +1364,6 @@ WHERE
     mr.is_deleted = 0
 ORDER BY 
     p.patient_id, mr.created_at DESC;
-
--- Offices
 CREATE OR REPLACE VIEW office_attending AS
 SELECT
     o.office_id,
@@ -1641,6 +1380,4 @@ GROUP BY
     o.office_id, o.office_name, DATE(a.appointment_datetime)
 ORDER BY
     o.office_id, date;
-
-
-
+;

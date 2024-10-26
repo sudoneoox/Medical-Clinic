@@ -44,7 +44,7 @@ wait_for_db
 # Check if migrations directory exists
 if [ ! -d "$MIGRATIONS_DIR" ]; then
     echo "Migrations directory not found: $MIGRATIONS_DIR"
-    ls -la $MIGRATION_DIR  # Debug: list contents
+    ls -la $MIGRATIONS_DIR  # Debug: list contents
     exit 1
 fi
 
@@ -61,9 +61,18 @@ fi
 
 echo "Found ${#migration_files[@]} migration files"
 
-# Concatenate all migration files
+# Clear the combined file if it exists
+> "$COMBINED_SQL_FILE"
+
+# Concatenate all migration files excluding comment lines
 echo "Concatenating migration files into $COMBINED_SQL_FILE..."
-cat "${migration_files[@]}" > "$COMBINED_SQL_FILE"
+for file in "${migration_files[@]}"; do
+    echo "Processing $file..."
+    # Use grep to exclude lines starting with -- and empty lines
+    grep -v '^[[:space:]]*--' "$file" | grep -v '^[[:space:]]*$' >> "$COMBINED_SQL_FILE"
+    # Add a semicolon and newline after each file for safety
+    echo ";" >> "$COMBINED_SQL_FILE"
+done
 
 # Execute combined SQL file
 echo "Executing combined migrations..."
@@ -71,5 +80,4 @@ execute_sql_file "$COMBINED_SQL_FILE"
 
 # Cleanup
 #rm -f "$COMBINED_SQL_FILE"
-
 echo "All migrations completed successfully!"
