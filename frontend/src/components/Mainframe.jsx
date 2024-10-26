@@ -39,8 +39,8 @@ const Header = ({ userFullName, userRole }) => (
 // sidebar component for navigation links and other information
 const Sidebar = ({ items, currentSelected, onItemSelect }) => {
   return (
-    <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
+    <div className="h-screen w-60 bg-white border-r border-gray-200 flex flex-col">
+      <div className="p-5  border-b border-gray-200">
         <img src="images/logo.png" alt="Logo" className="h-8 w-auto" />
       </div>
 

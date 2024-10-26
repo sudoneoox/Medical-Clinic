@@ -17,7 +17,7 @@ const Calendar = ({ data }) => {
 
   useEffect(() => {
     if (data?.appointments) {
-      //NOTE:  transforms appointments into calendar events
+      // DESC:  transforms appointments into calendar events
       const calendarEvents = data.appointments.map((apt) => ({
         id: apt.appointment_id,
         title: apt.title || "Appointment",

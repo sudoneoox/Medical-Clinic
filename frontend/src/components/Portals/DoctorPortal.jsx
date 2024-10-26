@@ -1,12 +1,31 @@
 import PortalConstants from "./PortalConstants.jsx";
 import React from "react";
 import MainFrame from "../Mainframe.jsx";
-
+import {
+  CalendarDays,
+  LogOut,
+  Clock9,
+  ChartNoAxesGantt,
+  Settings,
+  Users,
+} from "lucide-react";
 const DoctorPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.SidebarItems,
-    { label: "Patients", path: "/patients", icon: "" },
-    { label: "Prescriptions", path: "/prescriptions", icon: "" },
+    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
+    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
+    {
+      label: "My Appointments",
+      path: "/portal/my-appointments",
+      icon: <Clock9 />,
+    },
+    { label: "Patients", path: "/patients", icon: <Users /> },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/portal/settings",
+      icon: <Settings />,
+    },
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
   return (
@@ -14,10 +33,7 @@ const DoctorPortal = ({ userFullName }) => {
       userFullName={userFullName}
       userRole="Doctor"
       sidebarItems={sidebarItems}
-    >
-      <h1 className="text-2xl font-bold mb-4">Doctor Dashboard</h1>
-      {/* TODO: doctor-specific components */}
-    </MainFrame>
+    ></MainFrame>
   );
 };
 
