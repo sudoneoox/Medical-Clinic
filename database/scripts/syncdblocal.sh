@@ -70,6 +70,6 @@ echo "Executing combined migrations..."
 execute_sql_file "$COMBINED_SQL_FILE"
 
 # Cleanup
-rm -f "$COMBINED_SQL_FILE"
+#rm -f "$COMBINED_SQL_FILE"
 
 echo "All migrations completed successfully!"
