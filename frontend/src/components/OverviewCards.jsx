@@ -101,6 +101,7 @@ const Overview = ({ data }) => {
         );
 
       case "DOCTOR":
+        console.log(data);
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DashboardCard
@@ -118,20 +119,14 @@ const Overview = ({ data }) => {
               title="Today's Appointments"
               icon={<Clock className="h-4 w-4 text-gray-500" />}
             >
-              <AppointmentList
-                appointments={data.appointments.filter(
-                  (apt) =>
-                    new Date(apt.appointment_datetime).toDateString() ===
-                    new Date().toDateString(),
-                )}
-              />
+              <AppointmentList appointments={data.todaysAppointments} />
             </DashboardCard>
 
             <DashboardCard
               title="Upcoming Appointments"
               icon={<Calendar className="h-4 w-4 text-gray-500" />}
             >
-              <AppointmentList appointments={data.appointments} />
+              <AppointmentList appointments={data.upcomingAppointments} />
             </DashboardCard>
           </div>
         );

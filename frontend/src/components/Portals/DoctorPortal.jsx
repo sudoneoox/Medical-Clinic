@@ -1,4 +1,3 @@
-import PortalConstants from "./PortalConstants.jsx";
 import React from "react";
 import MainFrame from "../Mainframe.jsx";
 import {
@@ -12,8 +11,16 @@ import {
 
 const DoctorPortal = ({ userFullName }) => {
   const sidebarItems = [
-    { label: "Overview", path: "/portal/overview", icon: <ChartNoAxesGantt /> },
-    { label: "Calendar", path: "/portal/calendar", icon: <CalendarDays /> },
+    {
+      label: "Overview",
+      path: "/portal/overview",
+      icon: <ChartNoAxesGantt />,
+    },
+    {
+      label: "Calendar",
+      path: "/portal/calendar",
+      icon: <CalendarDays />,
+    },
     {
       label: "My Appointments",
       path: "/portal/my-appointments",

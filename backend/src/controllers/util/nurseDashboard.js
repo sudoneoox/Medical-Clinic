@@ -1,9 +1,9 @@
-import Nurse from "../models/Tables/Nurse.js";
-import Doctor from "../models/Tables/Doctor.js";
-import Patient from "../models/Tables/Patient.js";
-import User from "../models/Tables/Users.js";
-import Appointment from "../models/Tables/Appointment.js";
-import Office from "../models/Tables/Office.js";
+import Nurse from "../../models/Tables/Nurse.js";
+import Doctor from "../../models/Tables/Doctor.js";
+import Patient from "../../models/Tables/Patient.js";
+import User from "../../models/Tables/Users.js";
+import Appointment from "../../models/Tables/Appointment.js";
+import Office from "../../models/Tables/Office.js";
 
 const populateOVERVIEW = async (user, nurse, res) => {
   try {

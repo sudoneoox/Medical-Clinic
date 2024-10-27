@@ -39,19 +39,27 @@ const portalRoleSwitcher = async (req, res) => {
         });
         switch (sidebarItem) {
           case "OVERVIEW":
-            return await receptionistDashboard.populateOVERVIEW(user,relatedEntity, res);
-            break;
+            return await receptionistDashboard.populateOVERVIEW(
+              user,
+              relatedEntity,
+              res,
+            );
           case "APPOINTMENTS":
-            return await receptionistDashboard.populateAPPOINTMENTS(user, relatedEntity, res);
-          break;
+            return await receptionistDashboard.populateAPPOINTMENTS(
+              user,
+              relatedEntity,
+              res,
+            );
           case "PATIENTRECORDS":
-            return await receptionistDashboard.populatePATIENTRECORDS(user,relatedEntity, res);
-          break:
+            return await receptionistDashboard.populatePATIENTRECORDS(
+              user,
+              relatedEntity,
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for receptionist ${sidebarItem}`,
             });
-            break;
         }
       // NOTE: nurse seperator
       case "NURSE":
@@ -63,26 +71,22 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-            break;
           case "PATIENTCARE":
             return await nurseDashboard.populatePATIENTCARE(
               user,
               relatedEntity,
               res,
             );
-            break;
           case "MEDICATIONS":
             return await nurseDashboard.populateMEDICATION(
               user,
               relatedEntity,
               res,
             );
-            break;
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for nurse got ${sidebarItem}`,
             });
-            break;
         }
       // NOTE: patient seperator
       case "PATIENT":
@@ -94,37 +98,31 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-            break;
           case "CALENDAR":
             return await patientDashboard.populateCALENDAR(
               user,
               relatedEntity,
               res,
             );
-            break;
           case "MY-APPOINTMENTS":
             return await patientDashboard.populateAPPOINTMENTS(
               user,
               relatedEntity,
               res,
             );
-            break;
           case "MEDICAL-RECORDS":
             return await patientDashboard.populateMEDICALRECORDS(
               user,
               relatedEntity,
               res,
             );
-            break;
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for patient got ${sidebarItem}`,
             });
-            break;
         }
       // NOTE: doctor seperator
       case "DOCTOR":
-        console.log(res);
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
         switch (sidebarItem) {
           case "OVERVIEW":
@@ -134,42 +132,38 @@ const portalRoleSwitcher = async (req, res) => {
 
               res,
             );
-            break;
           case "CALENDAR":
             return await doctorDashboard.populateCALENDAR(
               user,
               relatedEntity,
               res,
             );
-            break;
           case "MY-APPOINTMENTS":
             return await doctorDashboard.populateMYAPPOINTMENTS(
               user,
               relatedEntity,
               res,
             );
-            break;
           case "PATIENTS":
             return await doctorDashboard.populatePATIENTS(
               user,
               relatedEntity,
               res,
             );
-            break;
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for doctor got ${sidebarItem}`,
             });
-            break;
         }
       case "ADMIN":
+        // TODO: admin dashboard backend logic
         return res
           .status(401)
           .json({ message: "Admin role not yet implemented" });
 
       default:
         return res.status(401).json({
-          message: `Invalid user_role received inside of userDashBoardController function got {user_role}`,
+          message: `Invalid user_role received inside of userDashBoardController function got ${user_role}`,
         });
     }
   } catch (error) {
