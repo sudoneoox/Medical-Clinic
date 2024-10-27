@@ -46,8 +46,17 @@ const populateOVERVIEW = async (user, receptionist, res) => {
   }
 };
 
+const populateAPPOINTMENTS = async (user, receptionist, res) => {
+  console.log("INSIDE receptionist populateAPPOINTMENTS");
+};
+
+const populatePATIENTRECORDS = async (user, receptionist, res) => {
+  console.log("INSIDE receptionist populatePATIENTRECORDS");
+};
 const receptionistDashboard = {
   populateOVERVIEW,
+  populateAPPOINTMENTS,
+  populatePATIENTRECORDS,
 };
 
 export default receptionistDashboard;

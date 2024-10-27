@@ -52,8 +52,21 @@ const populateOVERVIEW = async (user, doctor, res) => {
   }
 };
 
+const populateCALENDAR = async (user, doctor, res) => {
+  console.log("INSIDE calendar");
+};
+const populateAPPOINTMENTS = async (user, doctor, res) => {
+  console.log("INSIDE appointments");
+};
+const populatePATIENTS = async (user, doctor, res) => {
+  console.log("INSIDE patients");
+};
+
 const doctorDasboard = {
   populateOVERVIEW,
+  populateCALENDAR,
+  populateAPPOINTMENTS,
+  populatePATIENTS,
 };
 
 export default doctorDasboard;

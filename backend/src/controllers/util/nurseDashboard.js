@@ -49,8 +49,18 @@ const populateOVERVIEW = async (user, nurse, res) => {
   }
 };
 
+const populatePATIENTCARE = async (user, nurse, res) => {
+  console.log("INSIDE nurse Patient care");
+};
+
+const populateMEDICATIONS = async (user, nurse, res) => {
+  console.log("INSIDE nurse medications");
+};
+
 const nurseDashboard = {
   populateOVERVIEW,
+  populatePATIENTCARE,
+  populateMEDICATIONS,
 };
 
 export default nurseDashboard;

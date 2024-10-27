@@ -9,13 +9,18 @@ import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
 import PatientDoctor from "../models/Tables/PatientDoctor.js";
 import patientDashboard from "./util/patientDashboard.js";
-import nurseDashboard from "./utils/nurseDashboard.js";
-import receptionistDashboard from "./utils/receptionistDashboard.js";
+import nurseDashboard from "./util/nurseDashboard.js";
+import receptionistDashboard from "./util/receptionistDashboard.js";
+import doctorDashboard from "./util/doctorDashboard.js";
 
 // switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
   try {
     const { user_id, user_role, sidebarItem } = req.body;
+
+    console.log(
+      `Received sidebarItem inside portalRoleSwitcher: ${sidebarItem}`,
+    );
 
     const user = await User.findOne({ where: { user_id: user_id } });
     if (!user) {
@@ -27,16 +32,59 @@ const portalRoleSwitcher = async (req, res) => {
 
     let relatedEntity;
     switch (user.user_role) {
+      // NOTE: receptionist seperator
       case "RECEPTIONIST":
         relatedEntity = await Receptionist.findOne({
           where: { user_id: user_id },
         });
-        return await populateOVERVIEWForReceptionist(user, relatedEntity, res);
-
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await receptionistDashboard.populateOVERVIEW(user,relatedEntity, res);
+            break;
+          case "APPOINTMENTS":
+            return await receptionistDashboard.populateAPPOINTMENTS(user, relatedEntity, res);
+          break;
+          case "PATIENTRECORDS":
+            return await receptionistDashboard.populatePATIENTRECORDS(user,relatedEntity, res);
+          break:
+          default:
+            return res.status(401).json({
+              message: `Invalid sidebarItem found in portalRoleSwitcher for receptionist ${sidebarItem}`,
+            });
+            break;
+        }
+      // NOTE: nurse seperator
       case "NURSE":
         relatedEntity = await Nurse.findOne({ where: { user_id: user_id } });
-        return await populateOVERVIEWForNurse(user, relatedEntity, res);
-
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await nurseDashboard.populateOVERVIEW(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "PATIENTCARE":
+            return await nurseDashboard.populatePATIENTCARE(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "MEDICATIONS":
+            return await nurseDashboard.populateMEDICATION(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          default:
+            return res.status(401).json({
+              message: `Invalid sidebarItem found in portalRoleSwitcher for nurse got ${sidebarItem}`,
+            });
+            break;
+        }
+      // NOTE: patient seperator
       case "PATIENT":
         relatedEntity = await Patient.findOne({ where: { user_id: user_id } });
         switch (sidebarItem) {
@@ -70,21 +118,57 @@ const portalRoleSwitcher = async (req, res) => {
             break;
           default:
             return res.status(401).json({
-              message: "Invalid sidebarItem not found in portalRoleSwitcher",
+              message: `Invalid sidebarItem found in portalRoleSwitcher for patient got ${sidebarItem}`,
             });
+            break;
         }
-
+      // NOTE: doctor seperator
       case "DOCTOR":
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
-        return await populateOVERVIEWForDoctor(user, relatedEntity, res);
-
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await doctordashboard.populateOVERVIEW(
+              user,
+              relatedentity,
+              res,
+            );
+            break;
+          case "CALENDAR":
+            return await doctorDashboard.populateCALENDAR(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "MY-APPOINTMENTS":
+            return await doctorDashboard.populateAPPOINTMENTS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "PATIENTS":
+            return await doctorDashboard.populatePATIENTS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          default:
+            return res.status(401).json({
+              message: `Invalid sidebarItem found in portalRoleSwitcher for doctor got ${sidebarItem}`,
+            });
+            break;
+        }
       case "ADMIN":
         return res
           .status(401)
           .json({ message: "Admin role not yet implemented" });
 
       default:
-        return res.status(401).json({ message: "Invalid user role" });
+        return res.status(401).json({
+          message: `Invalid user_role received inside of userDashBoardController function got {user_role}`,
+        });
     }
   } catch (error) {
     console.error(`Error fetching dashboard data:`, error);
