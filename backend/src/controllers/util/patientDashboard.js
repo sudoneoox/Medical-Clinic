@@ -3,6 +3,7 @@ import Doctor from "../../models/Tables/Doctor.js";
 import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import Patient from "../../models/Tables/Patient.js";
+
 // TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
 // could use this if we had a more descriptive medicalrecord entity or maybe add a score attribute to make a graph
 // like the inspiration were taking from to make an overall health graph

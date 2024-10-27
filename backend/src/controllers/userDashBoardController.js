@@ -9,6 +9,8 @@ import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
 import PatientDoctor from "../models/Tables/PatientDoctor.js";
 import patientDashboard from "./util/patientDashboard.js";
+import nurseDashboard from "./utils/nurseDashboard.js";
+import receptionistDashboard from "./utils/receptionistDashboard.js";
 
 // switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
@@ -89,139 +91,6 @@ const portalRoleSwitcher = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching dashboard data", error: error.message });
-  }
-};
-
-const populateOVERVIEWForDoctor = async (user, doctor, res) => {
-  try {
-    const appointments = await Doctor.findOne({
-      where: { doctor_id: doctor.doctor_id },
-      include: [
-        {
-          model: Appointment,
-          where: { status: "CONFIRMED" },
-          required: false,
-          include: [
-            {
-              model: Patient,
-              attributes: ["patient_fname", "patient_lname"],
-            },
-            {
-              model: Office,
-              attributes: ["office_name"],
-            },
-          ],
-        },
-      ],
-    });
-
-    const patients = await PatientDoctor.findAll({
-      where: { doctor_id: doctor.doctor_id },
-    });
-
-    return res.json({
-      doctorInfo: {
-        name: `${doctor.doctor_fname} ${doctor.doctor_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-        experience: doctor.years_of_experience,
-      },
-      appointments: appointments?.appointments || [],
-      patients: patients?.patients || [],
-    });
-  } catch (error) {
-    console.error("Error in populateOVERVIEWForDoctor:", error);
-    res.status(500).json({
-      message: "Error loading doctor dashboard",
-      error: error.message,
-    });
-  }
-};
-
-const populateOVERVIEWForNurse = async (user, nurse, res) => {
-  try {
-    const nurseWithData = await Nurse.findOne({
-      where: { nurse_id: nurse.nurse_id },
-      include: [
-        {
-          model: Appointment,
-          where: { status: "CONFIRMED" },
-          required: false,
-          include: [
-            {
-              model: Patient,
-              attributes: ["patient_fname", "patient_lname"],
-            },
-            {
-              model: Doctor,
-              attributes: ["doctor_fname", "doctor_lname"],
-            },
-            {
-              model: Office,
-              attributes: ["office_name"],
-            },
-          ],
-        },
-      ],
-    });
-
-    return res.json({
-      nurseInfo: {
-        name: `${nurse.nurse_fname} ${nurse.nurse_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-        specialization: nurse.specialization,
-      },
-      appointments: nurseWithData?.Appointments || [],
-    });
-  } catch (error) {
-    console.error("Error in populateOVERVIEWForNurse:", error);
-    res
-      .status(500)
-      .json({ message: "Error loading nurse dashboard", error: error.message });
-  }
-};
-
-const populateOVERVIEWForReceptionist = async (user, receptionist, res) => {
-  try {
-    const receptionistWithData = await Receptionist.findOne({
-      where: { receptionist_id: receptionist.receptionist_id },
-      include: [
-        {
-          model: Appointment,
-          required: false,
-          include: [
-            {
-              model: Patient,
-              attributes: ["patient_fname", "patient_lname"],
-            },
-            {
-              model: Doctor,
-              attributes: ["doctor_fname", "doctor_lname"],
-            },
-            {
-              model: Office,
-              attributes: ["office_name"],
-            },
-          ],
-        },
-      ],
-    });
-
-    return res.json({
-      receptionistInfo: {
-        name: `${receptionist.receptionist_fname} ${receptionist.receptionist_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-      },
-      appointments: receptionistWithData?.Appointments || [],
-    });
-  } catch (error) {
-    console.error("Error in populateOVERVIEWForReceptionist:", error);
-    res.status(500).json({
-      message: "Error loading receptionist dashboard",
-      error: error.message,
-    });
   }
 };
 
