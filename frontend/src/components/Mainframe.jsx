@@ -105,6 +105,7 @@ const MainFrame = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  console.log(contentData);
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
     try {
@@ -120,7 +121,8 @@ const MainFrame = ({
         user_role,
         sidebarItem,
       });
-
+      console.log(response);
+      
       setContentData(response.data);
       setIsLoading(false);
     } catch (err) {
@@ -157,7 +159,7 @@ const MainFrame = ({
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
   const TEST = true;
-
+  
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar

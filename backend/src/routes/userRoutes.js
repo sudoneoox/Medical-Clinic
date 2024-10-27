@@ -30,14 +30,9 @@ router.post("/login", userControllerFuncs.loginUser);
 
 router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/calendar", dashBoardControllerFuncs.portalRoleSwitcher);
-router.post(
-  "/portal/medical-records",
-  dashBoardControllerFuncs.portalRoleSwitcher,
-);
-router.post(
-  "/portal/my-appointments",
-  dashBoardControllerFuncs.portalRoleSwitcher,
-);
+router.post("/portal/medical-records", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/my-appointments", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success

@@ -9,6 +9,7 @@ import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
 import PatientDoctor from "../models/Tables/PatientDoctor.js";
 import patientDashboard from "./util/patientDashboard.js";
+import doctorDashboard from "./util/doctorDashboard.js";
 
 // switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
@@ -73,8 +74,43 @@ const portalRoleSwitcher = async (req, res) => {
         }
 
       case "DOCTOR":
+        console.log(res);
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
-        return await populateOVERVIEWForDoctor(user, relatedEntity, res);
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await doctorDashboard.populateOVERVIEW(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "CALENDAR":
+            return await doctorDashboard.populateCALENDAR(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "MY-APPOINTMENTS":
+            return await doctorDashboard.populateMYAPPOINTMENTS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          case "PATIENTS":
+            return await doctorDashboard.populatePATIENTS(
+              user,
+              relatedEntity,
+              res,
+            );
+            break;
+          default:
+            return res.status(401).json({
+              message: "Invalid sidebarItem not found in portalRoleSwitcher",
+            });
+        }
+        // return await populateOVERVIEWForDoctor(user, relatedEntity, res);
 
       case "ADMIN":
         return res
@@ -92,51 +128,7 @@ const portalRoleSwitcher = async (req, res) => {
   }
 };
 
-const populateOVERVIEWForDoctor = async (user, doctor, res) => {
-  try {
-    const appointments = await Doctor.findOne({
-      where: { doctor_id: doctor.doctor_id },
-      include: [
-        {
-          model: Appointment,
-          where: { status: "CONFIRMED" },
-          required: false,
-          include: [
-            {
-              model: Patient,
-              attributes: ["patient_fname", "patient_lname"],
-            },
-            {
-              model: Office,
-              attributes: ["office_name"],
-            },
-          ],
-        },
-      ],
-    });
 
-    const patients = await PatientDoctor.findAll({
-      where: { doctor_id: doctor.doctor_id },
-    });
-
-    return res.json({
-      doctorInfo: {
-        name: `${doctor.doctor_fname} ${doctor.doctor_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-        experience: doctor.years_of_experience,
-      },
-      appointments: appointments?.appointments || [],
-      patients: patients?.patients || [],
-    });
-  } catch (error) {
-    console.error("Error in populateOVERVIEWForDoctor:", error);
-    res.status(500).json({
-      message: "Error loading doctor dashboard",
-      error: error.message,
-    });
-  }
-};
 
 const populateOVERVIEWForNurse = async (user, nurse, res) => {
   try {
