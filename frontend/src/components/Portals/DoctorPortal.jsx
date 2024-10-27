@@ -19,7 +19,7 @@ const DoctorPortal = ({ userFullName }) => {
       path: "/portal/my-appointments",
       icon: <Clock9 />,
     },
-    { label: "Patients", path: "/patients", icon: <Users /> },
+    { label: "Patients", path: "/portal/patients", icon: <Users /> },
     {
       section: "account",
       label: "Settings",

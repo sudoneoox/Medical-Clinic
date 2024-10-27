@@ -124,12 +124,14 @@ const portalRoleSwitcher = async (req, res) => {
         }
       // NOTE: doctor seperator
       case "DOCTOR":
+        console.log(res);
         relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
         switch (sidebarItem) {
           case "OVERVIEW":
-            return await doctordashboard.populateOVERVIEW(
+            return await doctorDashboard.populateOVERVIEW(
               user,
-              relatedentity,
+              relatedEntity,
+
               res,
             );
             break;
@@ -141,7 +143,7 @@ const portalRoleSwitcher = async (req, res) => {
             );
             break;
           case "MY-APPOINTMENTS":
-            return await doctorDashboard.populateAPPOINTMENTS(
+            return await doctorDashboard.populateMYAPPOINTMENTS(
               user,
               relatedEntity,
               res,
@@ -177,7 +179,6 @@ const portalRoleSwitcher = async (req, res) => {
       .json({ message: "Error fetching dashboard data", error: error.message });
   }
 };
-
 export default {
   portalRoleSwitcher,
 };
