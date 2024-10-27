@@ -5,8 +5,8 @@ WORKDIR /migrations
 # Copy migrations and scripts
 COPY migrations/ /migrations/migrations/
 COPY scripts/ /migrations/scripts/
+COPY scripts/reset-db.sh /migrations/scripts/
 
-# Make sure the script is executable
-RUN chmod +x /migrations/scripts/syncdb.sh
+RUN chmod +x /migrations/scripts/reset-db.sh
 
-CMD ["/migrations/scripts/syncdb.sh"]
+CMD ["/migrations/scripts/reset-db.sh", "reset"]
