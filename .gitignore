@@ -31,3 +31,10 @@ backend/.env
 
 #@database misc
 database/scripts/db_backup.sql
+
+#deployment
+frontend/.git
+frontend/.gitignore
+backend/.git
+backend/.gitignore
+

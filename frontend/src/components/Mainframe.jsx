@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Bell, UserRound } from "lucide-react";
-import api, { URL } from "../api.js";
+import api, { API } from "../api.js";
 import Overview from "./OverviewCards.jsx";
 import Calendar from "./Calendar.jsx";
+import Appointments from "./Appointments.jsx";
+
 import { cn } from "../utils/utils.js";
 
 // Header component to display user details and quick actions
@@ -105,7 +107,6 @@ const MainFrame = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log(contentData);
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
     try {
@@ -113,7 +114,7 @@ const MainFrame = ({
       setError(null);
       const user_id = localStorage.getItem("userId");
       const user_role = localStorage.getItem("userRole");
-      const API_PATH = URL + "/api/users" + path;
+      const API_PATH = API.URL + "/api/users" + path;
       console.log("API_PATH inside fetchdata inside mainframe", API_PATH);
       const sidebarItem = path.split("/").pop().toUpperCase();
       const response = await api.post(API_PATH, {
@@ -122,7 +123,7 @@ const MainFrame = ({
         sidebarItem,
       });
       console.log(response);
-      
+
       setContentData(response.data);
       setIsLoading(false);
     } catch (err) {
@@ -159,7 +160,7 @@ const MainFrame = ({
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
   const TEST = true;
-  
+
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -190,6 +191,10 @@ const MainFrame = ({
                   {currentSelected === "CALENDAR" && (
                     <Calendar data={contentData} />
                   )}
+                  {currentSelected === "APPOINTMENTS" && (
+                    <Appointments data={contentData} />
+                  )}
+
                   {/*NOTE: Add other component conditions here*/}
                 </div>
               )}

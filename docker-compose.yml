@@ -1,10 +1,11 @@
+
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80"  # Changed from 80 to 8080 for non-root binding
     restart: always
     depends_on:
       - backend
@@ -12,6 +13,9 @@ services:
       - ./frontend:/app
     networks:
       - app-network
+    environment:
+      - NODE_ENV=development
+
   backend:
     build:
       context: ./backend
@@ -20,10 +24,9 @@ services:
       - "5000:5000"
     volumes:
       - ./backend:/src
-      - /src/node_modules  # Add this to prevent node_modules from being overwritten
+      - /src/node_modules  # Prevent node_modules from being overwritten
     depends_on:
-      db:
-        condition: service_healthy
+      - migration  # Ensure backend waits for migration service
     environment:
       - DB_HOST=db
       - DB_USER=admin
@@ -35,6 +38,7 @@ services:
     command: npm start
     networks:
       - app-network
+
   migration:
     build:
       context: ./database
@@ -49,7 +53,7 @@ services:
       - ./database:/migrations
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy  # Wait for DB to be healthy before migration
     networks:
       - app-network
 

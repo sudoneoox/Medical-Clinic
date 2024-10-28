@@ -2,7 +2,20 @@ import express from "express";
 import cors from "cors";
 import UserLogicRouter from "./src/routes/userRoutes.js";
 import HomePageRouter from "./src/routes/homepageRouter.js";
+import allowedOrigins from "./src/config/allowedOrigins.js";
 import "./src/main.js"; // to initialize the associations it runs on its own
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
 
 const app = express();
 
