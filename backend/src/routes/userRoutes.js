@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET =
+  "adba8f88a5b4a2898b62366a3763837ca6669d9dd5048bb64af0e7717ded0569";
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -30,8 +31,14 @@ router.post("/login", userControllerFuncs.loginUser);
 
 router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/calendar", dashBoardControllerFuncs.portalRoleSwitcher);
-router.post("/portal/medical-records", dashBoardControllerFuncs.portalRoleSwitcher);
-router.post("/portal/my-appointments", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post(
+  "/portal/medical-records",
+  dashBoardControllerFuncs.portalRoleSwitcher,
+);
+router.post(
+  "/portal/my-appointments",
+  dashBoardControllerFuncs.portalRoleSwitcher,
+);
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 
 router.post("/validate-session", verifyToken, (req, res) => {
@@ -40,3 +47,4 @@ router.post("/validate-session", verifyToken, (req, res) => {
 });
 
 export default router;
+

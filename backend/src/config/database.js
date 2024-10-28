@@ -11,7 +11,7 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   port: 3306,
-  // logging: console.log, // Useful for debugging
+  logging: console.log, // Useful for debugging
   pool: {
     max: 5,
     min: 0,

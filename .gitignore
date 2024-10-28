@@ -38,3 +38,4 @@ frontend/.gitignore
 backend/.git
 backend/.gitignore
 
+azuredeploy.json

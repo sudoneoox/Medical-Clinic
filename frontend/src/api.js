@@ -1,10 +1,12 @@
 import axios from "axios";
 
+const INPRODUCTION = false;
+
 let URL;
-if (process.env.NODE_ENV !== "production") {
+if (!INPRODUCTION) {
   URL = "http://localhost:5000";
 } else {
-  URL = "https://medical-clinic-uma-api.onrender.com";
+  URL = "http://4.246.236.139:5000";
 }
 
 export const API = {
