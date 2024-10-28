@@ -72,8 +72,8 @@ const Overview = ({ data }) => {
   // TODO: loading is now handled in mainframe do something else here if this error occurs
   if (!userData || !data) return <div>Loading...</div>;
   console.log(data);
-  console.log("Running log");
-  
+  const fullName = localStorage.getItem("userFullName");
+
   const renderDashboard = () => {
     switch (userData.user_role) {
       case "PATIENT":
@@ -84,7 +84,7 @@ const Overview = ({ data }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {data.patientInfo.name}</p>
+                <p>Name: {fullName}</p>
                 <p>Email: {data.patientInfo.email}</p>
                 <p>Phone: {data.patientInfo.phone}</p>
               </div>
@@ -115,7 +115,7 @@ const Overview = ({ data }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {data.doctorInfo.name}</p>
+                <p>Name: {fullName}</p>
                 <p>Email: {data.doctorInfo.email}</p>
                 <p>Experience: {data.doctorInfo.experience} years</p>
               </div>
@@ -144,7 +144,7 @@ const Overview = ({ data }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {data.nurseInfo.name}</p>
+                <p>Name: {fullName}</p>
                 <p>Email: {data.nurseInfo.email}</p>
                 <p>Specialization: {data.nurseInfo.specialization}</p>
               </div>
@@ -173,7 +173,7 @@ const Overview = ({ data }) => {
               icon={<User className="h-4 w-4 text-gray-500" />}
             >
               <div className="space-y-2">
-                <p>Name: {data.receptionistInfo.name}</p>
+                <p>Name: {fullName}</p>
                 <p>Email: {data.receptionistInfo.email}</p>
               </div>
             </DashboardCard>

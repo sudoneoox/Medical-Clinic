@@ -8,28 +8,47 @@ import { Calendar as CalendarIcon, Plus } from "lucide-react";
 import { Button } from "../utils/Button.tsx";
 import "../styles/tailwindbase.css";
 
-// TODO: need to set backend api for calendar
-// TODO: need calendar to handle different types of data not just data?.appointments
 const Calendar = ({ data }) => {
   const [events, setEvents] = useState([]);
   const calendarRef = useRef(null);
   const userRole = localStorage.getItem("userRole");
-
+  console.log("data received inside calendar", data);
   useEffect(() => {
+    // DESC: transforms json to appointment calendar events
     if (data?.appointments) {
-      // DESC:  transforms appointments into calendar events
-      const calendarEvents = data.appointments.map((apt) => ({
-        id: apt.appointment_id,
-        title: apt.title || "Appointment",
-        start: apt.appointment_datetime,
-        end: apt.end_datetime,
-        extendedProps: {
-          doctor: apt.doctor_name,
-          patient: apt.patient_name,
-          status: apt.status,
-          type: apt.appointment_type,
-        },
-      }));
+      const calendarEvents = data.appointments.map((apt) => {
+        const startHour = new Date(apt.appointment_datetime).toLocaleTimeString(
+          [],
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          },
+        );
+        // Parse duration (HH:MM:SS) to ms
+        const [hours, minutes, seconds] = apt.duration.split(":").map(Number);
+        const durationMs = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+
+        const endHour = new Date(
+          new Date(apt.appointment_datetime).getTime() + durationMs,
+        ).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        return {
+          id: apt.appointment_id,
+          title: `Appointment`,
+          start: apt.appointment_datetime,
+          end: apt.appointment_datetime,
+          extendedProps: {
+            duration: `(${startHour} - ${endHour})`,
+            doctor: apt.doctor.doctor_lname,
+            patient: apt.patient_name,
+            status: apt.status,
+            type: apt.reason,
+          },
+        };
+      });
       setEvents(calendarEvents);
     }
   }, [data]);
@@ -45,7 +64,10 @@ const Calendar = ({ data }) => {
           <div className="truncate text-gray-600">Patient: {props.patient}</div>
         )}
         {userRole === "PATIENT" && (
-          <div className="truncate text-gray-600">Dr. {props.doctor}</div>
+          <>
+            <div className="truncate text-gray-600"> {props.duration}</div>
+            <div className="truncate text-gray-600">Dr. {props.doctor}</div>
+          </>
         )}
         {(userRole === "NURSE" || userRole === "RECEPTIONIST") && (
           <>
