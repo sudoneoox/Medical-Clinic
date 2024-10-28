@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import "../styles/tailwindbase.css";
 import { useNavigate } from "react-router-dom";
 import FormField from "../components/FormField";
-import api, { URL } from "../api.js";
+import api, { API } from "../api.js";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -61,7 +61,10 @@ export default function SignUp() {
       setStep(3);
     } else if (step === 3 && formData.role === "Patient") {
       try {
-        const response = await api.post(URL + "/api/users/register", formData);
+        const response = await api.post(
+          API.URL + "/api/users/register",
+          formData,
+        );
         navigate("/login");
       } catch (err) {
         if (err.response) {
@@ -76,7 +79,10 @@ export default function SignUp() {
       setStep(4);
     } else if (step === 4) {
       try {
-        const response = await api.post(URL + "/api/users/register", formData);
+        const response = await api.post(
+          API.URL + "/api/users/register",
+          formData,
+        );
         navigate("/login");
       } catch (err) {
         if (err.response) {

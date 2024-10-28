@@ -8,7 +8,8 @@ import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
-import api, { URL } from "./api.js";
+import { disableReactDevTools } from "@fvilers/disable-react-devtools";
+import api, { API } from "./api.js";
 import "./styles/tailwindbase.css";
 
 import {
@@ -17,9 +18,11 @@ import {
   redirect,
 } from "react-router-dom";
 
+if (process.env.NODE_ENV === "production") disableReactDevTools();
+
 async function servicesLoader() {
   try {
-    const response = await api.post(URL + "/api/homepage/specialities");
+    const response = await api.post(API.URL + "/api/homepage/specialities");
     return { specialties: response.data };
   } catch (error) {
     console.error("Error fetching specialties:", error);
@@ -38,7 +41,7 @@ async function portalLoader() {
   }
   try {
     const response = await api.post(
-      URL + "/api/users/validate-session",
+      API.URL + "/api/users/validate-session",
       { user_id: userId, user_role: userRole },
       { headers: { Authorization: `Bearer ${token}` } },
     );
