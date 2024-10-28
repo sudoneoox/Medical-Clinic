@@ -3,6 +3,7 @@ import { Bell, UserRound } from "lucide-react";
 import api, { URL } from "../api.js";
 import Overview from "./OverviewCards.jsx";
 import Calendar from "./Calendar.jsx";
+import Patients from "./PatientsCards.jsx";
 import { cn } from "../utils/utils.js";
 
 // Header component to display user details and quick actions
@@ -189,6 +190,10 @@ const MainFrame = ({
                   )}
                   {currentSelected === "CALENDAR" && (
                     <Calendar data={contentData} />
+                  )}
+                  {currentSelected === "PATIENTS" && (
+                    // <Patients data={contentData} />
+                    <Patients data={contentData.patients} />
                   )}
                   {/*NOTE: Add other component conditions here*/}
                 </div>
