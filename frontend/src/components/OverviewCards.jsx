@@ -21,24 +21,28 @@ const DashboardCard = ({ title, icon, children }) => (
   </Card>
 );
 
-const AppointmentList = ({ appointments }) => (
+const AppointmentList = ({ appointments = [] }) => (
   <div className="space-y-4">
-    {appointments.map((apt, i) => (
-      <div key={i} className="flex items-start justify-between border-b pb-2">
-        <div>
-          <p className="font-medium">
-            {apt.patient?.patient_fname} {apt.patient?.patient_lname}
-            {apt.doctor?.doctor_fname} {apt.doctor?.doctor_lname}
-          </p>
-          <p className="text-sm text-gray-500">
-            {new Date(apt.appointment_datetime).toLocaleString()}
-          </p>
+    {appointments.length === 0 ? (
+      <p>No appointments found.</p>
+    ) : (
+      appointments.map((apt, i) => (
+        <div key={i} className="flex items-start justify-between border-b pb-2">
+          <div>
+            <p className="font-medium">
+              {apt.patient?.patient_fname} {apt.patient?.patient_lname}
+              {apt.doctor?.doctor_fname} {apt.doctor?.doctor_lname}
+            </p>
+            <p className="text-sm text-gray-500">
+              {new Date(apt.appointment_datetime).toLocaleString()}
+            </p>
+          </div>
+          <div className="text-sm">
+            <p>{apt.office?.office_name}</p>
+          </div>
         </div>
-        <div className="text-sm">
-          <p>{apt.office?.office_name}</p>
-        </div>
-      </div>
-    ))}
+      ))
+    )}
   </div>
 );
 
@@ -67,7 +71,9 @@ const Overview = ({ data }) => {
   // WARNING:
   // TODO: loading is now handled in mainframe do something else here if this error occurs
   if (!userData || !data) return <div>Loading...</div>;
-
+  console.log(data);
+  console.log("Running log");
+  
   const renderDashboard = () => {
     switch (userData.user_role) {
       case "PATIENT":
