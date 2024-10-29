@@ -1,12 +1,36 @@
 import PortalConstants from "./PortalConstants.jsx";
 import React from "react";
 import MainFrame from "../Mainframe.jsx";
-
+import {
+  UserSearch,
+  LogOut,
+  Clock9,
+  ChartNoAxesGantt,
+  Settings,
+  CalendarDays,
+} from "lucide-react";
 const ReceptionistPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.SidebarItems,
-    { label: "Appointments", path: "/appointments", icon: "" },
-    { label: "Patient Records", path: "/records", icon: "" },
+    {
+      label: "Overview",
+      path: "/portal/overview",
+      icon: <ChartNoAxesGantt />,
+    },
+    {
+      label: "Calendar",
+      path: "/portal/calendar",
+      icon: <CalendarDays />,
+    },
+
+    { label: "Appointments", path: "/appointments", icon: <Clock9 /> },
+    { label: "Patient Records", path: "/records", icon: <UserSearch /> },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/portal/settings",
+      icon: <Settings />,
+    },
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
   return (
