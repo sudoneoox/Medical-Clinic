@@ -7,6 +7,7 @@ import Nurse from "../models/Tables/Nurse.js";
 import Receptionist from "../models/Tables/Receptionist.js";
 import Doctor from "../models/Tables/Doctor.js";
 import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
+import Admins from "../models/Tables/Admin.js";
 import User from "../models/Tables/Users.js";
 import jwt from "jsonwebtoken";
 
@@ -190,7 +191,11 @@ const loginUser = async (req, res) => {
           associatedEntity.patient_fname + " " + associatedEntity.patient_lname;
         break;
       case "ADMIN":
-        console.error("ROLE NOT YET IMPLEMENTED");
+        associatedEntity = await Admins.findOne({
+          where: { user_id: user.user_id },
+        });
+        entityFullName =
+          associatedEntity.admin_fname + " " + associatedEntity.admin_lname;
         break;
       default:
         console.error("USER ROLE NOT FOUND in loginUSER");

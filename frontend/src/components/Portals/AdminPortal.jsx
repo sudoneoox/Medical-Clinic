@@ -16,8 +16,8 @@ const AdminPortal = ({ userFullName }) => {
       icon: <ChartNoAxesGantt />,
     },
 
-    { label: "User Management", path: "/users", icon: <UserRoundPen /> },
-    { label: "Analytics", path: "/analytics", icon: <ChartPie /> },
+    { label: "Analytics", path: "/portal/analytics", icon: <ChartPie /> },
+    { label: "User Management", path: "/portal/users", icon: <UserRoundPen /> },
     {
       section: "account",
       label: "Settings",

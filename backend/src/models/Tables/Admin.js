@@ -42,7 +42,7 @@ const Admins = sequelize.define(
       defaultValue: 1,
       allowNull: false,
     },
-    can_review_reports: {
+    can_view_reports: {
       type: DataTypes.TINYINT,
       defaultValue: 1,
       allowNull: false,
