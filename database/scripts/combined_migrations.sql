@@ -307,6 +307,49 @@ CREATE TABLE IF NOT EXISTS notes (
     UNIQUE(note_id)
 );
 ;
+CREATE TABLE IF NOT EXISTS admins (
+    admin_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    admin_employee_id INTEGER NOT NULL,
+    admin_fname VARCHAR(50) NOT NULL,
+    admin_lname VARCHAR(50) NOT NULL,
+    user_id INTEGER UNIQUE NOT NULL,
+    can_manage_users TINYINT DEFAULT 1,
+    can_manage_billing TINYINT DEFAULT 1,
+    can_manage_appointments TINYINT DEFAULT 1,
+    can_view_reports TINYINT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_access TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE(admin_id),
+    UNIQUE(admin_employee_id)
+);
+;
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    notification_type ENUM(
+        'APPOINTMENT_REMINDER',
+        'TEST_RESULTS',
+        'PRESCRIPTION_READY',
+        'BILLING_REMINDER',
+        'MESSAGE',
+        'EMERGENCY_ALERT',
+        'SCHEDULE_CHANGE',
+        'INSURANCE_UPDATE',
+        'DOCUMENT_READY',
+        'GENERAL'
+    ) NOT NULL,
+    notification_title VARCHAR(100) NOT NULL,
+    notification_content TEXT NOT NULL,
+    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM',
+    is_read TINYINT DEFAULT 0,
+    read_at TIMESTAMP NULL,
+    scheduled_for TIMESTAMP NULL,
+    expires_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(notification_id)
+);
+;
 INSERT INTO race_code (race_code, race_text) VALUES
 (1, 'American Indian or Alaska Native'),
 (2, 'Asian'),
@@ -946,6 +989,20 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+DELIMITER //
+CREATE TRIGGER before_notification_insert 
+BEFORE INSERT ON notifications
+FOR EACH ROW
+BEGIN
+    IF NEW.expires_at IS NULL THEN
+        SET NEW.expires_at = DATE_ADD(NEW.created_at, INTERVAL 30 DAY);
+    END IF;
+    IF NEW.scheduled_for IS NOT NULL AND NEW.scheduled_for < NEW.created_at THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Notification cannot be scheduled for a past date';
+    END IF;
+END //
+DELIMITER ;
 ;
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(
@@ -1072,6 +1129,11 @@ CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_c
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
+CREATE INDEX idx_notifications_sender ON notifications(sender_id);
+CREATE INDEX idx_notifications_receiver ON notifications(receiver_id);
+CREATE INDEX idx_notifications_type ON notifications(notification_type);
+CREATE INDEX idx_notifications_created ON notifications(created_at);
+CREATE INDEX idx_notifications_scheduled ON notifications(scheduled_for);
 ;
 ALTER TABLE appointments
 ADD CONSTRAINT chk_appointment_duration 
@@ -1315,6 +1377,24 @@ ALTER TABLE receptionists
 ADD CONSTRAINT fk_valid_employee_no_receptionist
     FOREIGN KEY (receptionist_employee_id)
     REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+ALTER TABLE admins
+ADD CONSTRAINT fk_admin_user
+    FOREIGN KEY (user_id) 
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_valid_employee_no_admin
+    FOREIGN KEY (admin_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
+ALTER TABLE notifications
+ADD CONSTRAINT fk_notification_sender
+    FOREIGN KEY (sender_id) 
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_notification_receiver
+    FOREIGN KEY (receiver_id) 
+    REFERENCES users(user_id)
     ON DELETE CASCADE;
 ;
 CREATE OR REPLACE VIEW doctor_schedule AS

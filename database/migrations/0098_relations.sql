@@ -264,4 +264,25 @@ ADD CONSTRAINT fk_valid_employee_no_receptionist
     REFERENCES valid_employees(employee_no)
     ON DELETE CASCADE;
 
+-- admins 
+ALTER TABLE admins
+ADD CONSTRAINT fk_admin_user
+    FOREIGN KEY (user_id) 
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_valid_employee_no_admin
+    FOREIGN KEY (admin_employee_id)
+    REFERENCES valid_employees(employee_no)
+    ON DELETE CASCADE;
 
+
+-- notifs
+ALTER TABLE notifications
+ADD CONSTRAINT fk_notification_sender
+    FOREIGN KEY (sender_id) 
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_notification_receiver
+    FOREIGN KEY (receiver_id) 
+    REFERENCES users(user_id)
+    ON DELETE CASCADE;

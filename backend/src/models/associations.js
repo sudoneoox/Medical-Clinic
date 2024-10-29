@@ -26,6 +26,8 @@ import NurseOffices from "./Tables/NurseOffices.js";
 import ReceptionistOffices from "./Tables/ReceptionistOffices.js";
 import DoctorSpecialties from "./Tables/DoctorSpecialties.js";
 import EmployeeNo from "./Tables/ValidEmployeeNo.js";
+import Admins from "./Tables/Admin.js";
+import Notifs from "./Tables/Notifs.js";
 
 const initAssociations = () => {
   // User associations
@@ -53,6 +55,11 @@ const initAssociations = () => {
     foreignKey: { name: "demographics_id", onDelete: "CASCADE" },
     as: "demographics",
   });
+  User.hasOne(Admins, {
+    foreignKey: { name: "user_id", onDelete: "CASCADE" },
+    as: "admins",
+  });
+
   // Demographics associations
   Demographics.belongsTo(RaceCode, { foreignKey: "race_id", as: "raceCode" });
   Demographics.belongsTo(GenderCode, {
@@ -191,6 +198,19 @@ const initAssociations = () => {
   });
   Receptionist.belongsTo(EmployeeNo, {
     foreignKey: { name: "receptionist_employee_id", onDelete: "CASCADE" },
+  });
+
+  Admins.belongsTo(EmployeeNo, {
+    foreignKey: { name: "admin_employee_id", onDelete: "CASCADE" },
+  });
+
+  Notifs.belongsTo(User, {
+    foreignKey: { name: "sender_id", onDelete: "CASCADE" },
+    as: "sender",
+  });
+  Notifs.belongsTo(User, {
+    foreignKey: { name: "receiver_id", onDelete: "CASCADE" },
+    as: "receiver",
   });
 };
 
