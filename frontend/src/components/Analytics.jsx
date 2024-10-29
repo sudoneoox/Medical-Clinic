@@ -11,9 +11,35 @@ import {
   Building2,
   Users,
   Activity,
-  PieChart as PieChartIcon,
+  Calendar,
+  UserSquare2,
+  Globe2,
 } from "lucide-react";
 import api from "../api.js";
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+// TODO: handle click events
+// TODO: handle appointment analytics
+// TODO: handle correct office switching
+// TODO: possibly add more subgroups for the main groups
+// BUG: switching office branches does not change the piechart
+
+// SubCategory Card Component
+const SubCategoryCard = ({ title, icon, isSelected, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`cursor-pointer p-2 rounded-lg border transition-all ${
+      isSelected
+        ? "border-blue-500 bg-blue-50"
+        : "border-gray-200 hover:border-blue-300"
+    }`}
+  >
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className="text-sm font-medium">{title}</span>
+    </div>
+  </div>
+);
+
 const AnalyticsCard = ({ title, icon, isSelected, onClick, description }) => (
   <div
     onClick={onClick}
@@ -32,12 +58,16 @@ const AnalyticsCard = ({ title, icon, isSelected, onClick, description }) => (
     </div>
   </div>
 );
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-
+// Main Analytics Component
+//
+//
+//
 const Analytics = () => {
   const [selectedAnalytic, setSelectedAnalytic] = useState(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("all");
   const [chartData, setChartData] = useState(null);
+  const [selectedSlice, setSelectedSlice] = useState(null);
 
   const analyticOptions = [
     {
@@ -45,6 +75,23 @@ const Analytics = () => {
       title: "Patient Demographics",
       icon: <Users className="w-6 h-6 text-blue-500" />,
       description: "View patient age, gender, and ethnicity distribution",
+      subCategories: [
+        {
+          id: "GENDER",
+          title: "Gender Distribution",
+          icon: <UserSquare2 className="w-4 h-4" />,
+        },
+        {
+          id: "AGE",
+          title: "Age Groups",
+          icon: <Calendar className="w-4 h-4" />,
+        },
+        {
+          id: "ETHNICITY",
+          title: "Ethnicity",
+          icon: <Globe2 className="w-4 h-4" />,
+        },
+      ],
     },
     {
       id: "STAFF",
@@ -66,22 +113,20 @@ const Analytics = () => {
     { office_id: 3, office_name: "South Branch" },
   ];
 
-  const fetchAnalyticData = async (type, office) => {
+  const fetchAnalyticData = async (type, subCategory, office) => {
     try {
       const response = await api.post("/users/portal/analytics", {
         user_id: localStorage.getItem("userId"),
         user_role: "ADMIN",
         sidebarItem: "ANALYTICS",
-        analyticType: type, // Pass the type in the body
-        office: office,
         analyticData: {
           analyticType: type,
+          subCategory: subCategory,
           office: office,
         },
       });
-      console.log("sending office", office);
-      console.log("GOT FROM ANALYTICS", response.data.data);
       setChartData(response.data.data);
+      setSelectedSlice(null); // Reset selected slice when data changes
     } catch (error) {
       console.error("Error fetching analytic data:", error);
     }
@@ -89,14 +134,33 @@ const Analytics = () => {
 
   const handleAnalyticSelect = (analyticId) => {
     setSelectedAnalytic(analyticId);
-    fetchAnalyticData(analyticId, selectedOffice);
+    setSelectedSubCategory(null);
+    const option = analyticOptions.find((opt) => opt.id === analyticId);
+    if (option?.subCategories) {
+      setSelectedSubCategory(option.subCategories[0].id);
+      fetchAnalyticData(analyticId, option.subCategories[0].id, selectedOffice);
+    } else {
+      fetchAnalyticData(analyticId, null, selectedOffice);
+    }
+  };
+
+  const handleSubCategorySelect = (subCategoryId) => {
+    setSelectedSubCategory(subCategoryId);
+    fetchAnalyticData(selectedAnalytic, subCategoryId, selectedOffice);
   };
 
   const handleOfficeChange = (e) => {
-    setSelectedOffice(e.target.value);
+    const officeValue = e.target.value;
+    setSelectedOffice(officeValue);
     if (selectedAnalytic) {
-      fetchAnalyticData(selectedAnalytic, e.target.value);
+      fetchAnalyticData(selectedAnalytic, selectedSubCategory, officeValue);
     }
+  };
+
+  const handlePieClick = (entry, index) => {
+    setSelectedSlice(selectedSlice === index ? null : index);
+    // TODO: click logic ie show list of what s clicked
+    console.log("Clicked slice:", entry);
   };
 
   return (
@@ -121,6 +185,23 @@ const Analytics = () => {
           ))}
         </div>
 
+        {/* Sub-categories for Demographics */}
+        {selectedAnalytic === "DEMOGRAPHICS" && (
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {analyticOptions
+              .find((opt) => opt.id === "DEMOGRAPHICS")
+              .subCategories.map((subCat) => (
+                <SubCategoryCard
+                  key={subCat.id}
+                  title={subCat.title}
+                  icon={subCat.icon}
+                  isSelected={selectedSubCategory === subCat.id}
+                  onClick={() => handleSubCategorySelect(subCat.id)}
+                />
+              ))}
+          </div>
+        )}
+
         {/* Office Selection */}
         {selectedAnalytic && (
           <div className="mb-6">
@@ -138,6 +219,7 @@ const Analytics = () => {
             </select>
           </div>
         )}
+
         {/* Chart Display */}
         {chartData && (
           <div className="bg-white rounded-lg p-4 shadow">
@@ -154,18 +236,46 @@ const Analytics = () => {
                   outerRadius={150}
                   fill="#8884d8"
                   dataKey="value"
+                  onClick={(entry, index) => handlePieClick(entry, index)}
                 >
                   {chartData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
+                      opacity={
+                        selectedSlice === null || selectedSlice === index
+                          ? 1
+                          : 0.5
+                      }
                     />
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend />
+                <Legend
+                  onClick={(entry, index) => handlePieClick(entry, index)}
+                  cursor="pointer"
+                />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Selected Slice Details */}
+        {selectedSlice !== null && chartData && (
+          <div className="mt-4 p-4 border rounded-lg bg-blue-50">
+            <h3 className="font-bold mb-2">
+              {chartData[selectedSlice].name} Details
+            </h3>
+            <p>Value: {chartData[selectedSlice].value}</p>
+            <p>
+              Percentage:{" "}
+              {(
+                (chartData[selectedSlice].value /
+                  chartData.reduce((sum, item) => sum + item.value, 0)) *
+                100
+              ).toFixed(1)}
+              %
+            </p>
           </div>
         )}
       </div>

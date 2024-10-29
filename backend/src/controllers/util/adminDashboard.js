@@ -104,44 +104,122 @@ const populateUSERMANAGEMENT = async (user, admin, res) => {
   }
 };
 
+// TODO: switch off the deprecated functions
 const populateANALYTICS = async (user, admin, analyticData, res) => {
-  const { analyticType, office } = analyticData;
-  console.log(analyticType, office);
+  const { analyticType, subCategory, office } = analyticData;
+  console.log("RECEIVED INSIDE populateANALYTICS");
+  console.log(analyticType, subCategory, office);
   try {
     let data;
     switch (analyticType) {
       case "DEMOGRAPHICS": {
         const whereClause = office !== "all" ? { office_id: office } : {};
 
-        const demographicStats = await Demographics.findAll({
-          include: [
-            {
-              model: Users,
-              where: { user_role: "PATIENT" },
-              ...whereClause,
-            },
-          ],
-          attributes: [
-            "gender_id",
-            [sequelize.fn("COUNT", sequelize.col("gender_id")), "count"],
-          ],
-          group: ["gender_id"],
-        });
+        switch (subCategory) {
+          case "GENDER": {
+            const demographicStats = await Demographics.findAll({
+              include: [
+                {
+                  model: Users,
+                  where: { user_role: "PATIENT" },
+                  ...whereClause,
+                },
+              ],
+              attributes: [
+                "gender_id",
+                [sequelize.fn("COUNT", sequelize.col("gender_id")), "count"],
+              ],
+              group: ["gender_id"],
+            });
 
-        data = demographicStats.map((stat) => ({
-          name:
-            stat.gender_id === 1
-              ? "Male"
-              : stat.gender_id === 2
-                ? "Female"
-                : stat.gender_id === 3
-                  ? "Non-binary"
-                  : "Other",
-          value: parseInt(stat.dataValues.count),
-        }));
+            data = demographicStats.map((stat) => ({
+              name:
+                stat.gender_id === 1
+                  ? "Male"
+                  : stat.gender_id === 2
+                    ? "Female"
+                    : stat.gender_id === 3
+                      ? "Non-binary"
+                      : "Other",
+              value: parseInt(stat.dataValues.count),
+            }));
+            break;
+          }
+
+          case "AGE": {
+            const ageStats = await Demographics.findAll({
+              include: [
+                {
+                  model: Users,
+                  where: { user_role: "PATIENT" },
+                  ...whereClause,
+                  attributes: [], // Don't include user attributes in the result
+                },
+              ],
+              attributes: [
+                [
+                  sequelize.literal(`
+          CASE 
+            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 18 THEN '0-17'
+            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 30 THEN '18-29'
+            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 50 THEN '30-49'
+            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 70 THEN '50-69'
+            ELSE '70+'
+          END
+        `),
+                  "age_group",
+                ],
+                [
+                  sequelize.fn(
+                    "COUNT",
+                    sequelize.col("Demographics.demographics_id"),
+                  ),
+                  "count",
+                ],
+              ],
+              group: ["age_group"],
+              order: [[sequelize.literal("age_group"), "ASC"]],
+            });
+
+            data = ageStats.map((stat) => ({
+              name: stat.dataValues.age_group,
+              value: parseInt(stat.dataValues.count),
+            }));
+            break;
+          }
+          case "ETHNICITY": {
+            const ethnicityStats = await Demographics.findAll({
+              include: [
+                {
+                  model: Users,
+                  where: { user_role: "PATIENT" },
+                  ...whereClause,
+                },
+              ],
+              attributes: [
+                "ethnicity_id",
+                [sequelize.fn("COUNT", sequelize.col("ethnicity_id")), "count"],
+              ],
+              group: ["ethnicity_id"],
+            });
+
+            data = ethnicityStats.map((stat) => ({
+              name:
+                stat.ethnicity_id === 1
+                  ? "Hispanic or Latino"
+                  : stat.ethnicity_id === 2
+                    ? "Not Hispanic or Latino"
+                    : "Prefer not to say",
+              value: parseInt(stat.dataValues.count),
+            }));
+            break;
+          }
+
+          default:
+            throw new Error("Invalid demographic subcategory");
+        }
         break;
       }
-
       case "STAFF": {
         const whereClause = office !== "all" ? { office_id: office } : {};
 
