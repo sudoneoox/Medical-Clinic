@@ -1,13 +1,30 @@
 import React from "react";
-import PortalConstants from "./PortalConstants.jsx";
 import MainFrame from "../Mainframe.jsx";
-
+import {
+  LogOut,
+  ChartNoAxesGantt,
+  Settings,
+  ChartPie,
+  UserRoundPen,
+} from "lucide-react";
 // TODO: also create admin entity and etc
 const AdminPortal = ({ userFullName }) => {
   const sidebarItems = [
-    ...PortalConstants.sidebarItems,
-    { label: "User Management", path: "/users", icon: "" },
-    { label: "Analytics", path: "/analytics", icon: "" },
+    {
+      label: "Overview",
+      path: "/portal/overview",
+      icon: <ChartNoAxesGantt />,
+    },
+
+    { label: "User Management", path: "/users", icon: <UserRoundPen /> },
+    { label: "Analytics", path: "/analytics", icon: <ChartPie /> },
+    {
+      section: "account",
+      label: "Settings",
+      path: "/portal/settings",
+      icon: <Settings />,
+    },
+    { label: "Logout", path: "/login", icon: <LogOut /> },
   ];
 
   return (

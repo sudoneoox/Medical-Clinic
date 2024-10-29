@@ -8,10 +8,12 @@ import Appointment from "../models/Tables/Appointment.js";
 import MedicalRecord from "../models/Tables/MedicalRecord.js";
 import Office from "../models/Tables/Office.js";
 import PatientDoctor from "../models/Tables/PatientDoctor.js";
+import Admins from "../models/Tables/Admin.js";
 import patientDashboard from "./util/patientDashboard.js";
 import nurseDashboard from "./util/nurseDashboard.js";
 import receptionistDashboard from "./util/receptionistDashboard.js";
 import doctorDashboard from "./util/doctorDashboard.js";
+import adminDashboard from "./util/adminDashboard.js";
 
 // switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
@@ -156,10 +158,23 @@ const portalRoleSwitcher = async (req, res) => {
             });
         }
       case "ADMIN":
-        // TODO: admin dashboard backend logic
-        return res
-          .status(401)
-          .json({ message: "Admin role not yet implemented" });
+        relatedEntity = await Admins.findOne({ where: { user_id: user_id } });
+        switch (sidebarItem) {
+          case "OVERVIEW":
+            return await adminDashboard.populateOVERVIEW(
+              user,
+              relatedEntity,
+              res,
+            );
+          case "USER MANAGEMENT":
+            break;
+          case "ANALYTICS":
+            break;
+          default:
+            return res.status(401).json({
+              message: `Invalid sidebarItem found in portalRoleSwitcher for admin got ${sidebarItem}`,
+            });
+        }
 
       default:
         return res.status(401).json({
