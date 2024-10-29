@@ -108,6 +108,7 @@ const MainFrame = ({
   const [contentData, setContentData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  ///
 
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
@@ -198,7 +199,6 @@ const MainFrame = ({
                     <Calendar data={contentData} />
                   )}
                   {currentSelected === "PATIENTS" && (
-                    // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
                   {currentSelected === "MY APPOINTMENTS" && (

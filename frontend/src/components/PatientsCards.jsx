@@ -1,8 +1,13 @@
 import React from "react";
 
-const PatientList = ({ data  = []}) => { // Set default value to an empty array
-    console.log(data);
-    
+const PatientList = ({ data = [] }) => { // Set default value to an empty array
+  console.log(data);
+  
+  const handleViewMedicalRecords = (patientId) => {
+    // Add your logic to view medical records here
+    console.log(`Viewing medical records for patient ID: ${patientId}`);
+  };
+
   return (
     <div className="space-y-4">
       {data.length === 0 ? (
@@ -14,11 +19,14 @@ const PatientList = ({ data  = []}) => { // Set default value to an empty array
               <p className="font-medium">
                 {patient.patient_fname} {patient.patient_lname}
               </p>
-              {/* You can add more patient details here if needed */}
             </div>
-            <div className="text-sm">
-              {/* Add any additional actions or information here */}
-              <p>Patient ID: {patient.patient_id}</p>
+            <div>
+              <button 
+                onClick={() => handleViewMedicalRecords(patient.medicalRecords[0].diagnosis)} 
+                className="bg-blue-500 text-white px-3 py-1 rounded-sm shadow hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
+              >
+                View Records
+              </button>
             </div>
           </div>
         ))
