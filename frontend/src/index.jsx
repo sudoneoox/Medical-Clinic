@@ -8,7 +8,6 @@ import ServicesPage from "./routes/Services.jsx";
 import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
-import { disableReactDevTools } from "@fvilers/disable-react-devtools";
 import api, { API } from "./api.js";
 import "./styles/tailwindbase.css";
 
@@ -17,8 +16,6 @@ import {
   RouterProvider,
   redirect,
 } from "react-router-dom";
-
-if (process.env.NODE_ENV === "production") disableReactDevTools();
 
 async function servicesLoader() {
   try {

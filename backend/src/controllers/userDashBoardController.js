@@ -166,10 +166,19 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-          case "USER MANAGEMENT":
-            break;
+          case "USERS":
+            return await adminDashboard.populateUSERMANAGEMENT(
+              user,
+              relatedEntity,
+              res,
+            );
           case "ANALYTICS":
-            break;
+            return await adminDashboard.populateANALYTICS(
+              user,
+              relatedEntity,
+              req.body.analyticData,
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for admin got ${sidebarItem}`,

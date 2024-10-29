@@ -5,6 +5,8 @@ import Overview from "./OverviewCards.jsx";
 import Calendar from "./Calendar.jsx";
 import Patients from "./PatientsCards.jsx";
 import Appointments from "./Appointments.jsx";
+import Analytics from "./Analytics.jsx";
+import UserManagement from "./UserManagement.jsx";
 import { cn } from "../utils/utils.js";
 
 // Header component to display user details and quick actions
@@ -140,8 +142,12 @@ const MainFrame = ({
       window.location.href = "/login";
       return;
     }
-
     setCurrentSelected(item.label.toUpperCase());
+    console.log("CURRENTLY SELECTED", currentSelected);
+    // FIX: dont send api request since its handled in analytics.jsx but still set the currentSelected
+    if (item.label === "Analytics") {
+      return;
+    }
     fetchData(item.path);
   };
 
@@ -159,7 +165,7 @@ const MainFrame = ({
   // WARNING: remove during deployment
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
-  const TEST = false;
+  const TEST = true;
 
   return (
     <div className="h-screen flex bg-gray-50">
@@ -197,6 +203,10 @@ const MainFrame = ({
                   )}
                   {currentSelected === "MY APPOINTMENTS" && (
                     <Appointments data={contentData} />
+                  )}
+                  {currentSelected === "ANALYTICS" && <Analytics />}
+                  {currentSelected === "USER MANAGEMENT" && (
+                    <UserManagement data={contentData} />
                   )}
 
                   {/*NOTE: Add other component conditions here*/}

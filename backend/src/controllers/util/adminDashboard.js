@@ -5,6 +5,10 @@ import Patient from "../../models/Tables/Patient.js";
 import Appointment from "../../models/Tables/Appointment.js";
 import Billing from "../../models/Tables/Billing.js";
 import { Op } from "sequelize";
+import Demographics from "../../models/Tables/Demographics.js";
+import Nurse from "../../models/Tables/Nurse.js";
+import Receptionist from "../../models/Tables/Receptionist.js";
+import sequelize from "@sequelize/core";
 
 const populateOVERVIEW = async (user, admin, res) => {
   try {
@@ -88,5 +92,109 @@ const populateOVERVIEW = async (user, admin, res) => {
   }
 };
 
-const adminDashboard = { populateOVERVIEW };
+const populateUSERMANAGEMENT = async (user, admin, res) => {
+  try {
+    console.log("hello");
+  } catch (error) {
+    console.error("ERROR in populateUSERMANAGEMENT For admin", error);
+    res.status(500).json({
+      message: "Error loading admin usermanagement tools",
+      error: error.message,
+    });
+  }
+};
+
+const populateANALYTICS = async (user, admin, analyticData, res) => {
+  const { analyticType, office } = analyticData;
+  console.log(analyticType, office);
+  try {
+    let data;
+    switch (analyticType) {
+      case "DEMOGRAPHICS": {
+        const whereClause = office !== "all" ? { office_id: office } : {};
+
+        const demographicStats = await Demographics.findAll({
+          include: [
+            {
+              model: Users,
+              where: { user_role: "PATIENT" },
+              ...whereClause,
+            },
+          ],
+          attributes: [
+            "gender_id",
+            [sequelize.fn("COUNT", sequelize.col("gender_id")), "count"],
+          ],
+          group: ["gender_id"],
+        });
+
+        data = demographicStats.map((stat) => ({
+          name:
+            stat.gender_id === 1
+              ? "Male"
+              : stat.gender_id === 2
+                ? "Female"
+                : stat.gender_id === 3
+                  ? "Non-binary"
+                  : "Other",
+          value: parseInt(stat.dataValues.count),
+        }));
+        break;
+      }
+
+      case "STAFF": {
+        const whereClause = office !== "all" ? { office_id: office } : {};
+
+        const [doctors, nurses, receptionists] = await Promise.all([
+          Doctor.count(whereClause),
+          Nurse.count(whereClause),
+          Receptionist.count(whereClause),
+        ]);
+
+        data = [
+          { name: "Doctors", value: doctors },
+          { name: "Nurses", value: nurses },
+          { name: "Receptionists", value: receptionists },
+        ];
+        break;
+      }
+
+      case "APPOINTMENTS": {
+        const whereClause = office !== "all" ? { office_id: office } : {};
+
+        const appointmentStats = await Appointment.findAll({
+          where: whereClause,
+          attributes: [
+            "status",
+            [sequelize.fn("COUNT", sequelize.col("status")), "count"],
+          ],
+          group: ["status"],
+        });
+
+        data = appointmentStats.map((stat) => ({
+          name: stat.status,
+          value: parseInt(stat.dataValues.count),
+        }));
+        break;
+      }
+
+      default:
+        throw new Error("Invalid analytics type");
+    }
+
+    res.json({ data });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({
+      message: "Error fetching analytics",
+      error: error.message,
+    });
+  }
+};
+
+const adminDashboard = {
+  populateOVERVIEW,
+  populateUSERMANAGEMENT,
+  populateANALYTICS,
+};
 export default adminDashboard;
