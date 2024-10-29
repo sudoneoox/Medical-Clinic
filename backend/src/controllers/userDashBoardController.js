@@ -166,10 +166,11 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-          case "USERS":
+          case "MANAGEMENT":
             return await adminDashboard.populateUSERMANAGEMENT(
               user,
               relatedEntity,
+              req.body.managementData,
               res,
             );
           case "ANALYTICS":

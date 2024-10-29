@@ -144,8 +144,8 @@ const MainFrame = ({
     }
     setCurrentSelected(item.label.toUpperCase());
     console.log("CURRENTLY SELECTED", currentSelected);
-    // FIX: dont send api request since its handled in analytics.jsx but still set the currentSelected
-    if (item.label === "Analytics") {
+    // NOTE: ignores api requests for these components they handle themselves
+    if (item.label === "Analytics" || item.label == "User Management") {
       return;
     }
     fetchData(item.path);

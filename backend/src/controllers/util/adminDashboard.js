@@ -92,9 +92,8 @@ const populateOVERVIEW = async (user, admin, res) => {
   }
 };
 
-const populateUSERMANAGEMENT = async (user, admin, res) => {
+const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
   try {
-    console.log("hello");
   } catch (error) {
     console.error("ERROR in populateUSERMANAGEMENT For admin", error);
     res.status(500).json({
