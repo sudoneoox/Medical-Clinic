@@ -2,7 +2,6 @@ import Appointment from "../../models/Tables/Appointment.js";
 import Patient from "../../models/Tables/Patient.js";
 import Doctor from "../../models/Tables/Doctor.js";
 import Office from "../../models/Tables/Office.js";
-import Receptionist from "../../models/Tables/Receptionist.js";
 
 const populateOVERVIEW = async (user, receptionist, res) => {
   try {

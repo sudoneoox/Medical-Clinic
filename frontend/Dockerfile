@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build --omit=dev
+RUN npm run build
 
 FROM nginx:alpine
 # Copy the build files
