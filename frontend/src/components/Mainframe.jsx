@@ -199,7 +199,6 @@ const MainFrame = ({
                     <Calendar data={contentData} />
                   )}
                   {currentSelected === "PATIENTS" && (
-                    // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
                   {currentSelected === "MY APPOINTMENTS" && (
