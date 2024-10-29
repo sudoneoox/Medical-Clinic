@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS notifications (
     priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM',
     is_read TINYINT DEFAULT 0,
     read_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     scheduled_for TIMESTAMP NULL,
     expires_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    metadata JSON,
     UNIQUE(notification_id)
 );

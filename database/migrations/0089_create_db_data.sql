@@ -3,5 +3,6 @@ CALL populate_test_data(
     20,  -- 20 nurses
     5,   -- 5 receptionists
     100, -- 100 patients
+    3,   -- 3 admins
     4    -- 4 appointments per patient
 );

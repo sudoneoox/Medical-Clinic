@@ -202,6 +202,41 @@ BEGIN
     RETURN new_receptionist_id;
 END //
 
+-- Create Admin function 
+CREATE FUNCTION create_admin(
+    p_user_id INT,
+    p_employee_id INT,
+    p_fname VARCHAR(50),
+    p_lname VARCHAR(50)
+) RETURNS INT
+BEGIN
+    DECLARE new_admin_id INT;
+    
+    INSERT INTO admins (
+        admin_employee_id,
+        admin_fname,
+        admin_lname,
+        user_id,
+        can_manage_users,
+        can_manage_billing,
+        can_manage_appointments,
+        can_view_reports
+    ) VALUES (
+        p_employee_id,
+        p_fname,
+        p_lname,
+        p_user_id,
+        TRUE,  -- All permissions set to true as requested
+        TRUE,
+        TRUE,
+        TRUE
+    );
+    
+    SET new_admin_id = LAST_INSERT_ID();
+    RETURN new_admin_id;
+END //
+
+
 -- Create appointment function
 CREATE FUNCTION create_appointment(
     p_patient_id INT,
@@ -285,8 +320,20 @@ CREATE FUNCTION create_billing(
 BEGIN
     DECLARE new_billing_id INT;
     DECLARE amount DECIMAL(7,2);
+    DECLARE paid_amount DECIMAL(7,2);
+    DECLARE payment_stat VARCHAR(20);
     
     SET amount = FLOOR(50 + RAND() * 450) + 0.99;
+    SET paid_amount = IF(RAND() < 0.7, amount, 0); -- 70% chance of payment
+    
+    -- Determine payment status based on actual amounts
+    IF paid_amount = 0 THEN
+        SET payment_stat = 'NOT PAID';
+    ELSEIF paid_amount = amount THEN
+        SET payment_stat = 'PAID';
+    ELSE
+        SET payment_stat = 'IN PROGRESS';
+    END IF;
     
     INSERT INTO billing (
         patient_id,
@@ -300,10 +347,31 @@ BEGIN
         p_patient_id,
         p_appointment_id,
         amount,
-        IF(RAND() < 0.7, amount, 0), -- 70% chance of being paid
-        ELT(FLOOR(1 + RAND() * 3), 'PAID', 'NOT PAID', 'IN PROGRESS'),
+        paid_amount,
+        payment_stat,
         DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY),
         p_handled_by
+    );
+    INSERT INTO notifications (
+        sender_id,
+        receiver_id,
+        notification_type,
+        notification_title,
+        notification_content,
+        priority,
+        metadata
+    ) VALUES (
+        p_handled_by, -- sender (receptionist)
+        (SELECT user_id FROM patients WHERE patient_id = p_patient_id), -- receiver
+        'BILLING_REMINDER',
+        CONCAT('New billing statement - $', amount),
+        CONCAT('A new billing statement of $', amount, ' has been generated for your recent appointment.'),
+        'MEDIUM',
+        JSON_OBJECT(
+            'billing_id', LAST_INSERT_ID(),
+            'amount', amount,
+            'due_date', DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)
+        )
     );
     
     SET new_billing_id = LAST_INSERT_ID();
@@ -316,6 +384,7 @@ CREATE PROCEDURE populate_test_data(
     IN num_nurses INT,
     IN num_receptionists INT,
     IN num_patients INT,
+    IN num_admins INT,
     IN num_appointments_per_patient INT
 )
 BEGIN
@@ -352,6 +421,41 @@ BEGIN
     ('Main Clinic', '123 Medical Ave', generate_phone(), 'main@clinic.com'),
     ('North Branch', '456 Health St', generate_phone(), 'north@clinic.com'),
     ('South Branch', '789 Care Rd', generate_phone(), 'south@clinic.com');
+
+
+    -- create admins
+    SET i = 0;
+    WHILE i < num_admins DO
+        -- Create demographics
+        SET curr_demo_id = create_demographics(DATE_SUB(CURRENT_DATE, INTERVAL (30 + FLOOR(RAND() * 20)) YEAR));
+        
+        -- Create user
+        SET curr_user_id = create_user(
+            CONCAT('admin', i),
+            'abc',
+            CONCAT('admin', i, '@clinic.com'),
+            generate_phone(),
+            'ADMIN',
+            curr_demo_id
+        );
+        
+        -- Create valid employee number
+        SET curr_employee_id = 1600 + i;
+        INSERT INTO valid_employees (employee_no, employee_role) VALUES (curr_employee_id, 'ADMIN');
+        
+        SELECT name INTO @random_fname FROM temp_first_names ORDER BY RAND() LIMIT 1;
+        SELECT name INTO @random_lname FROM temp_last_names ORDER BY RAND() LIMIT 1;
+        
+        -- Create admin
+        SET @admin_id = create_admin(
+            curr_user_id,
+            curr_employee_id,
+            @random_fname,
+            @random_lname
+        );
+        
+        SET i = i + 1;
+    END WHILE;   
 
     -- Create doctors
     SET i = 0;

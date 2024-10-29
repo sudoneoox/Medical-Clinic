@@ -65,6 +65,9 @@ const Notifs = sequelize.define(
       type: "TIMESTAMP",
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
+    metadata: {
+      type: DataTypes.JSON,
+    },
   },
   {
     tableName: "notifications",
