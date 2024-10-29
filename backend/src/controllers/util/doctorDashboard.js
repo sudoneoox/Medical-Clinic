@@ -4,6 +4,7 @@ import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import Patient from "../../models/Tables/Patient.js";
 import PatientDoctor from "../../models/Tables/PatientDoctor.js";
+import Specialty from "../../models/Tables/Specialties.js";
 import { Op } from "@sequelize/core";
 
 // handle backend logic for todays and upcoming appointments in the backend
@@ -102,11 +103,28 @@ const populateOVERVIEW = async (user, doctor, res) => {
 };
 
 const populateCALENDAR = async (user, doctor, res) => {
-  console.log("Running doc calendar");
+  try {
+  } catch (error) {
+    console.error("Error in populateCALENDAR for doctor:", error);
+    res.status(500).json({
+      message: "Error loading doctor CALENDAR",
+      error: error.message,
+    });
+  }
 };
 
 const populateMYAPPOINTMENTS = async (user, doctor, res) => {
-  console.log("Running myappointments for doc");
+  try {
+    return res.json({
+      message: "NOT YET IMPLEMENTED",
+    });
+  } catch (error) {
+    console.error("Error in populateMYAPPOINTMENTS for doctor:", error);
+    res.status(500).json({
+      message: "Error loading doctor MYAPPOINTMENTS",
+      error: error.message,
+    });
+  }
 };
 
 const populatePATIENTS = async (user, doctor, res) => {

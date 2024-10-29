@@ -160,7 +160,7 @@ const MainFrame = ({
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
   const TEST = true;
-  
+
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -195,6 +195,10 @@ const MainFrame = ({
                     // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
+                  {currentSelected === "APPOINTMENTS" && (
+                    <Appointments data={contentData} />
+                  )}
+
                   {/*NOTE: Add other component conditions here*/}
                 </div>
               )}

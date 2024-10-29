@@ -3,6 +3,8 @@ import Doctor from "../../models/Tables/Doctor.js";
 import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import Patient from "../../models/Tables/Patient.js";
+import Specialty from "../../models/Tables/Specialties.js";
+import { Op } from "@sequelize/core";
 
 // TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
 // could use this if we had a more descriptive medicalrecord entity or maybe add a score attribute to make a graph
@@ -10,13 +12,22 @@ import Patient from "../../models/Tables/Patient.js";
 const populateOVERVIEW = async (user, patient, res) => {
   try {
     // Get appointments with associations
+    const today = new Date();
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+    // appointments ordered
     const appointments = await Patient.findOne({
       where: { patient_id: patient.patient_id },
       include: [
         {
           model: Appointment,
-          where: { status: "CONFIRMED" },
+          where: {
+            status: "CONFIRMED",
+            appointment_datetime: { [Op.gt]: endOfToday },
+          },
           required: false,
+          order: [["appointment_datetime", "ASC"]],
           include: [
             {
               model: Doctor,
@@ -68,11 +79,89 @@ const populateOVERVIEW = async (user, patient, res) => {
   }
 };
 const populateCALENDAR = async (user, patient, res) => {
-  console.log("received in populateCALENDAR");
+  try {
+    const appointments = await Patient.findOne({
+      where: { patient_id: patient.patient_id },
+      include: [
+        {
+          model: Appointment,
+          where: {
+            status: "CONFIRMED",
+          },
+          required: false,
+          order: [["appointment_datetime", "ASC"]],
+          include: [
+            {
+              model: Doctor,
+              attributes: ["doctor_fname", "doctor_lname"],
+            },
+            {
+              model: Office,
+              attributes: ["office_name", "office_address"],
+            },
+          ],
+        },
+      ],
+    });
+    console.log(appointments);
+
+    return res.json({
+      appointments: appointments?.appointments || [],
+    });
+  } catch (error) {
+    console.error("Error in populateCALENDAR for patient:", error);
+    res.status(500).json({
+      message: "Error Loading Patient Calendar",
+      error: error.message,
+    });
+  }
 };
+
 const populateAPPOINTMENTS = async (user, patient, res) => {
-  console.log("received in populateAPPOINTMENTS");
+  try {
+    console.log("received inside populateAPPOINTMENTS");
+    const appointments = await Patient.findOne({
+      where: { patient_id: patient.patient_id },
+      include: [
+        {
+          model: Appointment,
+          where: {
+            status: "CONFIRMED",
+          },
+          required: false,
+          order: [["appointment_datetime", "ASC"]],
+          include: [
+            {
+              model: Doctor,
+              attributes: ["doctor_fname", "doctor_lname"],
+              include: [
+                {
+                  model: Specialty,
+                  attributes: ["specialty_name"],
+                },
+              ],
+            },
+            {
+              model: Office,
+              attributes: ["office_name", "office_address"],
+            },
+          ],
+        },
+      ],
+    });
+
+    return res.json({
+      appointments: appointments?.appointments || [],
+    });
+  } catch (error) {
+    console.error("Error in populateCALENDAR for patients:", error);
+    res.status(500).json({
+      message: "Error loading patient calendar",
+      error: error.message,
+    });
+  }
 };
+
 const populateMEDICALRECORDS = async (user, patient, res) => {
   console.log("received in populateMEDICALRECORDS");
 };

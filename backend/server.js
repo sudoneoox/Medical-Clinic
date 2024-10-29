@@ -8,7 +8,11 @@ const app = express();
 
 // enable cors ie so our frontend server (port 3000) can communicate with
 // our backend server (port 5000)
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+  }),
+);
 
 // parse json bodies
 app.use(express.json());
