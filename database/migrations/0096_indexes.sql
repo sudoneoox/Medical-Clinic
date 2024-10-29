@@ -68,3 +68,11 @@ CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_c
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
+
+
+
+CREATE INDEX idx_notifications_sender ON notifications(sender_id);
+CREATE INDEX idx_notifications_receiver ON notifications(receiver_id);
+CREATE INDEX idx_notifications_type ON notifications(notification_type);
+CREATE INDEX idx_notifications_created ON notifications(created_at);
+CREATE INDEX idx_notifications_scheduled ON notifications(scheduled_for);

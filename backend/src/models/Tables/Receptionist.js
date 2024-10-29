@@ -19,7 +19,7 @@ const Receptionist = sequelize.define(
     },
     receptionist_lname: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
     },
 
     user_id: {
@@ -30,7 +30,7 @@ const Receptionist = sequelize.define(
   {
     tableName: "receptionists",
     timestamps: false,
-  }
+  },
 );
 
 export default Receptionist;
