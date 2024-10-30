@@ -4,10 +4,6 @@ import Nurse from "../models/Tables/Nurse.js";
 import Doctor from "../models/Tables/Doctor.js";
 import Patient from "../models/Tables/Patient.js";
 import User from "../models/Tables/Users.js";
-import Appointment from "../models/Tables/Appointment.js";
-import MedicalRecord from "../models/Tables/MedicalRecord.js";
-import Office from "../models/Tables/Office.js";
-import PatientDoctor from "../models/Tables/PatientDoctor.js";
 import Admins from "../models/Tables/Admin.js";
 import patientDashboard from "./util/patientDashboard.js";
 import nurseDashboard from "./util/nurseDashboard.js";
@@ -166,7 +162,7 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-          case "MANAGEMENT":
+          case "USER MANAGEMENT":
             return await adminDashboard.populateUSERMANAGEMENT(
               user,
               relatedEntity,

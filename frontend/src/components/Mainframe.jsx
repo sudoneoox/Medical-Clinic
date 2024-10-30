@@ -146,7 +146,7 @@ const MainFrame = ({
     setCurrentSelected(item.label.toUpperCase());
     console.log("CURRENTLY SELECTED", currentSelected);
     // NOTE: ignores api requests for these components they handle themselves
-    if (item.label === "Analytics" || item.label == "User Management") {
+    if (item.label === "Analytics" || item.label === "User Management") {
       return;
     }
     fetchData(item.path);
