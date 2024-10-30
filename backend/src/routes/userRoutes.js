@@ -42,6 +42,10 @@ router.post(
 );
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 
+router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
+
+router.post('/billing/:patientId', userControllerFuncs.retreiveBills);
+
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success
   res.json({ message: "Session valid" });

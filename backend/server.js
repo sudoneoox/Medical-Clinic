@@ -10,8 +10,9 @@ const app = express();
 // our backend server (port 5000)
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "http://localhost:5000",
   }),
+  // cors(),
 );
 
 // parse json bodies
@@ -23,7 +24,7 @@ app.use("/api/users", UserLogicRouter);
 // use homepage routes
 app.use("/api/homepage", HomePageRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4020;
 
 app.get("/", (req, res) => {
   res.send("Medical Clinic API is running");

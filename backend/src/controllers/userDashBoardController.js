@@ -52,7 +52,7 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
-          case "PATIENTRECORDS":
+          case "RECORDS":
             return await receptionistDashboard.populatePATIENTRECORDS(
               user,
               relatedEntity,
