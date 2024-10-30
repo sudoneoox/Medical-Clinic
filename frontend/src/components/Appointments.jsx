@@ -2,36 +2,49 @@ import React, { useState } from "react";
 import { Calendar, X, Plus, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../utils/Card.tsx";
 import { Alert, AlertDescription } from "../utils/Alerts.tsx";
+import { render } from "preact/compat";
 
 // WARNING: only works with patient need to modify appointment cards for the various
 // json responses from the backend
 const AppointmentCard = ({ appointment, onCancel }) => {
+  const userRole = localStorage.getItem("userRole");
+  console.log(userRole);
+  const renderContent = (userRole) => {
+    switch (userRole) {
+      case "PATIENT":
+        return (
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold">
+                Dr. {appointment.doctor.doctor_lname}
+              </h3>
+              {/* <p className="text-sm text-gray-500"> */}
+              {/*   {appointment.doctor.specialties[0].specialty_name} */}
+              {/* </p> */}
+              <p className="text-sm text-gray-500">
+                {new Date(appointment.appointment_datetime).toLocaleString()}
+              </p>
+            </div>
+            {onCancel && (
+              <button
+                onClick={() => onCancel(appointment.appointment_id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        );
+      case "DOCTOR":
+        break;
+      default:
+        break;
+    }
+  };
   console.log(appointment);
   return (
     <Card className="mb-4">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="font-semibold">
-              Dr. {appointment.doctor.doctor_lname}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {appointment.doctor.specialties[0].specialty_name}
-            </p>
-            <p className="text-sm text-gray-500">
-              {new Date(appointment.appointment_datetime).toLocaleString()}
-            </p>
-          </div>
-          {onCancel && (
-            <button
-              onClick={() => onCancel(appointment.appointment_id)}
-              className="text-red-500 hover:text-red-700"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </CardContent>
+      <CardContent className="pt-6">{renderContent(userRole)}</CardContent>
     </Card>
   );
 };
@@ -198,6 +211,7 @@ const Appointments = ({ data }) => {
         );
 
       case "DOCTOR":
+        console.log("INSIDE SWITCH STATEMENT", data);
         return (
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
