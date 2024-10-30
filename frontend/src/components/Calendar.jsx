@@ -12,7 +12,6 @@ const Calendar = ({ data }) => {
   const [events, setEvents] = useState([]);
   const calendarRef = useRef(null);
   const userRole = localStorage.getItem("userRole");
-  console.log("data received inside calendar", data);
   useEffect(() => {
     // DESC: transforms json to appointment calendar events
     if (data?.appointments) {

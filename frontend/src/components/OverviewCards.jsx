@@ -72,7 +72,6 @@ const Overview = ({ data }) => {
   const userData = {
     user_role: localStorage.getItem("userRole"),
   };
-  console.log(data);
   const fullName = localStorage.getItem("userFullName");
 
   const renderDashboard = () => {
@@ -108,7 +107,6 @@ const Overview = ({ data }) => {
         );
 
       case "DOCTOR":
-        console.log(data);
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <DashboardCard

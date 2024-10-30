@@ -118,14 +118,13 @@ const MainFrame = ({
       const user_id = localStorage.getItem("userId");
       const user_role = localStorage.getItem("userRole");
       const API_PATH = API.URL + "/api/users" + path;
-      console.log("API_PATH inside fetchdata inside mainframe", API_PATH);
+      // console.log("API_PATH inside fetchdata inside mainframe", API_PATH);
       const sidebarItem = path.split("/").pop().toUpperCase();
       const response = await api.post(API_PATH, {
         user_id,
         user_role,
         sidebarItem,
       });
-      console.log(response);
 
       setContentData(response.data);
       setIsLoading(false);
@@ -146,7 +145,11 @@ const MainFrame = ({
     setCurrentSelected(item.label.toUpperCase());
     console.log("CURRENTLY SELECTED", currentSelected);
     // NOTE: ignores api requests for these components they handle themselves
-    if (item.label === "Analytics" || item.label === "User Management") {
+    if (
+      item.label === "Analytics" ||
+      item.label === "User Management" ||
+      item.label === "MY APPOINTMENTS"
+    ) {
       return;
     }
     fetchData(item.path);
@@ -201,9 +204,7 @@ const MainFrame = ({
                   {currentSelected === "PATIENTS" && (
                     <Patients data={contentData.patients} />
                   )}
-                  {currentSelected === "MY APPOINTMENTS" && (
-                    <Appointments data={contentData} />
-                  )}
+                  {currentSelected === "MY APPOINTMENTS" && <Appointments />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />

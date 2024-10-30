@@ -30,11 +30,6 @@ import Admins from "./Tables/Admin.js";
 import Notifs from "./Tables/Notifs.js";
 
 const initAssociations = () => {
-  // User associations
-  // User.hasOne(Demographics, {
-  //   foreignKey: "demographics_id",
-  //   as: "demographics",
-  // });
   User.hasOne(Doctor, {
     foreignKey: { name: "user_id", onDelete: "CASCADE" },
     as: "doctor",

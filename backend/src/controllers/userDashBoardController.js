@@ -10,6 +10,7 @@ import nurseDashboard from "./util/nurseDashboard.js";
 import receptionistDashboard from "./util/receptionistDashboard.js";
 import doctorDashboard from "./util/doctorDashboard.js";
 import adminDashboard from "./util/adminDashboard.js";
+import defaultDashboard from "./util/defaultDashboard.js";
 
 // switches depending on role and sidebar item clicked
 const portalRoleSwitcher = async (req, res) => {
@@ -103,9 +104,10 @@ const portalRoleSwitcher = async (req, res) => {
               res,
             );
           case "MY-APPOINTMENTS":
-            return await patientDashboard.populateAPPOINTMENTS(
+            return await defaultDashboard.populateMYAPPOINTMENTS(
               user,
               relatedEntity,
+              req.body.appointmentData,
               res,
             );
           case "MEDICAL-RECORDS":
@@ -137,9 +139,10 @@ const portalRoleSwitcher = async (req, res) => {
               res,
             );
           case "MY-APPOINTMENTS":
-            return await doctorDashboard.populateMYAPPOINTMENTS(
+            return await defaultDashboard.populateMYAPPOINTMENTS(
               user,
               relatedEntity,
+              req.body.appointmentData,
               res,
             );
           case "PATIENTS":
