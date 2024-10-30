@@ -10,6 +10,13 @@ export default function AboutPage() {
   const [secondSectionHeight, setSecondSectionHeight] = useState(0);
   const [thirdSectionHeight, setThirdSectionHeight] = useState(0);
 
+  const navbarItems = [
+    { label: "Home", to: "/", isActive: false },
+    { label: "About", to: "/About", isActive: true },
+    { label: "Services", to: "/Services", isActive: false },
+    { label: "Contact", to: "/Contact", isActive: false },
+  ];
+
   useEffect(() => {
     if (sectionRef.current) {
       setSectionHeight(sectionRef.current.offsetHeight);
@@ -24,7 +31,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar items={navbarItems} />
       
       {/* Main content starts here with the background applied directly to the container */}
       <main

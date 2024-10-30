@@ -1090,6 +1090,42 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+DELIMITER //
+CREATE TRIGGER before_appointment_specialist_check
+BEFORE INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    DECLARE is_specialist BOOLEAN;
+    DECLARE is_primary BOOLEAN;
+    SELECT COUNT(*) > 0 INTO is_specialist
+    FROM doctor_specialties ds
+    WHERE ds.doctor_id = NEW.doctor_id;
+    SELECT COUNT(*) > 0 INTO is_primary
+    FROM patient_doctor_junction pdj
+    WHERE pdj.patient_id = NEW.patient_id 
+    AND pdj.doctor_id = NEW.doctor_id
+    AND pdj.is_primary = 1;
+    IF is_specialist AND NOT is_primary THEN
+        SET @primary_doctor_id = (
+            SELECT doctor_id 
+            FROM patient_doctor_junction 
+            WHERE patient_id = NEW.patient_id 
+            AND is_primary = 1
+            LIMIT 1
+        );
+        INSERT INTO specialist_approvals (
+            patient_id,
+            reffered_doctor_id,
+            specialist_id
+        ) VALUES (
+            NEW.patient_id,
+            @primary_doctor_id,
+            NEW.doctor_id
+        );
+        SET NEW.status = 'PENDING';
+    END IF;
+END//
+DELIMITER ;
 ;
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(

@@ -108,6 +108,7 @@ const MainFrame = ({
   const [contentData, setContentData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  ///
 
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
@@ -144,8 +145,8 @@ const MainFrame = ({
     }
     setCurrentSelected(item.label.toUpperCase());
     console.log("CURRENTLY SELECTED", currentSelected);
-    // FIX: dont send api request since its handled in analytics.jsx but still set the currentSelected
-    if (item.label === "Analytics") {
+    // NOTE: ignores api requests for these components they handle themselves
+    if (item.label === "Analytics" || item.label === "User Management") {
       return;
     }
     fetchData(item.path);
@@ -197,6 +198,7 @@ const MainFrame = ({
                   {currentSelected === "CALENDAR" && (
                     <Calendar data={contentData} />
                   )}
+
                   {(currentSelected === "PATIENTS" || currentSelected === "PATIENT RECORDS") && (
                     // <Patients data={contentData} />
                     <Patients data={contentData.patients} />

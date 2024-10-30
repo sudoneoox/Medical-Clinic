@@ -29,6 +29,9 @@ const router = express.Router();
 router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
 router.post("/portal/analytics", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/management", dashBoardControllerFuncs.portalRoleSwitcher);
+// TODO: handle delete
+router.post("/portal/management/delete", null);
 router.post("/portal/users", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/calendar", dashBoardControllerFuncs.portalRoleSwitcher);

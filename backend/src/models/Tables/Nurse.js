@@ -18,6 +18,14 @@ const Nurse = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    nurse_fname: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    nurse_lname: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
     specialization: {
       type: DataTypes.STRING(50),
     },
@@ -32,7 +40,7 @@ const Nurse = sequelize.define(
   {
     tableName: "nurses",
     timestamps: false,
-  }
+  },
 );
 
 export default Nurse;
