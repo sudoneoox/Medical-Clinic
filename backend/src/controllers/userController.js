@@ -6,6 +6,7 @@ import Patient from "../models/Tables/Patient.js";
 import Nurse from "../models/Tables/Nurse.js";
 import Receptionist from "../models/Tables/Receptionist.js";
 import Doctor from "../models/Tables/Doctor.js";
+import Billing from "../models/Tables/Billing.js";
 import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
 import Admins from "../models/Tables/Admin.js";
 import User from "../models/Tables/Users.js";
@@ -233,9 +234,32 @@ const loginUser = async (req, res) => {
   }
 };
 
+const retreiveBills = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    console.log(`Fetching billing records for patient ID: ${patientId}`);
+
+    // Fetch billing records for the specified patient ID
+    const billingRecords = await Billing.findAll({
+      where: { patient_id: patientId },
+    });
+
+    if (billingRecords.length === 0) {
+      return res.status(404).json({ message: "No billing records found for this patient." });
+    }
+
+    return res.json(billingRecords);
+  } catch (error) {
+    console.error("Error fetching billing data:", error);
+    return res.status(500).json({ message: "Error fetching billing data", error: error.message });
+  }
+};
+
+
 const userControllerFuncs = {
   loginUser,
   registerUser,
+  retreiveBills,
 };
 
 export default userControllerFuncs;

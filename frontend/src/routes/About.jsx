@@ -37,13 +37,11 @@ export default function AboutPage() {
       <main
         className="relative w-full h-screen pt-24"
         style={{
-          backgroundImage: 'url("images/contact_logo.png")',
+          backgroundImage: "url('https://img.freepik.com/premium-photo/medical-technology-medical-network_488220-34701.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          height: "100%",
-          margin: 0,
-          paddingBottom: "20px",
+          height: "100vh",
+          width: "100vw"
         }}
       >
         <div id="about-page" className="container mx-auto px-4 relative z-10">

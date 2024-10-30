@@ -6,41 +6,48 @@ export default function Homepage() {
   return (
     <>
       <Navbar />
-      <div className="relative w-full h-screen flex flex-col items-center">
-      <div
-        className="w-full h-full bg-cover bg-center flex flex-col items-center justify-center"
-        style={{ backgroundImage: 'url("images/contact_logo.png")' }}
-      >
-        
-          <header className="absolute top-32 w-full text-center z-10">
-              <h1 className="text-4xl font-bold">Welcome to Our Medical Clinic</h1>
-              <p className="text-lg">Your health is our priority</p>
-          </header>
+      <div className="relative w-full h-screen flex flex-col items-center bg-gray-100">
+        <img 
+          src="https://img.freepik.com/premium-photo/medical-technology-medical-network_488220-34701.jpg" 
+          alt="Hospital" 
+          className="w-full h-full opacity-70"
+        />
 
-          <div className="absolute top-60 flex flex-row z-10 justify-center space-x-4"> 
-              {/* Find a Doctor Box */}
-              <div className="card p-6 bg-white rounded-lg shadow-md w-72">
-                  <h2 className="text-xl font-semibold mb-2">Find a Doctor</h2>
-                  <input 
-                      type="text" 
-                      placeholder="Search by name or specialty" 
-                      className="w-full p-2 border border-gray-300 rounded"
-                  />
-                  <button className="mt-4 w-full bg-blue-500 text-white py-2 rounded">Search</button>
-              </div>
+        <header className="absolute top-1/4 w-full text-center z-10">
+          <h1 className="text-5xl font-bold mb-2">Welcome to Our Medical Clinic</h1>
+          <p className="text-xl mb-4">Your health is our priority</p>
+          <button className="bg-blue-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition duration-300">
+            Book an Appointment
+          </button>
+        </header>
 
-              {/* Find a Location Box */}
-              <div className="card p-6 bg-white rounded-lg shadow-md w-72">
-                <h2 className="text-xl font-semibold mb-2">Find a Location</h2>
-                <input 
-                    type="text" 
-                    placeholder="Enter your city or zip" 
-                    className="w-full p-2 border border-gray-300 rounded"
-                />
-                <button className="mt-4 w-full bg-blue-500 text-white py-2 rounded">Search</button>
-              </div>
-          </div>
-        </div>
+        {/* View Services Section */}
+        <section className="absolute top-1/2 w-full flex flex-col items-center z-10 p-6 bg-white rounded-lg shadow-md max-w-3xl mx-auto">
+          <h2 className="text-3xl font-semibold text-center mb-6">Health Resources</h2>
+          <p className="text-center mb-4">
+            Explore our collection of articles and guides to help you manage your health better. 
+            <a href="/services" className="text-blue-200 underline"> Learn More</a>
+          </p>
+        </section>
+
+        <section className="absolute top-1/2 w-full flex flex-col items-center z-10 p-6 bg-white rounded-lg shadow-md max-w-3xl mx-auto">
+          <h2 className="text-3xl font-semibold text-center mb-6">Explore Our Services</h2>
+          <p className="text-center mb-4">
+            Discover the full range of services we offer to meet your healthcare needs&nbsp;
+            <a href="/services" className="text-blue-500 underline">
+              here
+            </a>
+            .
+          </p>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="absolute top-3/4 w-full p-6 z-10 bg-white rounded-lg shadow-md max-w-3xl mx-auto">
+          <h2 className="text-2xl font-semibold text-center mb-4">What Our Patients Say</h2>
+          <blockquote className="italic text-gray-600 text-center">
+            "The staff is always friendly and attentive. I feel well cared for every time I visit!" - Jane D.
+          </blockquote>
+        </section>
       </div>
     </>
   );

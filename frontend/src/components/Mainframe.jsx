@@ -201,7 +201,9 @@ const MainFrame = ({
                   {currentSelected === "CALENDAR" && (
                     <Calendar data={contentData} />
                   )}
-                  {currentSelected === "PATIENTS" && (
+
+                  {(currentSelected === "PATIENTS" || currentSelected === "PATIENT RECORDS") && (
+                    // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
                   {currentSelected === "MY APPOINTMENTS" && <Appointments />}

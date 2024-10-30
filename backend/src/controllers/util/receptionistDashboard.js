@@ -1,6 +1,7 @@
 import Appointment from "../../models/Tables/Appointment.js";
 import Patient from "../../models/Tables/Patient.js";
 import Doctor from "../../models/Tables/Doctor.js";
+import Billing from "../../models/Tables/Billing.js";
 import Office from "../../models/Tables/Office.js";
 import Receptionist from "../../models/Tables/Receptionist.js";
 
@@ -52,7 +53,47 @@ const populateAPPOINTMENTS = async (user, receptionist, res) => {
 };
 
 const populatePATIENTRECORDS = async (user, receptionist, res) => {
-  console.log("INSIDE receptionist populatePATIENTRECORDS");
+  try {
+    console.log("INSIDE receptionist populatePATIENTRECORDS");
+
+    const receptionistData = await Receptionist.findOne({
+      where: { receptionist_id: receptionist.receptionist_id },
+      include: [
+        {
+          model: Office, 
+          attributes: ["office_id"],
+          required: true,
+        },
+      ],
+    });
+    const officeIds = receptionistData?.offices?.map(office => office.office_id) || []; // Get the office ID
+
+    const doctors = await Doctor.findAll({
+      include: [
+        {
+          model: Office,
+          where: { office_id: officeIds[0] },
+        },
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname", "patient_id"],
+          required: true,
+        },
+      ],
+    });
+
+    const patients = doctors.flatMap(doctor => doctor.patients || []);
+
+    return res.json({
+      patients,
+    });
+  } catch (error) {
+    console.error("Error in populatePatientsForClinic:", error);
+    res.status(500).json({
+      message: "Error loading patients for the clinic",
+      error: error.message,
+    });
+  }
 };
 const receptionistDashboard = {
   populateOVERVIEW,
