@@ -26,7 +26,7 @@ async function initDB() {
 
     const models = initModels(sequelize);
 
-    await sequelize.sync({ alter: false });
+    // await sequelize.sync({ alter: false });
     console.log("Models synchronized");
 
     return models;

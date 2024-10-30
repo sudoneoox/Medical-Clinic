@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export RESOURCE_GROUP="medical-clinic-rg"
 # check status:
 az container show --name medical-clinic --resource-group $RESOURCE_GROUP --query instanceView.state
 
