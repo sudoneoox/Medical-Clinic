@@ -66,7 +66,7 @@ const Sidebar = ({ items, currentSelected, onItemSelect }) => {
                     "w-full flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200",
                     "hover:bg-gray-100",
                     isActive &&
-                    "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-600",
+                      "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-600",
                     !isActive && "text-gray-700",
                   )}
                 >
@@ -98,7 +98,12 @@ const Sidebar = ({ items, currentSelected, onItemSelect }) => {
     </div>
   );
 };
+
 // MainFrame component that wraps the entire layout
+// NOTE: the mainframe should not handle a sidebarItems Logic nor the UI for it
+// its just being used to fetch an api request and then to send the data it got from that api request to the component
+// so that its filled with something ones its rendered and to switch around what UI is showing depending on what sidebaritem is clicked
+// IMPORTANT: DO NOT DO sidebarItem UI or LOGIC here
 const MainFrame = ({
   userFullName,
   userRole,
@@ -248,10 +253,8 @@ const MainFrame = ({
                     // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
-                  {currentSelected === "PATIENT RECORDS" && (
-                    <Bills data={contentData.patients} onViewBills={handleViewBills} />
-                  )}
 
+<<<<<<< HEAD
                   {currentSelected === "BILLING" && (
                     <div className="space-y-5">
                       <h2 className="text-xl font-semibold">
@@ -311,6 +314,22 @@ const MainFrame = ({
                       </div>
                     </div>
                   )}
+=======
+                  {/* TODO:  */}
+                  {/* {currentSelected === "PATIENT RECORDS" && ( */}
+                  {/* FIX: ?? Bills should be a logic components inside PatientRecords.jsx your not just */}
+                  {/* showing Bills here  */}
+                  {/* <Bills */}
+                  {/*   data={contentData.patients} */}
+                  {/*   onViewBills={handleViewBills} */}
+                  {/* /> */}
+                  {/* )} */}
+
+                  {/* TODO: */}
+                  {/* FIX: pass component here dont write jsx code it makes it harder to read for the people */}
+                  {/*     that are using Mainframe.jsx */}
+                  {/* {currentSelected === "BILLING" && ()} */}
+>>>>>>> c9b89cb3979340fdef6b79b82316c0f8f2573a3e
 
                   {currentSelected === "MY APPOINTMENTS" && <Appointments />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
