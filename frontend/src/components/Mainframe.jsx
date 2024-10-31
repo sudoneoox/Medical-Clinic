@@ -254,7 +254,13 @@ const MainFrame = ({
                     <Patients data={contentData.patients} />
                   )}
 
-<<<<<<< HEAD
+                  {currentSelected === "PATIENT RECORDS" && (
+                    <Bills
+                     data={contentData.patients} 
+                     onViewBills={handleViewBills} 
+                    /> 
+                  )}
+
                   {currentSelected === "BILLING" && (
                     <div className="space-y-5">
                       <h2 className="text-xl font-semibold">
@@ -314,7 +320,7 @@ const MainFrame = ({
                       </div>
                     </div>
                   )}
-=======
+
                   {/* TODO:  */}
                   {/* {currentSelected === "PATIENT RECORDS" && ( */}
                   {/* FIX: ?? Bills should be a logic components inside PatientRecords.jsx your not just */}
@@ -329,7 +335,6 @@ const MainFrame = ({
                   {/* FIX: pass component here dont write jsx code it makes it harder to read for the people */}
                   {/*     that are using Mainframe.jsx */}
                   {/* {currentSelected === "BILLING" && ()} */}
->>>>>>> c9b89cb3979340fdef6b79b82316c0f8f2573a3e
 
                   {currentSelected === "MY APPOINTMENTS" && <Appointments />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
