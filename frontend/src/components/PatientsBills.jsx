@@ -141,5 +141,5 @@ const BillingLogic = ({ data }) => {
     </>
   );
 };
-export default BillingLogic;
+export default PatientList;
 

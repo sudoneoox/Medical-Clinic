@@ -5,6 +5,7 @@ import Overview from "./OverviewCards.jsx";
 import Calendar from "./Calendar.jsx";
 import Patients from "./PatientsCards.jsx";
 import Bills from "./PatientsBills.jsx";
+import PaymentForm from "./PaymentForm.jsx";
 import Appointments from "./Appointments.jsx";
 import Analytics from "./Analytics.jsx";
 import UserManagement from "./UserManagement.jsx";
@@ -114,6 +115,10 @@ const MainFrame = ({
   const [contentData, setContentData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [billingRecords, setBillingRecords] = useState([]);
+  const [isPaymentFormVisible, setPaymentFormVisible] = useState(false);
+  const [selectedBillingRecord, setSelectedBillingRecord] = useState(null);
 
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
@@ -160,6 +165,23 @@ const MainFrame = ({
     fetchData(item.path);
   };
 
+  // Patient Billing
+  const handleViewBills = (patient) => {
+    setSelectedPatient(patient);
+    fetchBillingRecords(patient.patient_id);
+    setCurrentSelected("BILLING");
+  };
+
+  // Patient Payments
+  const handlePaymentComplete = async () => {
+    fetchBillingRecords(selectedPatient.patient_id);
+    setPaymentFormVisible(false); 
+  };
+
+  const handlePaymentCancel = () => {
+    setPaymentFormVisible(false);
+  };
+
   // Initial data fetch
   useEffect(() => {
     const defaultItem = sidebarItems.find(
@@ -170,11 +192,26 @@ const MainFrame = ({
       fetchData(defaultItem.path);
     }
   }, []);
+
+  // Fetch billing records
+  const fetchBillingRecords = async (patientId) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.post(`${API.URL}/api/users/billing/${patientId}`);
+      setBillingRecords(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // WARNING: remove during deployment
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
   const TEST = true;
-
+  console.log("Payment Form Visible:", isPaymentFormVisible);
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -193,6 +230,12 @@ const MainFrame = ({
             </div>
           ) : !TEST && error ? (
             <div className="text-center text-red-600">Error: {error}</div>
+          ) : isPaymentFormVisible && selectedBillingRecord ? (
+            <PaymentForm
+              selectedBillingRecord={selectedBillingRecord}
+              onPaymentComplete={handlePaymentComplete}
+              onCancel={handlePaymentCancel}
+            />
           ) : (
             <div className="max-w-7xl mx-auto">
               {/* Render the appropriate component based on contentData */}
@@ -209,6 +252,73 @@ const MainFrame = ({
                   {currentSelected === "PATIENTS" && (
                     // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
+                  )}
+
+                  {currentSelected === "PATIENT RECORDS" && (
+                    <Bills
+                     data={contentData.patients} 
+                     onViewBills={handleViewBills} 
+                    /> 
+                  )}
+
+                  {currentSelected === "BILLING" && (
+                    <div className="space-y-5">
+                      <h2 className="text-xl font-semibold">
+                        Billing Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}
+                      </h2>
+                      <p>To make a payment, select the row of the appointment that has not been paid and you wish to pay for at this time.</p>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white border border-gray-200">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="py-2 px-4 border-b border-gray-200 text-left">Date of Appointment</th>
+                              <th className="py-2 px-4 border-b border-gray-200 text-left">Payment Due Date</th>
+                              <th className="py-2 px-4 border-b border-gray-200 text-left">Amount Due</th>
+                              <th className="py-2 px-4 border-b border-gray-200 text-left">Payment Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {billingRecords.map((record, index) => (
+                              <tr
+                                key={index}
+                                className={`hover:bg-gray-50 ${record.payment_status === "PAID" ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                onClick={() => {
+                                  if (record.payment_status !== "PAID") {
+                                    setSelectedBillingRecord(record); 
+                                    setPaymentFormVisible(true);
+                                  }
+                                }}
+                              >
+                                <td className="py-2 px-4 border-b border-gray-200">
+                                  {new Date(record.created_at).toLocaleDateString()}
+                                </td>
+                                <td className="py-2 px-4 border-b border-gray-200">
+                                  {new Date(record.billing_due).toLocaleDateString()}
+                                </td>
+                                <td className="py-2 px-4 border-b border-gray-200">
+                                  ${parseFloat(record.amount_due).toFixed(2)}
+                                </td>
+                                <td className={`py-2 px-4 border-b border-gray-200 font-bold ${record.payment_status === "PAID" ? 'text-green-600' : 'text-red-600'}`}>
+                                  {record.payment_status}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="flex justify-end space-x-4">
+                        <button
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
+                          onClick={() => {
+                            setCurrentSelected("PATIENT RECORDS");
+                            setSelectedPatient(null); 
+                          }}
+                        >
+                          Back to Patient Records
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* TODO:  */}
