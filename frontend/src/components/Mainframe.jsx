@@ -65,7 +65,7 @@ const Sidebar = ({ items, currentSelected, onItemSelect }) => {
                     "w-full flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200",
                     "hover:bg-gray-100",
                     isActive &&
-                    "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-600",
+                      "bg-blue-50 text-blue-600 font-semibold border-l-4 border-blue-600",
                     !isActive && "text-gray-700",
                   )}
                 >
@@ -97,7 +97,12 @@ const Sidebar = ({ items, currentSelected, onItemSelect }) => {
     </div>
   );
 };
+
 // MainFrame component that wraps the entire layout
+// NOTE: the mainframe should not handle a sidebarItems Logic nor the UI for it
+// its just being used to fetch an api request and then to send the data it got from that api request to the component
+// so that its filled with something ones its rendered and to switch around what UI is showing depending on what sidebaritem is clicked
+// IMPORTANT: DO NOT DO sidebarItem UI or LOGIC here
 const MainFrame = ({
   userFullName,
   userRole,
@@ -109,8 +114,6 @@ const MainFrame = ({
   const [contentData, setContentData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [billingRecords, setBillingRecords] = useState([]);
 
   // Function to fetch data based on selected item
   const fetchData = async (path) => {
@@ -157,12 +160,6 @@ const MainFrame = ({
     fetchData(item.path);
   };
 
-  const handleViewBills = (patient) => {
-    setSelectedPatient(patient);
-    fetchBillingRecords(patient.patient_id);
-    setCurrentSelected("BILLING");
-  };
-
   // Initial data fetch
   useEffect(() => {
     const defaultItem = sidebarItems.find(
@@ -173,23 +170,6 @@ const MainFrame = ({
       fetchData(defaultItem.path);
     }
   }, []);
-
-  // Fetch billing records
-  const fetchBillingRecords = async (patientId) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.post(`${API.URL}/api/users/billing/${patientId}`);
-      console.log(response.data);
-      setBillingRecords(response.data);
-      console.log(billingRecords);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // WARNING: remove during deployment
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
@@ -230,64 +210,21 @@ const MainFrame = ({
                     // <Patients data={contentData} />
                     <Patients data={contentData.patients} />
                   )}
-                  {currentSelected === "PATIENT RECORDS" && (
-                    <Bills data={contentData.patients} onViewBills={handleViewBills} />
-                  )}
 
-                  {currentSelected === "BILLING" && (
-                    <div className="space-y-5">
-                      <h2 className="text-xl font-semibold">
-                        Billing Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}
-                      </h2>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full bg-white border border-gray-200">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="py-2 px-4 border-b border-gray-200 text-left">Date of Appointment</th>
-                              <th className="py-2 px-4 border-b border-gray-200 text-left">Payment Due Date</th>
-                              <th className="py-2 px-4 border-b border-gray-200 text-left">Amount Due</th>
-                              <th className="py-2 px-4 border-b border-gray-200 text-left">Payment Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {billingRecords.map((record, index) => (
-                              <tr key={index} className="hover:bg-gray-50">
-                                <td className="py-2 px-4 border-b border-gray-200">
-                                  {new Date(record.created_at).toLocaleDateString()} {/* Date of Appointment */}
-                                </td>
-                                <td className="py-2 px-4 border-b border-gray-200">
-                                  {new Date(record.billing_due).toLocaleDateString()} {/* Payment Due Date */}
-                                </td>
-                                <td className="py-2 px-4 border-b border-gray-200">
-                                  ${parseFloat(record.amount_due).toFixed(2)} {/* Amount Due */}
-                                </td>
-                                <td className={`py-2 px-4 border-b border-gray-200 font-bold ${record.payment_status === "PAID" ? 'text-green-600' : 'text-red-600'}`}>
-                                  {record.payment_status}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="flex justify-end space-x-4">
+                  {/* TODO:  */}
+                  {/* {currentSelected === "PATIENT RECORDS" && ( */}
+                  {/* FIX: ?? Bills should be a logic components inside PatientRecords.jsx your not just */}
+                  {/* showing Bills here  */}
+                  {/* <Bills */}
+                  {/*   data={contentData.patients} */}
+                  {/*   onViewBills={handleViewBills} */}
+                  {/* /> */}
+                  {/* )} */}
 
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
-                        onClick={() => {
-                          setCurrentSelected("PATIENT RECORDS");
-                          setSelectedPatient(null); // Clear the selected patient
-                        }}
-                      >
-                        Back to Patient Records
-                      </button>
-                      <button
-                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-200 focus:ring-opacity-50"
-                        >
-                          Make a Payment
-                        </button>
-                        </div>
-                    </div>
-                  )}
+                  {/* TODO: */}
+                  {/* FIX: pass component here dont write jsx code it makes it harder to read for the people */}
+                  {/*     that are using Mainframe.jsx */}
+                  {/* {currentSelected === "BILLING" && ()} */}
 
                   {currentSelected === "MY APPOINTMENTS" && <Appointments />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
