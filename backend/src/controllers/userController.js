@@ -255,11 +255,41 @@ const retreiveBills = async (req, res) => {
   }
 };
 
+const submitPayment = async (req, res) => {
+  try {
+    console.log(req.body);
+
+    const { selectedBillingRecord, cardNumber, expirationDate, cvv } = req.body;
+    const { billing_id, patient_id } = selectedBillingRecord;
+    
+    const billingRecord = await Billing.findOne({
+      where: { billing_id: billing_id, patient_id: patient_id },
+    });
+
+    if (!billingRecord) {
+      return res.status(404).json({ message: "Billing record not found." });
+    }
+
+    if (billingRecord.payment_status === 'PAID') {
+      return res.status(400).json({ message: "Payment has already been made." });
+    }
+
+    // Update the payment status to 'PAID'
+    await billingRecord.update({ payment_status: 'PAID' });
+
+    return res.status(200).json({ message: "Payment submitted successfully." });
+  } catch (error) {
+    console.error("Error submitting payment:", error);
+    return res.status(500).json({ message: "Error submitting payment", error: error.message });
+  }
+};
+
 
 const userControllerFuncs = {
   loginUser,
   registerUser,
   retreiveBills,
+  submitPayment,
 };
 
 export default userControllerFuncs;
