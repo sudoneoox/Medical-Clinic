@@ -74,9 +74,14 @@ CREATE TABLE IF NOT EXISTS office (
 CREATE TABLE IF NOT EXISTS doctor_offices (
     doctor_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
+    day_of_week ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY') NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
-    PRIMARY KEY (doctor_id, office_id)
+    is_primary_office TINYINT DEFAULT 0,
+    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    effective_end_date DATE,
+    schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
+    PRIMARY KEY (doctor_id, office_id, day_of_week)
 );
 ;
 CREATE TABLE IF NOT EXISTS appointments (
@@ -211,11 +216,16 @@ CREATE TABLE IF NOT EXISTS nurses (
 );
 ;
 CREATE TABLE IF NOT EXISTS nurse_offices (
-    nurse_id INT NOT NULL,
-    office_id INT NOT NULL,
+    nurse_id INTEGER NOT NULL,
+    office_id INTEGER NOT NULL,
+    day_of_week ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY') NOT NULL,
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
-    PRIMARY KEY (nurse_id, office_id)
+    is_primary_office TINYINT DEFAULT 0,
+    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    effective_end_date DATE,
+    schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
+    PRIMARY KEY (nurse_id, office_id, day_of_week)
 );
 ;
 CREATE TABLE IF NOT EXISTS appointment_notes (
@@ -246,9 +256,14 @@ CREATE TABLE IF NOT EXISTS appointment_cancellations (
 CREATE TABLE IF NOT EXISTS receptionist_offices (
     receptionist_id INTEGER NOT NULL,
     office_id INTEGER NOT NULL,
-    shift_start TIME,
-    shift_end TIME,
-    PRIMARY KEY (receptionist_id, office_id)
+    day_of_week ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY') NOT NULL,
+    shift_start TIME NOT NULL,
+    shift_end TIME NOT NULL,
+    is_primary_office TINYINT DEFAULT 0,
+    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    effective_end_date DATE,
+    schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
+    PRIMARY KEY (receptionist_id, office_id, day_of_week)
 );
 ;
 CREATE TABLE IF NOT EXISTS test_results (
@@ -789,14 +804,44 @@ BEGIN
         );
         INSERT INTO doctor_specialties (doctor_id, specialty_code)
         VALUES (curr_doctor_id, 1 + FLOOR(RAND() * 15));
-        INSERT INTO doctor_offices (doctor_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_doctor_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
+        INSERT INTO doctor_offices (
+          doctor_id, 
+          office_id,
+          day_of_week,
+          shift_start,
+          shift_end,
+          is_primary_office,
+          effective_start_date,
+          schedule_type
+        )
+         SELECT 
+    curr_doctor_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.2 THEN '07:00:00'
+        WHEN RAND() < 0.5 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.2 THEN '16:00:00'
+        WHEN RAND() < 0.5 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
@@ -820,14 +865,44 @@ BEGIN
             @random_fname,
             @random_lname
         );
-        INSERT INTO nurse_offices (nurse_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_nurse_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
+        INSERT INTO nurse_offices (
+    nurse_id, 
+    office_id,
+    day_of_week,
+    shift_start,
+    shift_end,
+    is_primary_office,
+    effective_start_date,
+    schedule_type
+)
+SELECT 
+    curr_nurse_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.3 THEN '07:00:00'
+        WHEN RAND() < 0.6 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.3 THEN '16:00:00'
+        WHEN RAND() < 0.6 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
@@ -851,14 +926,44 @@ BEGIN
             @random_fname,
             @random_lname
         );
-        INSERT INTO receptionist_offices (receptionist_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_receptionist_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
+        INSERT INTO receptionist_offices (
+    receptionist_id, 
+    office_id,
+    day_of_week,
+    shift_start,
+    shift_end,
+    is_primary_office,
+    effective_start_date,
+    schedule_type
+)
+SELECT 
+    curr_receptionist_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.4 THEN '07:00:00'
+        WHEN RAND() < 0.7 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.4 THEN '16:00:00'
+        WHEN RAND() < 0.7 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
@@ -1267,6 +1372,15 @@ CHECK (years_of_experience >= 0 AND years_of_experience <= 70);
 ALTER TABLE billing
 ADD CONSTRAINT chk_billing_amounts 
 CHECK (amount_due >= 0 AND amount_paid >= 0);
+ALTER TABLE doctor_offices
+ADD CONSTRAINT chk_doctor_shift_times
+CHECK (shift_start < shift_end);
+ALTER TABLE nurse_offices
+ADD CONSTRAINT chk_nurse_shift_times
+CHECK (shift_start < shift_end);
+ALTER TABLE receptionist_offices
+ADD CONSTRAINT chk_receptionist_shift_times
+CHECK (shift_start < shift_end);
 DELIMITER //
 CREATE TRIGGER before_appointment_insert 
 BEFORE INSERT ON appointments
@@ -1542,6 +1656,28 @@ WHERE
     a.status = 'CONFIRMED'
 ORDER BY
     d.doctor_id, a.appointment_datetime;
+CREATE OR REPLACE VIEW current_doctor_schedules AS
+SELECT 
+    d.doctor_id,
+    d.doctor_fname,
+    d.doctor_lname,
+    do.office_id,
+    o.office_name,
+    do.day_of_week,
+    do.shift_start,
+    do.shift_end,
+    do.is_primary_office,
+    do.schedule_type
+FROM doctors d
+JOIN doctor_offices do ON d.doctor_id = do.doctor_id
+JOIN office o ON do.office_id = o.office_id
+WHERE 
+    do.effective_start_date <= CURRENT_DATE
+    AND (do.effective_end_date IS NULL OR do.effective_end_date >= CURRENT_DATE)
+ORDER BY 
+    d.doctor_id,
+    FIELD(do.day_of_week, 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'),
+    do.shift_start;
 CREATE OR REPLACE VIEW patient_medical_history AS
 SELECT 
     p.patient_id,

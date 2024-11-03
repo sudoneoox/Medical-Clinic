@@ -23,6 +23,31 @@ WHERE
 ORDER BY
     d.doctor_id, a.appointment_datetime;
 
+
+CREATE OR REPLACE VIEW current_doctor_schedules AS
+SELECT 
+    d.doctor_id,
+    d.doctor_fname,
+    d.doctor_lname,
+    do.office_id,
+    o.office_name,
+    do.day_of_week,
+    do.shift_start,
+    do.shift_end,
+    do.is_primary_office,
+    do.schedule_type
+FROM doctors d
+JOIN doctor_offices do ON d.doctor_id = do.doctor_id
+JOIN office o ON do.office_id = o.office_id
+WHERE 
+    do.effective_start_date <= CURRENT_DATE
+    AND (do.effective_end_date IS NULL OR do.effective_end_date >= CURRENT_DATE)
+ORDER BY 
+    d.doctor_id,
+    FIELD(do.day_of_week, 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'),
+    do.shift_start;
+
+
 -- Pateint medical history view
 CREATE OR REPLACE VIEW patient_medical_history AS
 SELECT 

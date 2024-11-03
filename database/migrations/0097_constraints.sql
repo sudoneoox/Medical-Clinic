@@ -13,6 +13,20 @@ ALTER TABLE billing
 ADD CONSTRAINT chk_billing_amounts 
 CHECK (amount_due >= 0 AND amount_paid >= 0);
 
+
+ALTER TABLE doctor_offices
+ADD CONSTRAINT chk_doctor_shift_times
+CHECK (shift_start < shift_end);
+
+ALTER TABLE nurse_offices
+ADD CONSTRAINT chk_nurse_shift_times
+CHECK (shift_start < shift_end);
+
+ALTER TABLE receptionist_offices
+ADD CONSTRAINT chk_receptionist_shift_times
+CHECK (shift_start < shift_end);
+
+
 -- delimeter constraints
 
 -- appointments are in the future not before present (insert constraint)
@@ -41,3 +55,7 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+
+
+

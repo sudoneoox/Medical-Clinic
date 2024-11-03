@@ -492,15 +492,49 @@ BEGIN
         VALUES (curr_doctor_id, 1 + FLOOR(RAND() * 15));
         
         -- Assign to offices
-        INSERT INTO doctor_offices (doctor_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_doctor_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
-        
+        INSERT INTO doctor_offices (
+          doctor_id, 
+          office_id,
+          day_of_week,
+          shift_start,
+          shift_end,
+          is_primary_office,
+          effective_start_date,
+          schedule_type
+        )
+         SELECT 
+    curr_doctor_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.2 THEN '07:00:00'
+        WHEN RAND() < 0.5 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.2 THEN '16:00:00'
+        WHEN RAND() < 0.5 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
+
+
+
+
+
         SET i = i + 1;
     END WHILE;
 
@@ -535,15 +569,48 @@ BEGIN
         );
         
         -- Assign to offices
-        INSERT INTO nurse_offices (nurse_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_nurse_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
-        
+        INSERT INTO nurse_offices (
+    nurse_id, 
+    office_id,
+    day_of_week,
+    shift_start,
+    shift_end,
+    is_primary_office,
+    effective_start_date,
+    schedule_type
+)
+SELECT 
+    curr_nurse_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.3 THEN '07:00:00'
+        WHEN RAND() < 0.6 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.3 THEN '16:00:00'
+        WHEN RAND() < 0.6 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
+
+
+
+
         SET i = i + 1;
     END WHILE;
 
@@ -577,15 +644,47 @@ BEGIN
         );
         
         -- Assign to offices
-        INSERT INTO receptionist_offices (receptionist_id, office_id, shift_start, shift_end)
-        SELECT 
-            curr_receptionist_id,
-            office_id,
-            '08:00:00',
-            '17:00:00'
-        FROM office
-        WHERE RAND() < 0.7;
-        
+        INSERT INTO receptionist_offices (
+    receptionist_id, 
+    office_id,
+    day_of_week,
+    shift_start,
+    shift_end,
+    is_primary_office,
+    effective_start_date,
+    schedule_type
+)
+SELECT 
+    curr_receptionist_id,
+    o.office_id,
+    dow.day,
+    CASE 
+        WHEN RAND() < 0.4 THEN '07:00:00'
+        WHEN RAND() < 0.7 THEN '08:00:00'
+        ELSE '09:00:00'
+    END,
+    CASE 
+        WHEN RAND() < 0.4 THEN '16:00:00'
+        WHEN RAND() < 0.7 THEN '17:00:00'
+        ELSE '18:00:00'
+    END,
+    CASE WHEN o.office_id = (
+        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
+    ) THEN TRUE ELSE FALSE END,
+    CURRENT_DATE,
+    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
+FROM office o
+CROSS JOIN (
+    SELECT 'MONDAY' as day UNION
+    SELECT 'TUESDAY' UNION
+    SELECT 'WEDNESDAY' UNION
+    SELECT 'THURSDAY' UNION
+    SELECT 'FRIDAY'
+) dow
+WHERE RAND() < 0.7;
+
+
+
         SET i = i + 1;
     END WHILE;
 
