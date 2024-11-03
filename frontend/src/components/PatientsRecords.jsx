@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api, { API } from "../api.js";
 import PaymentForm from "./PaymentForm.jsx";
+import { Search } from "lucide-react";
 
 const PatientRecords = ({ data = [] }) => {
   const [currentView, setCurrentView] = useState("PATIENT_LIST");
@@ -10,7 +11,20 @@ const PatientRecords = ({ data = [] }) => {
   const [error, setError] = useState(null);
   const [isPaymentFormVisible, setPaymentFormVisible] = useState(false);
   const [selectedBillingRecord, setSelectedBillingRecord] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const filteredPatients = data.filter(
+    (patient) =>
+      patient.patient_fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.patient_lname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (
+        patient.patient_fname.toLowerCase() +
+        " " +
+        patient.patient_lname.toLowerCase()
+      ).includes(searchTerm.toLowerCase()) ||
+      (patient.patient_id &&
+        patient.patient_id.toString().includes(searchTerm)),
+  );
   // Fetch billing records
   const fetchBillingRecords = async (patientId) => {
     setIsLoading(true);
@@ -46,10 +60,21 @@ const PatientRecords = ({ data = [] }) => {
   if (currentView === "PATIENT_LIST") {
     return (
       <div className="space-y-4">
-        {data.length === 0 ? (
+        <div className="flex items-center gap-2 w-full md:w-96">
+          <Search className="w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or ID..."
+            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {filteredPatients.length === 0 ? (
           <p>No patients found.</p>
         ) : (
-          data.map((patient, index) => (
+          filteredPatients.map((patient, index) => (
             <div
               key={index}
               className="flex items-start justify-between border-b pb-2"
@@ -73,6 +98,7 @@ const PatientRecords = ({ data = [] }) => {
       </div>
     );
   }
+
   // Billing View
   if (currentView === "BILLING") {
     if (isLoading) {
