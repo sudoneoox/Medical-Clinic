@@ -49,6 +49,12 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
+          case "CALENDAR":
+            return await receptionistDashboard.populateCALENDAR(
+              user,
+              relatedEntity,
+              res,
+            );
           case "RECORDS":
             return await receptionistDashboard.populatePATIENTRECORDS(
               user,
@@ -77,11 +83,19 @@ const portalRoleSwitcher = async (req, res) => {
               res,
             );
           case "MEDICATIONS":
-            return await nurseDashboard.populateMEDICATION(
+            return await nurseDashboard.populateMEDICATIONS(
               user,
               relatedEntity,
               res,
             );
+
+          case "CALENDAR":
+            return await nurseDashboard.populateCALENDAR(
+              user,
+              relatedEntity,
+              res,
+            );
+
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for nurse got ${sidebarItem}`,

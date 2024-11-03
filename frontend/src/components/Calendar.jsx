@@ -12,41 +12,63 @@ const Calendar = ({ data }) => {
   const [events, setEvents] = useState([]);
   const calendarRef = useRef(null);
   const userRole = localStorage.getItem("userRole");
+
   useEffect(() => {
-    // DESC: transforms json to appointment calendar events
     if (data?.appointments) {
-      const calendarEvents = data.appointments.map((apt) => {
-        const startHour = new Date(apt.appointment_datetime).toLocaleTimeString(
-          [],
-          {
+      const calendarEvents = data.appointments.map((evt) => {
+        // Check if this is a schedule event or appointment event
+        if (evt.extendedProps?.type === "schedule") {
+          // Handle schedule events (already formatted from backend)
+          return {
+            id: evt.id,
+            title: evt.title,
+            start: evt.start,
+            end: evt.end,
+            backgroundColor: evt.backgroundColor || "#059669",
+            extendedProps: evt.extendedProps,
+          };
+        } else {
+          // Handle appointment events (traditional format)
+          const startHour = new Date(
+            evt.appointment_datetime,
+          ).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
-          },
-        );
-        // Parse duration (HH:MM:SS) to ms
-        const [hours, minutes, seconds] = apt.duration.split(":").map(Number);
-        const durationMs = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+          });
 
-        const endHour = new Date(
-          new Date(apt.appointment_datetime).getTime() + durationMs,
-        ).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+          // Only process duration if it exists
+          let endHour = startHour;
+          if (evt.duration) {
+            const [hours, minutes, seconds] = evt.duration
+              .split(":")
+              .map(Number);
+            const durationMs =
+              (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+            endHour = new Date(
+              new Date(evt.appointment_datetime).getTime() + durationMs,
+            ).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
 
-        return {
-          id: apt.appointment_id,
-          title: `Appointment`,
-          start: apt.appointment_datetime,
-          end: apt.appointment_datetime,
-          extendedProps: {
-            duration: `(${startHour} - ${endHour})`,
-            doctor: apt.doctor.doctor_lname,
-            patient: apt.patient_name,
-            status: apt.status,
-            type: apt.reason,
-          },
-        };
+          return {
+            id: evt.appointment_id,
+            title: `Appointment`,
+            start: evt.appointment_datetime,
+            end: evt.appointment_datetime,
+            backgroundColor: "#4F46E5",
+            extendedProps: {
+              type: "appointment",
+              duration: `(${startHour} - ${endHour})`,
+              doctor: evt.doctor?.doctor_lname,
+              patient: evt.patient_name,
+              status: evt.status,
+              reason: evt.reason,
+              location: evt.Office?.office_name,
+            },
+          };
+        }
       });
       setEvents(calendarEvents);
     }
@@ -56,6 +78,29 @@ const Calendar = ({ data }) => {
     const { event } = eventInfo;
     const props = event.extendedProps;
 
+    if (props.type === "schedule") {
+      return (
+        <div className="p-1 overflow-hidden text-xs">
+          <div className="font-semibold truncate">
+            {props.isPrimary ? "🏥 Primary Office" : "🏥 Office Hours"}
+          </div>
+          <div className="truncate text-gray-600">{props.location}</div>
+          <div className="truncate text-gray-600">
+            {new Date(event.start).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
+            -
+            {new Date(event.end).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // Default appointment display
     return (
       <div className="p-1 overflow-hidden text-xs">
         <div className="font-semibold truncate">{event.title}</div>
@@ -64,7 +109,7 @@ const Calendar = ({ data }) => {
         )}
         {userRole === "PATIENT" && (
           <>
-            <div className="truncate text-gray-600"> {props.duration}</div>
+            <div className="truncate text-gray-600">{props.duration}</div>
             <div className="truncate text-gray-600">Dr. {props.doctor}</div>
           </>
         )}
@@ -75,6 +120,9 @@ const Calendar = ({ data }) => {
               Patient: {props.patient}
             </div>
           </>
+        )}
+        {props.location && (
+          <div className="truncate text-gray-600">At: {props.location}</div>
         )}
       </div>
     );

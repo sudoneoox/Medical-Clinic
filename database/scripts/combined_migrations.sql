@@ -805,43 +805,32 @@ BEGIN
         INSERT INTO doctor_specialties (doctor_id, specialty_code)
         VALUES (curr_doctor_id, 1 + FLOOR(RAND() * 15));
         INSERT INTO doctor_offices (
-          doctor_id, 
-          office_id,
-          day_of_week,
-          shift_start,
-          shift_end,
-          is_primary_office,
-          effective_start_date,
-          schedule_type
-        )
-         SELECT 
+    doctor_id, 
+    office_id,
+    day_of_week,
+    shift_start,
+    shift_end,
+    is_primary_office,
+    effective_start_date,
+    schedule_type
+)
+SELECT 
     curr_doctor_id,
     o.office_id,
-    dow.day,
-    CASE 
-        WHEN RAND() < 0.2 THEN '07:00:00'
-        WHEN RAND() < 0.5 THEN '08:00:00'
-        ELSE '09:00:00'
-    END,
-    CASE 
-        WHEN RAND() < 0.2 THEN '16:00:00'
-        WHEN RAND() < 0.5 THEN '17:00:00'
-        ELSE '18:00:00'
-    END,
-    CASE WHEN o.office_id = (
-        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
-    ) THEN TRUE ELSE FALSE END,
+    d.day,
+    ADDTIME('08:00:00', SEC_TO_TIME(FLOOR(RAND() * 3600))), -- Random start between 8 AM and 9 AM
+    ADDTIME('17:00:00', SEC_TO_TIME(FLOOR(RAND() * 7200))), -- Random end between 5 PM and 7 PM
+    IF(o.office_id = (SELECT MIN(office_id) FROM office), TRUE, FALSE), -- Primary office for first office
     CURRENT_DATE,
-    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
-FROM office o
+    'REGULAR'
+FROM (SELECT DISTINCT office_id FROM office ORDER BY RAND() LIMIT 1) o
 CROSS JOIN (
-    SELECT 'MONDAY' as day UNION
-    SELECT 'TUESDAY' UNION
-    SELECT 'WEDNESDAY' UNION
-    SELECT 'THURSDAY' UNION
+    SELECT 'MONDAY' as day UNION ALL
+    SELECT 'TUESDAY' UNION ALL
+    SELECT 'WEDNESDAY' UNION ALL
+    SELECT 'THURSDAY' UNION ALL
     SELECT 'FRIDAY'
-) dow
-WHERE RAND() < 0.7;
+) d;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
@@ -865,7 +854,7 @@ WHERE RAND() < 0.7;
             @random_fname,
             @random_lname
         );
-        INSERT INTO nurse_offices (
+       INSERT INTO nurse_offices (
     nurse_id, 
     office_id,
     day_of_week,
@@ -878,31 +867,20 @@ WHERE RAND() < 0.7;
 SELECT 
     curr_nurse_id,
     o.office_id,
-    dow.day,
-    CASE 
-        WHEN RAND() < 0.3 THEN '07:00:00'
-        WHEN RAND() < 0.6 THEN '08:00:00'
-        ELSE '09:00:00'
-    END,
-    CASE 
-        WHEN RAND() < 0.3 THEN '16:00:00'
-        WHEN RAND() < 0.6 THEN '17:00:00'
-        ELSE '18:00:00'
-    END,
-    CASE WHEN o.office_id = (
-        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
-    ) THEN TRUE ELSE FALSE END,
+    d.day,
+    ADDTIME('08:00:00', SEC_TO_TIME(FLOOR(RAND() * 3600))), -- Random start between 8 AM and 9 AM
+    ADDTIME('17:00:00', SEC_TO_TIME(FLOOR(RAND() * 7200))), -- Random end between 5 PM and 7 PM
+    IF(o.office_id = (SELECT MIN(office_id) FROM office), TRUE, FALSE), -- Primary office for first office
     CURRENT_DATE,
-    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
-FROM office o
+    'REGULAR'
+FROM (SELECT DISTINCT office_id FROM office ORDER BY RAND() LIMIT 1) o
 CROSS JOIN (
-    SELECT 'MONDAY' as day UNION
-    SELECT 'TUESDAY' UNION
-    SELECT 'WEDNESDAY' UNION
-    SELECT 'THURSDAY' UNION
+    SELECT 'MONDAY' as day UNION ALL
+    SELECT 'TUESDAY' UNION ALL
+    SELECT 'WEDNESDAY' UNION ALL
+    SELECT 'THURSDAY' UNION ALL
     SELECT 'FRIDAY'
-) dow
-WHERE RAND() < 0.7;
+) d;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
@@ -939,31 +917,20 @@ WHERE RAND() < 0.7;
 SELECT 
     curr_receptionist_id,
     o.office_id,
-    dow.day,
-    CASE 
-        WHEN RAND() < 0.4 THEN '07:00:00'
-        WHEN RAND() < 0.7 THEN '08:00:00'
-        ELSE '09:00:00'
-    END,
-    CASE 
-        WHEN RAND() < 0.4 THEN '16:00:00'
-        WHEN RAND() < 0.7 THEN '17:00:00'
-        ELSE '18:00:00'
-    END,
-    CASE WHEN o.office_id = (
-        SELECT office_id FROM office ORDER BY RAND() LIMIT 1
-    ) THEN TRUE ELSE FALSE END,
+    d.day,
+    ADDTIME('08:00:00', SEC_TO_TIME(FLOOR(RAND() * 3600))), -- Random start between 8 AM and 9 AM
+    ADDTIME('17:00:00', SEC_TO_TIME(FLOOR(RAND() * 7200))), -- Random end between 5 PM and 7 PM
+    IF(o.office_id = (SELECT MIN(office_id) FROM office), TRUE, FALSE), -- Primary office for first office
     CURRENT_DATE,
-    ELT(FLOOR(1 + RAND() * 3), 'REGULAR', 'TEMPORARY', 'ON_CALL')
-FROM office o
+    'REGULAR'
+FROM (SELECT DISTINCT office_id FROM office ORDER BY RAND() LIMIT 1) o
 CROSS JOIN (
-    SELECT 'MONDAY' as day UNION
-    SELECT 'TUESDAY' UNION
-    SELECT 'WEDNESDAY' UNION
-    SELECT 'THURSDAY' UNION
+    SELECT 'MONDAY' as day UNION ALL
+    SELECT 'TUESDAY' UNION ALL
+    SELECT 'WEDNESDAY' UNION ALL
+    SELECT 'THURSDAY' UNION ALL
     SELECT 'FRIDAY'
-) dow
-WHERE RAND() < 0.7;
+) d;
         SET i = i + 1;
     END WHILE;
     SET i = 0;
