@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/tailwindbase.css";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/UI/Navbar.jsx";
 import { useLoaderData } from "react-router-dom";
 
 const DepartmentCard = ({ title, description, image }) => {

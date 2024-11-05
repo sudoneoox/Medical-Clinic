@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
 
-import "../styles/tailwindbase.css";
+import "../../styles/tailwindbase.css";
 
 const MOBILE_THRESHOLD = 768; // Mobile threshold in pixels
 
@@ -54,7 +54,7 @@ const NavbarItems = ({ isMobile, isMenuOpen, items }) => {
 export default function Navbar({ items = null, customButtonProps = {} }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
-    window.innerWidth < MOBILE_THRESHOLD
+    window.innerWidth < MOBILE_THRESHOLD,
   );
 
   useEffect(() => {
@@ -70,12 +70,12 @@ export default function Navbar({ items = null, customButtonProps = {} }) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-
   return (
     <nav className="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {/* /* Navbar Title */ }
-        {customButtonProps['buttonText'] === 'Sign in' || customButtonProps['buttonText'] === 'Sign Up' ? (
+        {/* /* Navbar Title */}
+        {customButtonProps["buttonText"] === "Sign in" ||
+        customButtonProps["buttonText"] === "Sign Up" ? (
           <Link
             to={`/`}
             className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
@@ -88,7 +88,7 @@ export default function Navbar({ items = null, customButtonProps = {} }) {
           </span>
         )}
 
-        {/* /* Login Portal Button with router route */ }
+        {/* /* Login Portal Button with router route */}
         <Button
           isMobile={isMobile}
           isMobileMenuOpen={isMobileMenuOpen}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Overview from "./OverviewCards.jsx";
-import Calendar from "./Calendar.jsx";
+import Calendar from "./sidebarItems/Calendar.jsx";
 import Patients from "./PatientsCards.jsx";
-import PatientRecords from "./PatientsRecords.jsx";
-import Appointments from "./Appointments.jsx";
-import Analytics from "./Analytics.jsx";
-import UserManagement from "./UserManagement.jsx";
+import PatientRecords from "./sidebarItems/PatientsRecords.jsx";
+import Appointments from "./sidebarItems/Appointments.jsx";
+import Analytics from "./sidebarItems/Analytics.jsx";
+import UserManagement from "./sidebarItems/UserManagement.jsx";
+import Settings from "./sidebarItems/UserSettings.jsx";
 import { cn } from "../utils/utils.js";
 import { Bell, UserRound } from "lucide-react";
 import api, { API } from "../api.js";
@@ -153,7 +154,8 @@ const MainFrame = ({
     if (
       item.label === "Analytics" ||
       item.label === "User Management" ||
-      item.label === "MY APPOINTMENTS"
+      item.label === "MY APPOINTMENTS" ||
+      item.label === "SETTINGS"
     ) {
       return;
     }
@@ -218,6 +220,9 @@ const MainFrame = ({
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />
+                  )}
+                  {currentSelected === "SETTINGS" && (
+                    <Settings data={contentData} />
                   )}
 
                   {/*NOTE: Add other component conditions here*/}

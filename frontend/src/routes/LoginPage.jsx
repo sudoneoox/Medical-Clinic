@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/UI/Navbar.jsx";
 import "../styles/tailwindbase.css";
 import api, { API } from "../api.js";
 import { useNavigate } from "react-router-dom";

@@ -15,7 +15,7 @@ import {
   UserSquare2,
   Globe2,
 } from "lucide-react";
-import api from "../api.js";
+import api from "../../api.js";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 // TODO: handle click events
 // TODO: handle appointment analytics

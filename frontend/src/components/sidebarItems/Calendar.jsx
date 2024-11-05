@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../utils/Card.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "../../utils/Card.tsx";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
-import { Button } from "../utils/Button.tsx";
-import "../styles/tailwindbase.css";
+import { Button } from "../../utils/Button.tsx";
+import "../../styles/tailwindbase.css";
 
 const Calendar = ({ data }) => {
   const [events, setEvents] = useState([]);

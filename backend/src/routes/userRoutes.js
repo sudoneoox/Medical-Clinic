@@ -31,6 +31,7 @@ router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
 router.post("/portal/analytics", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/management", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/settigns", dashBoardControllerFuncs.portalRoleSwitcher);
 // TODO: handle delete
 // router.post("/portal/management/delete", null);
 router.post("/portal/users", dashBoardControllerFuncs.portalRoleSwitcher);
@@ -52,9 +53,9 @@ router.post("/prescriptionrecords/:recordId", doctorDashboard.retrievePrescripti
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 
-router.post('/billing/:patientId', userControllerFuncs.retreiveBills);
+router.post("/billing/:patientId", userControllerFuncs.retreiveBills);
 
-router.post('/submit-payment', userControllerFuncs.submitPayment);
+router.post("/submit-payment", userControllerFuncs.submitPayment);
 
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success
