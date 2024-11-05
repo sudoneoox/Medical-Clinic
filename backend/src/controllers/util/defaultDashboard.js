@@ -47,7 +47,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
           }
         }
 
-        // Phone validation (XXX-XXX-XXXX)
+        // Phone validation
         if (data.phone && !data.phone.match(/^\d{3}-\d{3}-\d{4}$/)) {
           return res.status(400).json({
             success: false,
@@ -68,7 +68,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
         break;
 
       case "password":
-        // Simple password validation
+        // password validation
         if (data.newPassword !== data.confirmPassword) {
           return res.status(400).json({
             success: false,
@@ -76,7 +76,6 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
           });
         }
 
-        // Update password without encryption
         await User.update(
           { user_password: data.newPassword },
           { where: { user_id: user.user_id } },
@@ -182,7 +181,6 @@ const populateMYAPPOINTMENTS = async (
             break;
           }
           case "PENDING": {
-            // Fixed to use proper association names
             data = await Appointment.findAll({
               where: {
                 patient_id: relatedEntity.patient_id,
@@ -209,7 +207,6 @@ const populateMYAPPOINTMENTS = async (
           }
 
           case "AVAILABLE_DOCTORS": {
-            // Fixed doctor specialties association
             data = await Doctor.findAll({
               include: [
                 {
@@ -259,7 +256,6 @@ const populateMYAPPOINTMENTS = async (
           }
 
           case "PENDING_APPROVALS": {
-            // Fixed to use correct association aliases
             data = await SpecialistApproval.findAll({
               where: {
                 reffered_doctor_id: relatedEntity.doctor_id,
