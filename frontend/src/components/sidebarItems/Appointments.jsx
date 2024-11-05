@@ -7,9 +7,9 @@ import {
   AlertCircle,
   Check,
 } from "lucide-react";
-import { Card, CardContent } from "../utils/Card.tsx";
-import { Alert, AlertDescription } from "../utils/Alerts.tsx";
-import api from "../api.js";
+import { Card, CardContent } from "../../utils/Card.tsx";
+import { Alert, AlertDescription } from "../../utils/Alerts.tsx";
+import api from "../../api.js";
 
 const CategoryCard = ({ title, icon, description, isSelected, onClick }) => (
   <div

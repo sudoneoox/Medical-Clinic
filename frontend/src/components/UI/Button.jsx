@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../styles/tailwindbase.css";
+import "../../styles/tailwindbase.css";
 
 export default function Button({
   isMobile,
@@ -52,4 +52,3 @@ export default function Button({
     </div>
   );
 }
-

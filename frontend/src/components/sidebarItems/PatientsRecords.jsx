@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import api, { API } from "../api.js";
-import PaymentForm from "./PaymentForm.jsx";
+import api, { API } from "../../api.js";
+import PaymentForm from "../PaymentForm.jsx";
 import { Search } from "lucide-react";
 
 const PatientRecords = ({ data = [] }) => {

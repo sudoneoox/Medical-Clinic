@@ -6,8 +6,135 @@ import Office from "../../models/Tables/Office.js";
 import SpecialistApproval from "../../models/Tables/SpecialistApproval.js";
 import Patient from "../../models/Tables/Patient.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
-
+import User from "../../models/Tables/Users.js";
 import { Op } from "@sequelize/core";
+
+const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
+  const { section, data } = settingsData;
+
+  try {
+    switch (section) {
+      case "account":
+        // Check email uniqueness
+        if (data.email) {
+          const existingEmail = await User.findOne({
+            where: {
+              user_email: data.email,
+              user_id: { [Op.ne]: user.user_id }, // Exclude current user
+            },
+          });
+          if (existingEmail) {
+            return res.status(400).json({
+              success: false,
+              message: "This email is already registered to another account.",
+            });
+          }
+        }
+
+        // Check username uniqueness
+        if (data.username) {
+          const existingUsername = await User.findOne({
+            where: {
+              user_username: data.username,
+              user_id: { [Op.ne]: user.user_id }, // Exclude current user
+            },
+          });
+          if (existingUsername) {
+            return res.status(400).json({
+              success: false,
+              message: "This username is already taken.",
+            });
+          }
+        }
+
+        // Phone validation (XXX-XXX-XXXX)
+        if (data.phone && !data.phone.match(/^\d{3}-\d{3}-\d{4}$/)) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Invalid phone number format. Please use XXX-XXX-XXXX format.",
+          });
+        }
+
+        // Update user account information
+        await User.update(
+          {
+            user_email: data.email,
+            user_phone: data.phone,
+            user_username: data.username,
+          },
+          { where: { user_id: user.user_id } },
+        );
+        break;
+
+      case "password":
+        // Simple password validation
+        if (data.newPassword !== data.confirmPassword) {
+          return res.status(400).json({
+            success: false,
+            message: "New passwords do not match.",
+          });
+        }
+
+        // Update password without encryption
+        await User.update(
+          { user_password: data.newPassword },
+          { where: { user_id: user.user_id } },
+        );
+        break;
+
+      case "emergency":
+        if (user.user_role !== "PATIENT") {
+          return res.status(403).json({
+            success: false,
+            message: "Only patients can update emergency contacts",
+          });
+        }
+
+        // TODO: later check
+        for (const contact of data.contacts) {
+          if (!contact.name || !contact.relationship || !contact.phone) {
+            return res.status(400).json({
+              success: false,
+              message: "All emergency contact fields are required",
+            });
+          }
+
+          if (!contact.phone.match(/^\d{3}-\d{3}-\d{4}$/)) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "Invalid phone format for emergency contact. Please use XXX-XXX-XXXX format.",
+            });
+          }
+        }
+
+        // Update emergency contacts
+        await Patient.update(
+          { emergency_contacts: JSON.stringify(data.contacts) },
+          { where: { user_id: user.user_id } },
+        );
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: `Invalid settings section: ${section}`,
+        });
+    }
+
+    res.json({
+      success: true,
+      message: "Settings updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating settings:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating settings. Please try again.",
+    });
+  }
+};
 
 const populateMYAPPOINTMENTS = async (
   user,
@@ -210,5 +337,6 @@ const populateMYAPPOINTMENTS = async (
 
 const defaultDashboard = {
   populateMYAPPOINTMENTS,
+  updateSETTINGS,
 };
 export default defaultDashboard;

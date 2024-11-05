@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Users, FileUser, Search, Edit, Trash2 } from "lucide-react";
-import api from "../api.js";
+import api from "../../api.js";
 
 const AddEmployeeForm = () => {
   const [employeeData, setEmployeeData] = useState({

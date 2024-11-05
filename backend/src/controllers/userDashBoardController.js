@@ -61,6 +61,13 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
+          case "SETTINGS":
+            return await defaultDashboard.updateSETTINGS(
+              user,
+              relatedEntity,
+              { section: req.body.section, data: req.body.data },
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for receptionist ${sidebarItem}`,
@@ -130,6 +137,14 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
+
+          case "SETTINGS":
+            return await defaultDashboard.updateSETTINGS(
+              user,
+              relatedEntity,
+              { section: req.body.section, data: req.body.data },
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for patient got ${sidebarItem}`,
@@ -165,6 +180,13 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
+          case "SETTINGS":
+            return await defaultDashboard.updateSETTINGS(
+              user,
+              relatedEntity,
+              { section: req.body.section, data: req.body.data },
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for doctor got ${sidebarItem}`,
@@ -191,6 +213,14 @@ const portalRoleSwitcher = async (req, res) => {
               user,
               relatedEntity,
               req.body.analyticData,
+              res,
+            );
+
+          case "SETTINGS":
+            return await defaultDashboard.updateSETTINGS(
+              user,
+              relatedEntity,
+              { section: req.body.section, data: req.body.data },
               res,
             );
           default:
