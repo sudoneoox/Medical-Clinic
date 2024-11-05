@@ -9,7 +9,7 @@ const Prescription = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    record_id: {
+    medical_record_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
