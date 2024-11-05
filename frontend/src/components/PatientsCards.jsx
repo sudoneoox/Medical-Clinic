@@ -6,10 +6,13 @@ import {
   Plus,
   PillBottle,
   Trash2,
+  MoveLeft,
+  ArrowLeft,
  } from "lucide-react";
 
 const PatientList = ({ data = [] }) => {
   const [currentView, setCurrentView] = useState("PATIENT LIST");
+  const [viewHistory, setViewHistory] = useState([]); // History of views
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -17,6 +20,15 @@ const PatientList = ({ data = [] }) => {
   const [prescriptionRecords, setPrescriptionRecords] = useState([]);
   const [expandedPrescription, setExpandedPrescription] = useState(null);
   
+  const renderHeader = () => {
+    return (
+        <MoveLeft 
+          onClick={goBack} 
+          className="text-blue-500 cursor-pointer"
+        />
+    );
+  };
+
   const fetchMedicalRecords = async (patientId) => {
     setIsLoading(true);
     setError(null);
@@ -33,6 +45,7 @@ const PatientList = ({ data = [] }) => {
   };
 
   const handleMedicalRecords = (patient) => {
+    setViewHistory([...viewHistory, currentView]); // Save the current view to history
     setSelectedPatient(patient);
     fetchMedicalRecords(patient.patient_id);
     setCurrentView("MEDICAL RECORDS");
@@ -48,6 +61,7 @@ const PatientList = ({ data = [] }) => {
 
   const handleViewPrescriptions = async (record_id) => {
     setCurrentView("PRESCRIPTIONS");
+    setViewHistory([...viewHistory, currentView]);
     try {
       const response = await api.post(
         `${API.URL}/api/users/prescriptionrecords/${record_id}`,
@@ -57,6 +71,14 @@ const PatientList = ({ data = [] }) => {
       setError(error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const goBack = () => {
+    if (viewHistory.length > 0) {
+      const previousView = viewHistory[viewHistory.length - 1]; // Get the last view from history
+      setCurrentView(previousView);
+      setViewHistory(viewHistory.slice(0, -1));
     }
   };
 
@@ -96,7 +118,10 @@ const PatientList = ({ data = [] }) => {
     return (
       <div className="space-y-4">
         <div className="flex justify-between">
-          <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
+          <div className="flex items-center justify-center">
+            <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3 font-light"/>
+            <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
+          </div>
           <button
             onClick={handleAddMedicalRecord}
             className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
@@ -153,14 +178,17 @@ const PatientList = ({ data = [] }) => {
     return (
       <div className="space-y-4">
           <div className="flex justify-between">
-          <h2 className="text-2xl font-bold">Prescriptions</h2>
-          <button
-            onClick={handleAddMedicalRecord}
-            className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
-          >
-            <Plus className="inline-block w-4 h-4 mr-1" /><p>Prescriptions</p>
-          </button>
-        </div>
+            <div className="flex items-center justify-center">
+              <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3"/>
+              <h2 className="text-2xl font-bold">Prescriptions</h2>
+            </div>
+            <button
+              onClick={handleAddMedicalRecord}
+              className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
+            >
+              <Plus className="inline-block w-4 h-4 mr-1" /><p>Prescriptions</p>
+            </button>
+          </div>
         {isLoading ? (
           <p>Loading prescriptions...</p>
         ) : error ? (
@@ -172,10 +200,26 @@ const PatientList = ({ data = [] }) => {
             ) : (
               prescriptionRecords.map((prescription) => (
                 <div key={prescription.prescription_id} className="border rounded-md p-4 mb-2">
-                  <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer">
-                    <h3 className="font-bold">{prescription.medication_name}</h3>
-                    <p>Dosage: {prescription.dosage}</p>
-                    <p>Duration: {prescription.duration}</p>
+                  <div className="flex justify-between">
+                    <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer w-3/4">
+                      <h3 className="font-bold">{prescription.medication_name}</h3>
+                      <p>Dosage: {prescription.dosage}</p>
+                      <p>Duration: {prescription.duration}</p>
+                    </div>
+                    <div className="flex justify-evenly items-center px-3">
+                      <button
+                        // onClick={() => handleEditMedicalRecord(record.record_id)}
+                        className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
+                      >
+                        <Pencil className="w-5 h-5" />
+                      </button>
+                      <button
+                        // onClick={() => handleViewPrescriptions(record.record_id)}
+                        className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                  </div>
                   </div>
                   <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
                     {expandedPrescription === prescription.prescription_id && (
