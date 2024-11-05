@@ -56,8 +56,21 @@ const DoctorCard = ({ doctor }) => (
         </div>
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          onClick={() => {
-            /* TODO: Implement appointment scheduling */
+          onClick={async () => {
+            try {
+              const response = await api.post(
+                "/users/portal/submitNewAppointment",
+                {
+                  user_id: localStorage.getItem("userId"),
+                  user_role: localStorage.getItem("userRole"),
+                  // TODO: have to make the button send the doctor id in which they're planning to set up an appointment with
+                  // BUG: this could possibly be removed
+                  // sidebarItem: "MY-APPOINTMENTS",
+                },
+              );
+            } catch (error) {
+              // TODO: error handling this is where the TRIGGER is going to show up
+            }
           }}
         >
           Schedule
@@ -129,7 +142,8 @@ const Appointments = () => {
 
   const categoryOptions =
     userRole === "PATIENT"
-      ? [
+      ? // if else statement
+        [
           {
             id: "CURRENT",
             title: "Current Appointments",
@@ -150,6 +164,7 @@ const Appointments = () => {
           },
         ]
       : [
+          // DOCTORS
           {
             id: "UPCOMING",
             title: "Upcoming Appointments",

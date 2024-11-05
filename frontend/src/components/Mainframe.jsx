@@ -154,8 +154,9 @@ const MainFrame = ({
     if (
       item.label === "Analytics" ||
       item.label === "User Management" ||
-      item.label === "MY APPOINTMENTS" ||
-      item.label === "SETTINGS"
+      item.label === "My Appointments" ||
+      item.label === "Settings" ||
+      item.label === "Appointments"
     ) {
       return;
     }
@@ -217,6 +218,7 @@ const MainFrame = ({
                   )}
 
                   {currentSelected === "MY APPOINTMENTS" && <Appointments />}
+                  {currentSelected === "APPOINTMENTS" && <Appointments />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />
