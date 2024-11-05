@@ -2,6 +2,7 @@ import Appointment from "../../models/Tables/Appointment.js";
 import Doctor from "../../models/Tables/Doctor.js";
 import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
+import Prescription from "../../models/Tables/Prescription.js"
 import Patient from "../../models/Tables/Patient.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import { Op } from "@sequelize/core";
@@ -258,11 +259,36 @@ const populatePATIENTS = async (user, doctor, res) => {
   }
 };
 
+const retrieveMedicalRecords = async (req, res) => {
+
+  try {
+    const patientid = req.params.patientId;
+    console.log(`Fetching billing records for patient ID: ${patientid}`);
+
+    const medicalrecords = await MedicalRecord.findAll({
+      where: { patient_id: patientid},
+    })
+
+    return res.json(medicalrecords);
+  } catch (error) {
+    console.error("Error fetching billing data:", error);
+    return res.status(500).json({ message: "Error fetching billing data", error: error.message });
+  }
+}
+
+const retrievePrescriptionRecords = async (req, res) => {
+  console.log(req.params.recordId);
+
+  // start here
+}
+
 const doctorDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
   populateMYAPPOINTMENTS,
   populatePATIENTS,
+  retrieveMedicalRecords,
+  retrievePrescriptionRecords,
 };
 
 export default doctorDashboard;
