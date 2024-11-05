@@ -109,6 +109,7 @@ const Settings = ({ data }) => {
       const response = await api.post(API.URL + "/api/users/portal/settings", {
         section,
         data: formData[section],
+        sidebarItem: "SETTINGS",
         user_id: localStorage.getItem("userId"),
         user_role: userRole,
       });

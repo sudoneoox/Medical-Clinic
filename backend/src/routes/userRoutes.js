@@ -31,7 +31,7 @@ router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
 router.post("/portal/analytics", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/management", dashBoardControllerFuncs.portalRoleSwitcher);
-router.post("/portal/settigns", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("/portal/settings", dashBoardControllerFuncs.portalRoleSwitcher);
 // TODO: handle delete
 // router.post("/portal/management/delete", null);
 router.post("/portal/users", dashBoardControllerFuncs.portalRoleSwitcher);
@@ -47,9 +47,15 @@ router.post(
 );
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 
-router.post("/medicalrecords/:patientId", doctorDashboard.retrieveMedicalRecords);
+router.post(
+  "/medicalrecords/:patientId",
+  doctorDashboard.retrieveMedicalRecords,
+);
 
-router.post("/prescriptionrecords/:recordId", doctorDashboard.retrievePrescriptionRecords);
+router.post(
+  "/prescriptionrecords/:recordId",
+  doctorDashboard.retrievePrescriptionRecords,
+);
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 
