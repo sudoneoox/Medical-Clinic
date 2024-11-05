@@ -8,6 +8,8 @@ module.exports = {
     "./src/components/*.jsx",
     "./src/routes/*.jsx",
     "./src/utils/*.jsx",
+    "./src/components/UI/*.jsx",
+    "./src/components/sidebarItems/*.jsx",
     "./src/index.jsx",
   ],
   theme: {
