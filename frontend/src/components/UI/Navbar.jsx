@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
-
 import "../../styles/tailwindbase.css";
 
 const MOBILE_THRESHOLD = 768; // Mobile threshold in pixels
