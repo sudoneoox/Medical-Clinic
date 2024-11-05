@@ -271,14 +271,25 @@ const retrieveMedicalRecords = async (req, res) => {
 
     return res.json(medicalrecords);
   } catch (error) {
-    console.error("Error fetching billing data:", error);
-    return res.status(500).json({ message: "Error fetching billing data", error: error.message });
+    console.error("Error fetching medical data:", error);
+    return res.status(500).json({ message: "Error fetching medical data", error: error.message });
   }
 }
 
 const retrievePrescriptionRecords = async (req, res) => {
-  console.log(req.params.recordId);
+  console.log("Passing record id in doc dashboard",req.params.recordId);
 
+  try {
+    const recordId = req.params.recordId;
+    const prescriptionrecords = await Prescription.findAll({
+      where: { medical_record_id: recordId},
+    })
+
+    return res.json(prescriptionrecords);
+  } catch (error) {
+    console.error("Error fetching prescription data:", error);
+    return res.status(500).json({ message: "Error fetching prescription data", error: error.message });
+  }
   // start here
 }
 
