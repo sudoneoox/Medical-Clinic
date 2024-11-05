@@ -1,6 +1,7 @@
 import express from "express";
 import userControllerFuncs from "../controllers/userController.js";
 import dashBoardControllerFuncs from "../controllers/userDashBoardController.js";
+import doctorDashboard from "../controllers/util/doctorDashboard.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -45,6 +46,10 @@ router.post(
   dashBoardControllerFuncs.portalRoleSwitcher,
 );
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
+
+router.post("/medicalrecords/:patientId", doctorDashboard.retrieveMedicalRecords);
+
+router.post("/prescriptionrecords/:recordId", doctorDashboard.retrievePrescriptionRecords);
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 
