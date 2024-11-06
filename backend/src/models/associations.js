@@ -28,6 +28,7 @@ import DoctorSpecialties from "./Tables/DoctorSpecialties.js";
 import EmployeeNo from "./Tables/ValidEmployeeNo.js";
 import Admins from "./Tables/Admin.js";
 import Notifs from "./Tables/Notifs.js";
+import MedicalRecordNotes from "./Tables/MedicalRecordNotes.js";
 
 const initAssociations = () => {
   User.hasOne(Doctor, {
@@ -162,6 +163,9 @@ const initAssociations = () => {
   MedicalRecord.belongsTo(Doctor, { foreignKey: "doctor_id" });
   MedicalRecord.belongsTo(Appointment, { foreignKey: "appointment_id" });
   MedicalRecord.hasOne(Prescription, { foreignKey: "medical_record_id" });
+  MedicalRecord.hasMany(MedicalRecordNotes, {
+    foreignKey: "medical_record_id",
+  });
   MedicalRecord.hasMany(TestResults, { foreignKey: "medical_record_id" });
   MedicalRecord.hasMany(Allergies, { foreignKey: "medical_record_id" });
 

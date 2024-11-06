@@ -310,7 +310,7 @@ CREATE TABLE IF NOT EXISTS valid_employees (
   employee_role ENUM('DOCTOR', 'RECEPTIONIST', 'NURSE', 'ADMIN') NOT NULL
 );
 ;
-CREATE TABLE IF NOT EXISTS notes (
+CREATE TABLE IF NOT EXISTS medical_record_notes (
     note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -1485,7 +1485,7 @@ ALTER TABLE detailed_allergies
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)
     ON DELETE CASCADE;
-ALTER TABLE notes
+ALTER TABLE medical_record_notes
     ADD CONSTRAINT fk_notes_medical_record
     FOREIGN KEY (medical_record_id)
     REFERENCES medical_records(record_id)

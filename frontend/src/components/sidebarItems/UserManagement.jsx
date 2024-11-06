@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { Users, FileUser, Search, Edit, Trash2 } from "lucide-react";
 import api from "../../api.js";
 
+// TODO: dates received from backend are timestamp mysql datatypes make them into dates
+// TODO:  make a button for patient emergency contacts on click expand the parsed out json file because right now its displaying just the json of the data that it
+// got from the backend
+// TODO: patients and employee subcategories still display inside newemployee add employee could be a state render logic issue
 const AddEmployeeForm = () => {
   const [employeeData, setEmployeeData] = useState({
     employeeId: "",

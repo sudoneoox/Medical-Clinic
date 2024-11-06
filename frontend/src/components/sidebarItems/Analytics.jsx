@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import api from "../../api.js";
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-// TODO: handle click events
-// TODO: handle appointment analytics
-// TODO: handle correct office switching
-// TODO: possibly add more subgroups for the main groups
-// BUG: switching office branches does not change the piechart
+
+// TODO: handle click events for pie chart dont know what to do for it yet maybe show the list of values under the little description that makes up that data
+// TODO: add more comprehensive filter data ie not just office selection but date selection, role selection
+// TODO: allow the piechart view to be toggleble other option besides piechart is being able to generate the data that actually made the report
+// like when your viewing your transcript
+// TODO: add billing into analytics as well
+// TODO: show actual data in sql file format for the report and show the venn diagram optionally as a button
 
 // SubCategory Card Component
 const SubCategoryCard = ({ title, icon, isSelected, onClick }) => (
@@ -72,9 +74,9 @@ const Analytics = () => {
   const analyticOptions = [
     {
       id: "DEMOGRAPHICS",
-      title: "Patient Demographics",
+      title: "User Demographics",
       icon: <Users className="w-6 h-6 text-blue-500" />,
-      description: "View patient age, gender, and ethnicity distribution",
+      description: "View User age, gender, and ethnicity distribution",
       subCategories: [
         {
           id: "GENDER",
@@ -107,10 +109,21 @@ const Analytics = () => {
     },
   ];
 
+  // TODO: make it automatic
   const OFFICE_LIST = [
     { office_id: 1, office_name: "Main Clinic" },
     { office_id: 2, office_name: "North Branch" },
     { office_id: 3, office_name: "South Branch" },
+  ];
+
+  const DATE_RANGE = [];
+
+  const ROLE_LIST = [
+    { user_role: "Admin" },
+    { user_role: "Patient" },
+    { user_role: "Doctor" },
+    { user_role: "Receptionists" },
+    { user_role: "Nurse" },
   ];
 
   const fetchAnalyticData = async (type, subCategory, office) => {
@@ -204,20 +217,32 @@ const Analytics = () => {
 
         {/* Office Selection */}
         {selectedAnalytic && (
-          <div className="mb-6">
-            <select
-              value={selectedOffice}
-              onChange={handleOfficeChange}
-              className="w-full md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Offices</option>
-              {OFFICE_LIST.map((office) => (
-                <option key={office.office_id} value={office.office_id}>
-                  {office.office_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="mb-6">
+              <select
+                value={selectedOffice}
+                onChange={handleOfficeChange}
+                className=" md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Offices</option>
+                {OFFICE_LIST.map((office) => (
+                  <option key={office.office_id} value={office.office_id}>
+                    {office.office_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* <div className="mb-6"> */}
+            {/*   <select className=" md:w-auto px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"> */}
+            {/*     <option value="all">Users</option> */}
+            {/*     {OFFICE_LIST.map((office) => ( */}
+            {/*       <option key={office.office_id} value={office.office_id}> */}
+            {/*         {office.office_name} */}
+            {/*       </option> */}
+            {/*     ))} */}
+            {/*   </select> */}
+            {/* </div> */}
+          </>
         )}
 
         {/* Chart Display */}
