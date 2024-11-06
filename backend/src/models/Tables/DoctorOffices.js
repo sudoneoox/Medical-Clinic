@@ -41,12 +41,12 @@ const DoctorOffices = sequelize.define(
       defaultValue: 0,
     },
     effective_start_date: {
-      type: DataTypes.DATE,
+      type: "TIMESTAMP",
       allowNull: false,
-      defaultValue: sequelize.literal("CURRENT_DATE"),
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     effective_end_date: {
-      type: DataTypes.DATE,
+      type: "TIMESTAMP",
     },
     schedule_type: {
       type: DataTypes.ENUM("REGULAR", "TEMPORARY", "ON_CALL"),

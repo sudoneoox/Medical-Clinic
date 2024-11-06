@@ -78,8 +78,8 @@ CREATE TABLE IF NOT EXISTS doctor_offices (
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     is_primary_office TINYINT DEFAULT 0,
-    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    effective_end_date DATE,
+    effective_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    effective_end_date TIMESTAMP,
     schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
     PRIMARY KEY (doctor_id, office_id, day_of_week)
 );
@@ -222,8 +222,8 @@ CREATE TABLE IF NOT EXISTS nurse_offices (
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     is_primary_office TINYINT DEFAULT 0,
-    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    effective_end_date DATE,
+    effective_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    effective_end_date TIMESTAMP,
     schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
     PRIMARY KEY (nurse_id, office_id, day_of_week)
 );
@@ -260,8 +260,8 @@ CREATE TABLE IF NOT EXISTS receptionist_offices (
     shift_start TIME NOT NULL,
     shift_end TIME NOT NULL,
     is_primary_office TINYINT DEFAULT 0,
-    effective_start_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    effective_end_date DATE,
+    effective_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    effective_end_date TIMESTAMP,
     schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
     PRIMARY KEY (receptionist_id, office_id, day_of_week)
 );
