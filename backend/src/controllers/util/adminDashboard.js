@@ -603,7 +603,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
     });
   }
 };
-
 const getAnalyticsDetails = async (req, res) => {
   const { analyticType, subCategory, office, filter } = req.body.analyticData;
 
@@ -612,14 +611,21 @@ const getAnalyticsDetails = async (req, res) => {
     switch (analyticType) {
       case "DEMOGRAPHICS": {
         details = await Demographics.findAll({
+          attributes: [
+            "demographics_id",
+            "ethnicity_id",
+            "race_id",
+            "gender_id",
+            "dob",
+          ],
           include: [
             {
               model: Users,
+              attributes: ["user_id", "user_email", "user_username"],
               where: {
                 user_role: "PATIENT",
                 ...(office !== "all" && { office_id: office }),
               },
-              attributes: ["user_id", "user_email"],
             },
           ],
           where: {
@@ -635,6 +641,13 @@ const getAnalyticsDetails = async (req, res) => {
 
       case "BILLING": {
         details = await Billing.findAll({
+          attributes: [
+            "billing_id",
+            "amount_due",
+            "amount_paid",
+            "payment_status",
+            "created_at",
+          ],
           where: {
             ...(office !== "all" && { office_id: office }),
             ...(subCategory === "PAYMENT_STATUS" && { payment_status: filter }),
@@ -651,13 +664,14 @@ const getAnalyticsDetails = async (req, res) => {
       }
     }
 
-    res.json({ details });
+    res.json({ details: details.map((d) => d.toJSON()) });
   } catch (error) {
     console.error("Error fetching details:", error);
-    res.status(500).json({ message: "Error fetching details" });
+    res
+      .status(500)
+      .json({ message: "Error fetching details", error: error.message });
   }
 };
-
 const adminDashboard = {
   populateOVERVIEW,
   populateUSERMANAGEMENT,
