@@ -17,7 +17,7 @@ import DoctorSpecialties from "../../models/Tables/DoctorSpecialties.js";
 import Office from "../../models/Tables/Office.js";
 import sequelize from "@sequelize/core";
 import EmployeeNo from "../../models/Tables/ValidEmployeeNo.js";
-
+import logic from "./shared/logic.js";
 const populateOVERVIEW = async (user, admin, res) => {
   try {
     const today = new Date();
@@ -514,6 +514,82 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
         break;
       }
 
+      case "BILLING": {
+        const whereClause = office !== "all" ? { office_id: office } : {};
+
+        switch (subCategory) {
+          case "PAYMENT_STATUS": {
+            const billingStats = await Billing.findAll({
+              where: whereClause,
+              attributes: [
+                "payment_status",
+                [sequelize.fn("COUNT", sequelize.col("billing_id")), "count"],
+                [
+                  sequelize.fn("SUM", sequelize.col("amount_due")),
+                  "total_amount",
+                ],
+              ],
+              group: ["payment_status"],
+            });
+
+            data = billingStats.map((stat) => ({
+              name: stat.payment_status,
+              value: parseInt(stat.dataValues.count),
+              amount: parseFloat(stat.dataValues.total_amount),
+            }));
+            break;
+          }
+
+          case "REVENUE": {
+            const revenueStats = await Billing.findAll({
+              where: {
+                ...whereClause,
+                payment_status: "PAID",
+              },
+              attributes: [
+                [
+                  sequelize.fn(
+                    "DATE_FORMAT",
+                    sequelize.col("created_at"),
+                    "%Y-%m",
+                  ),
+                  "month",
+                ],
+                [
+                  sequelize.fn("SUM", sequelize.col("amount_paid")),
+                  "total_revenue",
+                ],
+              ],
+              group: [
+                sequelize.fn(
+                  "DATE_FORMAT",
+                  sequelize.col("created_at"),
+                  "%Y-%m",
+                ),
+              ],
+              order: [
+                [
+                  sequelize.fn(
+                    "DATE_FORMAT",
+                    sequelize.col("created_at"),
+                    "%Y-%m",
+                  ),
+                  "DESC",
+                ],
+              ],
+              limit: 12,
+            });
+
+            data = revenueStats.map((stat) => ({
+              name: stat.dataValues.month,
+              value: parseFloat(stat.dataValues.total_revenue),
+            }));
+            break;
+          }
+        }
+        break;
+      }
+
       default:
         throw new Error("Invalid analytics type");
     }
@@ -528,9 +604,64 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
   }
 };
 
+const getAnalyticsDetails = async (req, res) => {
+  const { analyticType, subCategory, office, filter } = req.body.analyticData;
+
+  try {
+    let details;
+    switch (analyticType) {
+      case "DEMOGRAPHICS": {
+        details = await Demographics.findAll({
+          include: [
+            {
+              model: Users,
+              where: {
+                user_role: "PATIENT",
+                ...(office !== "all" && { office_id: office }),
+              },
+              attributes: ["user_id", "user_email"],
+            },
+          ],
+          where: {
+            [subCategory.toLowerCase() + "_id"]: logic.getDemographicId(
+              subCategory,
+              filter,
+            ),
+          },
+          limit: 100,
+        });
+        break;
+      }
+
+      case "BILLING": {
+        details = await Billing.findAll({
+          where: {
+            ...(office !== "all" && { office_id: office }),
+            ...(subCategory === "PAYMENT_STATUS" && { payment_status: filter }),
+          },
+          include: [
+            {
+              model: Patient,
+              attributes: ["patient_fname", "patient_lname"],
+            },
+          ],
+          limit: 100,
+        });
+        break;
+      }
+    }
+
+    res.json({ details });
+  } catch (error) {
+    console.error("Error fetching details:", error);
+    res.status(500).json({ message: "Error fetching details" });
+  }
+};
+
 const adminDashboard = {
   populateOVERVIEW,
   populateUSERMANAGEMENT,
   populateANALYTICS,
+  getAnalyticsDetails,
 };
 export default adminDashboard;

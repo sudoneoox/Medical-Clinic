@@ -2,6 +2,7 @@ import express from "express";
 import userControllerFuncs from "../controllers/userController.js";
 import dashBoardControllerFuncs from "../controllers/userDashBoardController.js";
 import doctorDashboard from "../controllers/util/doctorDashboard.js";
+import adminDashboard from "../controllers/util/adminDashboard.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -62,7 +63,7 @@ router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for pat
 router.post("/billing/:patientId", userControllerFuncs.retreiveBills);
 
 router.post("/submit-payment", userControllerFuncs.submitPayment);
-
+router.post("/portal/analytics/details", adminDashboard.getAnalyticsDetails);
 router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success
   res.json({ message: "Session valid" });

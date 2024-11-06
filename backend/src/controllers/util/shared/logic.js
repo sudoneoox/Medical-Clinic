@@ -1,3 +1,5 @@
+import { getDefaultSettings } from "http2";
+
 // Helper function to convert HH:MM:SS to milliseconds
 const timeToMs = (timeStr) => {
   const [hours, minutes, seconds] = timeStr.split(":").map(Number);
@@ -42,10 +44,23 @@ const combineDateTime = (date, time) => {
   return combined;
 };
 
+const getDemographicId = (category, filter) => {
+  const mappings = {
+    GENDER: { Male: 1, Female: 2, "Non-binary": 3, Other: 4 },
+    ETHNICITY: {
+      "Hispanic or Latino": 1,
+      "Not Hispanic or Latino": 2,
+      "Prefer not to say": 3,
+    },
+  };
+  return mappings[category][filter];
+};
+
 const logic = {
   timeToMs,
   getNextThreeMonthsDates,
   combineDateTime,
+  getDemographicId,
 };
 
 export default logic;
