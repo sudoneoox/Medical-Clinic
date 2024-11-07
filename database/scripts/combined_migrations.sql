@@ -1002,7 +1002,7 @@ CROSS JOIN (
                     1
                 );
             END IF;
-            IF RAND() < 0.4 THEN
+            IF RAND() < 1.0 THEN
                 INSERT INTO prescription (
                     medical_record_id,
                     medication_name,

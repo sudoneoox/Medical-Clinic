@@ -73,6 +73,7 @@ const Overview = ({ data }) => {
     user_role: localStorage.getItem("userRole"),
   };
   const fullName = localStorage.getItem("userFullName");
+  const email = localStorage.getItem("userEmail");
 
   const renderDashboard = () => {
     switch (userData.user_role) {
