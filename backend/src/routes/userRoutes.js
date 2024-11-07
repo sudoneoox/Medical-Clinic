@@ -42,6 +42,7 @@ router.post(
   "/portal/medical-records",
   dashBoardControllerFuncs.portalRoleSwitcher,
 );
+
 router.post(
   "/portal/my-appointments",
   dashBoardControllerFuncs.portalRoleSwitcher,

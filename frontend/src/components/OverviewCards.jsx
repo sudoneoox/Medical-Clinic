@@ -86,7 +86,7 @@ const Overview = ({ data }) => {
             >
               <div className="space-y-2">
                 <p>Name: {fullName}</p>
-                <p>Email: {data.patientInfo.email}</p>
+                <p>Email: {email}</p>
                 <p>Phone: {data.patientInfo.phone}</p>
               </div>
             </DashboardCard>
@@ -116,7 +116,7 @@ const Overview = ({ data }) => {
             >
               <div className="space-y-2">
                 <p>Name: {fullName}</p>
-                <p>Email: {data.doctorInfo.email}</p>
+                <p>Email: {email}</p>
                 <p>Experience: {data.doctorInfo.experience} years</p>
               </div>
             </DashboardCard>
@@ -145,7 +145,7 @@ const Overview = ({ data }) => {
             >
               <div className="space-y-2">
                 <p>Name: {fullName}</p>
-                <p>Email: {data.nurseInfo.email}</p>
+                <p>Email: {email}</p>
                 <p>Specialization: {data.nurseInfo.specialization}</p>
               </div>
             </DashboardCard>
@@ -174,7 +174,7 @@ const Overview = ({ data }) => {
             >
               <div className="space-y-2">
                 <p>Name: {fullName}</p>
-                <p>Email: {data.receptionistInfo.email}</p>
+                <p>Email: {email}</p>
               </div>
             </DashboardCard>
 
@@ -212,7 +212,7 @@ const Overview = ({ data }) => {
             >
               <div className="space-y-2">
                 <p>Name: {fullName}</p>
-                <p>Email: {data.adminInfo.email}</p>
+                <p>Email: {email}</p>
               </div>
             </DashboardCard>
 

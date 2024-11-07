@@ -41,6 +41,7 @@ export default function LoginPage() {
       localStorage.setItem("userId", response.data.userId);
       localStorage.setItem("userRole", response.data.role);
       localStorage.setItem("userFullName", response.data.userFullName);
+      localStorage.setItem("userEmail", response.data.email);
       console.log("RESPONSE GOTTEN FROM LOGIN ", response);
       // Redirect based on user role
       navigate("/portal");

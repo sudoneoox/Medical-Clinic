@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import api, { API } from "../api.js";
-import { 
+import {
   Search,
   Pencil,
   Plus,
@@ -8,7 +8,7 @@ import {
   Trash2,
   MoveLeft,
   ArrowLeft,
- } from "lucide-react";
+} from "lucide-react";
 
 const PatientList = ({ data = [] }) => {
   const [currentView, setCurrentView] = useState("PATIENT LIST");
@@ -19,13 +19,10 @@ const PatientList = ({ data = [] }) => {
   const [medicalRecords, setMedicalRecords] = useState([]);
   const [prescriptionRecords, setPrescriptionRecords] = useState([]);
   const [expandedPrescription, setExpandedPrescription] = useState(null);
-  
+
   const renderHeader = () => {
     return (
-        <MoveLeft 
-          onClick={goBack} 
-          className="text-blue-500 cursor-pointer"
-        />
+      <MoveLeft onClick={goBack} className="text-blue-500 cursor-pointer" />
     );
   };
 
@@ -51,13 +48,9 @@ const PatientList = ({ data = [] }) => {
     setCurrentView("MEDICAL RECORDS");
   };
 
-  const handleEditMedicalRecord = async (recordId) => {
+  const handleEditMedicalRecord = async (recordId) => {};
 
-  }
-
-  const handleAddMedicalRecord = async (recordId) => {
-    
-  }
+  const handleAddMedicalRecord = async (recordId) => {};
 
   const handleViewPrescriptions = async (record_id) => {
     setCurrentView("PRESCRIPTIONS");
@@ -83,7 +76,9 @@ const PatientList = ({ data = [] }) => {
   };
 
   const togglePrescriptionDetails = (prescriptionId) => {
-    setExpandedPrescription(expandedPrescription === prescriptionId ? null : prescriptionId);
+    setExpandedPrescription(
+      expandedPrescription === prescriptionId ? null : prescriptionId,
+    );
   };
 
   if (currentView === "PATIENT LIST") {
@@ -93,7 +88,10 @@ const PatientList = ({ data = [] }) => {
           <p>No patients found.</p>
         ) : (
           data.map((patient, index) => (
-            <div key={index} className="flex items-start justify-between border-b pb-2">
+            <div
+              key={index}
+              className="flex items-start justify-between border-b pb-2"
+            >
               <div>
                 <p className="font-medium">
                   {patient.patient_fname} {patient.patient_lname}
@@ -119,17 +117,24 @@ const PatientList = ({ data = [] }) => {
       <div className="space-y-4">
         <div className="flex justify-between">
           <div className="flex items-center justify-center">
-            <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3 font-light"/>
-            <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
+            <ArrowLeft
+              onClick={goBack}
+              className="text-black cursor-pointer mr-3 font-light"
+            />
+            <h2 className="text-2xl font-bold">
+              Medical Records for {selectedPatient.patient_fname}{" "}
+              {selectedPatient.patient_lname}
+            </h2>
           </div>
           <button
             onClick={handleAddMedicalRecord}
             className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
           >
-            <Plus className="inline-block w-4 h-4 mr-1" /><p>Medical Record</p>
+            <Plus className="inline-block w-4 h-4 mr-1" />
+            <p>Medical Record</p>
           </button>
         </div>
-        
+
         {isLoading ? (
           <p>Loading medical records...</p>
         ) : error ? (
@@ -140,10 +145,16 @@ const PatientList = ({ data = [] }) => {
               <p>No medical records found for this patient.</p>
             ) : (
               medicalRecords.map((record, index) => (
-                <div key ={index} className="flex items-center justify-between border-b pb-2">
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-2"
+                >
                   <div>
                     <p className="font-medium">{record.diagnosis}</p>
-                    <p className="text-sm text-gray-600">Updated Date: {new Date(record.updated_at).toLocaleString()}</p>
+                    <p className="text-sm text-gray-600">
+                      Updated Date:{" "}
+                      {new Date(record.updated_at).toLocaleString()}
+                    </p>
                   </div>
                   <div className="flex justify-evenly items-center px-3">
                     <button
@@ -177,18 +188,22 @@ const PatientList = ({ data = [] }) => {
   if (currentView === "PRESCRIPTIONS") {
     return (
       <div className="space-y-4">
-          <div className="flex justify-between">
-            <div className="flex items-center justify-center">
-              <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3"/>
-              <h2 className="text-2xl font-bold">Prescriptions</h2>
-            </div>
-            <button
-              onClick={handleAddMedicalRecord}
-              className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
-            >
-              <Plus className="inline-block w-4 h-4 mr-1" /><p>Prescriptions</p>
-            </button>
+        <div className="flex justify-between">
+          <div className="flex items-center justify-center">
+            <ArrowLeft
+              onClick={goBack}
+              className="text-black cursor-pointer mr-3"
+            />
+            <h2 className="text-2xl font-bold">Prescriptions</h2>
           </div>
+          <button
+            onClick={handleAddMedicalRecord}
+            className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
+          >
+            <Plus className="inline-block w-4 h-4 mr-1" />
+            <p>Prescriptions</p>
+          </button>
+        </div>
         {isLoading ? (
           <p>Loading prescriptions...</p>
         ) : error ? (
@@ -199,10 +214,20 @@ const PatientList = ({ data = [] }) => {
               <p>No prescriptions found for this patient.</p>
             ) : (
               prescriptionRecords.map((prescription) => (
-                <div key={prescription.prescription_id} className="border rounded-md p-4 mb-2">
+                <div
+                  key={prescription.prescription_id}
+                  className="border rounded-md p-4 mb-2"
+                >
                   <div className="flex justify-between">
-                    <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer w-3/4">
-                      <h3 className="font-bold">{prescription.medication_name}</h3>
+                    <div
+                      onClick={() =>
+                        togglePrescriptionDetails(prescription.prescription_id)
+                      }
+                      className="cursor-pointer w-3/4"
+                    >
+                      <h3 className="font-bold">
+                        {prescription.medication_name}
+                      </h3>
                       <p>Dosage: {prescription.dosage}</p>
                       <p>Duration: {prescription.duration}</p>
                     </div>
@@ -219,15 +244,24 @@ const PatientList = ({ data = [] }) => {
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
+                    </div>
                   </div>
-                  </div>
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
+                  <div
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? "max-h-40" : "max-h-0"}`}
+                  >
                     {expandedPrescription === prescription.prescription_id && (
                       <div className="mt-2">
                         <h4 className="font-semibold">Pharmacy Details:</h4>
-                        <p>Name: {prescription.pharmacy_details.pharmacy_name}</p>
-                        <p>Phone: {prescription.pharmacy_details.pharmacy_phone}</p>
-                        <p>Address: {prescription.pharmacy_details.pharmacy_address}</p>
+                        <p>
+                          Name: {prescription.pharmacy_details.pharmacy_name}
+                        </p>
+                        <p>
+                          Phone: {prescription.pharmacy_details.pharmacy_phone}
+                        </p>
+                        <p>
+                          Address:{" "}
+                          {prescription.pharmacy_details.pharmacy_address}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -242,3 +276,4 @@ const PatientList = ({ data = [] }) => {
 };
 
 export default PatientList;
+
