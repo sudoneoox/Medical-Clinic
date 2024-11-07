@@ -247,13 +247,12 @@ const populatePATIENTS = async (user, doctor, res) => {
         phone: user.user_phone,
         experience: doctor.years_of_experience,
       },
-      // appointments: appointments?.appointments || [],
       patients: patients?.patients || [],
     });
   } catch (error) {
-    console.error("Error in populateOVERVIEWForDoctor:", error);
+    console.error("Error in populatePatientsForDoctor:", error);
     res.status(500).json({
-      message: "Error loading doctor dashboard",
+      message: "Error loading doctor patients",
       error: error.message,
     });
   }
