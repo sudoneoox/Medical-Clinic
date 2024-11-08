@@ -160,7 +160,6 @@ const portalRoleSwitcher = async (req, res) => {
             return await doctorDashboard.populateOVERVIEW(
               user,
               relatedEntity,
-
               res,
             );
           case "CALENDAR":
