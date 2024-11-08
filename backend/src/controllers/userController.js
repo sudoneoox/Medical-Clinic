@@ -217,6 +217,7 @@ const loginUser = async (req, res) => {
       message: "User logged in successfully",
       token,
       userId: user.user_id,
+      email: user.user_email,
       role: user.user_role,
       userFullName: entityFullName,
     });
@@ -245,13 +246,17 @@ const retreiveBills = async (req, res) => {
     });
 
     if (billingRecords.length === 0) {
-      return res.status(404).json({ message: "No billing records found for this patient." });
+      return res
+        .status(404)
+        .json({ message: "No billing records found for this patient." });
     }
 
     return res.json(billingRecords);
   } catch (error) {
     console.error("Error fetching billing data:", error);
-    return res.status(500).json({ message: "Error fetching billing data", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error fetching billing data", error: error.message });
   }
 };
 
@@ -261,7 +266,7 @@ const submitPayment = async (req, res) => {
 
     const { selectedBillingRecord, cardNumber, expirationDate, cvv } = req.body;
     const { billing_id, patient_id } = selectedBillingRecord;
-    
+
     const billingRecord = await Billing.findOne({
       where: { billing_id: billing_id, patient_id: patient_id },
     });
@@ -270,20 +275,23 @@ const submitPayment = async (req, res) => {
       return res.status(404).json({ message: "Billing record not found." });
     }
 
-    if (billingRecord.payment_status === 'PAID') {
-      return res.status(400).json({ message: "Payment has already been made." });
+    if (billingRecord.payment_status === "PAID") {
+      return res
+        .status(400)
+        .json({ message: "Payment has already been made." });
     }
 
     // Update the payment status to 'PAID'
-    await billingRecord.update({ payment_status: 'PAID' });
+    await billingRecord.update({ payment_status: "PAID" });
 
     return res.status(200).json({ message: "Payment submitted successfully." });
   } catch (error) {
     console.error("Error submitting payment:", error);
-    return res.status(500).json({ message: "Error submitting payment", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error submitting payment", error: error.message });
   }
 };
-
 
 const userControllerFuncs = {
   loginUser,

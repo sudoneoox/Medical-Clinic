@@ -738,8 +738,8 @@ CROSS JOIN (
                 );
             END IF;
             
-            -- Create prescription (40% chance)
-            IF RAND() < 0.4 THEN
+            -- Create prescription (100% chance)
+            IF RAND() < 1.0 THEN
                 INSERT INTO prescription (
                     medical_record_id,
                     medication_name,
