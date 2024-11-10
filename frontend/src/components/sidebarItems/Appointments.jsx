@@ -147,10 +147,18 @@ const DoctorCard = ({ doctor }) => {
                   <p className="text-sm text-gray-600 font-medium">
                     Available at:
                   </p>
-                  {doctor.offices.map((office, idx) => (
-                    <p key={idx} className="text-sm text-gray-600">
-                      {office.office_name} - {office.office_address}
-                    </p>
+                  {JSON.parse(doctor.availability).map((slot, idx) => (
+                    <div key={idx} className="mb-2">
+                      <p className="text-sm text-gray-600 font-semibold">
+                        {slot.office_name} - {slot.office_address}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {slot.day}:{" "}
+                        {slot.time_slots
+                          .map((time) => `${time.start_time}-${time.end_time}`)
+                          .join(", ")}
+                      </p>
+                    </div>
                   ))}
                 </div>
               )}

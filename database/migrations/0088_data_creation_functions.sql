@@ -879,3 +879,95 @@ END //
 
 DELIMITER ;
 
+
+-- recursive function to generate doctor availability
+DELIMITER //
+-- singular doctor availability
+CREATE PROCEDURE populate_doctor_availability(
+    IN p_doctor_id INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE curr_office_id INT;
+    DECLARE curr_day VARCHAR(10);
+    DECLARE curr_slot_id INT;
+    
+    -- Cursor for doctor's offices and their working days
+    DECLARE office_cursor CURSOR FOR 
+        SELECT DISTINCT do.office_id, do.day_of_week
+        FROM doctor_offices do
+        WHERE do.doctor_id = p_doctor_id;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    -- For each office and day combination
+    OPEN office_cursor;
+    
+    read_loop: LOOP
+        FETCH office_cursor INTO curr_office_id, curr_day;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Get available slots between shift start and end
+        INSERT INTO doctor_availability (
+            doctor_id, 
+            office_id, 
+            day_of_week, 
+            slot_id, 
+            is_available,
+            recurrence_type
+        )
+        SELECT 
+            p_doctor_id,
+            curr_office_id,
+            curr_day,
+            ts.slot_id,
+            1, -- is_available
+            'WEEKLY' -- recurrence_type
+        FROM 
+            time_slots ts
+        JOIN 
+            doctor_offices do ON 
+                do.doctor_id = p_doctor_id AND 
+                do.office_id = curr_office_id AND 
+                do.day_of_week = curr_day
+        WHERE 
+            ts.start_time >= do.shift_start AND 
+            ts.end_time <= do.shift_end
+        ON DUPLICATE KEY UPDATE is_available = 1;
+        
+    END LOOP;
+    
+    CLOSE office_cursor;
+END //
+
+-- utilize the previous function to make multiple
+
+CREATE PROCEDURE populate_all_doctors_availability()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE curr_doctor_id INT;
+    
+    -- Cursor for all doctors
+    DECLARE doctor_cursor CURSOR FOR 
+        SELECT doctor_id FROM doctors;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN doctor_cursor;
+    
+    read_loop: LOOP
+        FETCH doctor_cursor INTO curr_doctor_id;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        CALL populate_doctor_availability(curr_doctor_id);
+    END LOOP;
+    
+    CLOSE doctor_cursor;
+END //
+
+DELIMITER ;
+

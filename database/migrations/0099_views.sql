@@ -96,22 +96,35 @@ ORDER BY
 
 -- get time slots for doctor availibility
 CREATE OR REPLACE VIEW doctor_available_slots AS
+WITH time_slots_json AS (
+    SELECT 
+        da.doctor_id,
+        da.office_id,
+        o.office_name,
+        o.office_address,
+        da.day_of_week,
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'start_time', ts.start_time,
+                'end_time', ts.end_time
+            )
+        ) as time_slots
+    FROM 
+        doctor_availability da
+    JOIN 
+        time_slots ts ON da.slot_id = ts.slot_id
+    JOIN 
+        office o ON da.office_id = o.office_id
+    WHERE 
+        da.is_available = TRUE
+    GROUP BY 
+        da.doctor_id, da.office_id, o.office_name, o.office_address, da.day_of_week
+)
 SELECT 
-    da.doctor_id,
-    da.office_id,
-    o.office_name,
-    o.office_address,
-    da.day_of_week,
-    da.specific_date,
-    ts.start_time,
-    ts.end_time,
-    da.is_available,
-    da.recurrence_type
-FROM 
-    doctor_availability da
-JOIN 
-    time_slots ts ON da.slot_id = ts.slot_id
-JOIN 
-    office o ON da.office_id = o.office_id
-WHERE 
-    da.is_available = TRUE;
+    doctor_id,
+    office_id,
+    office_name,
+    office_address,
+    day_of_week,
+    time_slots
+FROM time_slots_json;

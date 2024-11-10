@@ -223,6 +223,9 @@ const initAssociations = () => {
   DoctorAvailibility.belongsTo(TimeSlots, {
     foreignKey: { name: "slot_id", onDelete: "CASCADE" },
   });
+  Doctor.belongsTo(DoctorAvailibility, {
+    foreignKey: { name: "doctor_id", onDelete: "CASCADE" },
+  });
 };
 
 export default initAssociations;

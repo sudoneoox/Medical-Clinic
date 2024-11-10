@@ -1164,6 +1164,73 @@ CROSS JOIN (
     WHERE status = 'CONFIRMED' AND RAND() < 0.1;
 END //
 DELIMITER ;
+DELIMITER //
+CREATE PROCEDURE populate_doctor_availability(
+    IN p_doctor_id INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE curr_office_id INT;
+    DECLARE curr_day VARCHAR(10);
+    DECLARE curr_slot_id INT;
+    DECLARE office_cursor CURSOR FOR 
+        SELECT DISTINCT do.office_id, do.day_of_week
+        FROM doctor_offices do
+        WHERE do.doctor_id = p_doctor_id;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    OPEN office_cursor;
+    read_loop: LOOP
+        FETCH office_cursor INTO curr_office_id, curr_day;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        INSERT INTO doctor_availability (
+            doctor_id, 
+            office_id, 
+            day_of_week, 
+            slot_id, 
+            is_available,
+            recurrence_type
+        )
+        SELECT 
+            p_doctor_id,
+            curr_office_id,
+            curr_day,
+            ts.slot_id,
+            1, -- is_available
+            'WEEKLY' -- recurrence_type
+        FROM 
+            time_slots ts
+        JOIN 
+            doctor_offices do ON 
+                do.doctor_id = p_doctor_id AND 
+                do.office_id = curr_office_id AND 
+                do.day_of_week = curr_day
+        WHERE 
+            ts.start_time >= do.shift_start AND 
+            ts.end_time <= do.shift_end
+        ON DUPLICATE KEY UPDATE is_available = 1;
+    END LOOP;
+    CLOSE office_cursor;
+END //
+CREATE PROCEDURE populate_all_doctors_availability()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE curr_doctor_id INT;
+    DECLARE doctor_cursor CURSOR FOR 
+        SELECT doctor_id FROM doctors;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    OPEN doctor_cursor;
+    read_loop: LOOP
+        FETCH doctor_cursor INTO curr_doctor_id;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        CALL populate_doctor_availability(curr_doctor_id);
+    END LOOP;
+    CLOSE doctor_cursor;
+END //
+DELIMITER ;
 ;
 CALL populate_test_data(
     10,  -- 10 doctors
@@ -1173,6 +1240,7 @@ CALL populate_test_data(
     3,   -- 3 admins
     4    -- 4 appointments per patient
 );
+CALL populate_all_doctors_availability();
 ;
 DELIMITER //
 CREATE TRIGGER check_daily_appointment_limit
@@ -1781,23 +1849,36 @@ GROUP BY
 ORDER BY
     o.office_id, date;
 CREATE OR REPLACE VIEW doctor_available_slots AS
+WITH time_slots_json AS (
+    SELECT 
+        da.doctor_id,
+        da.office_id,
+        o.office_name,
+        o.office_address,
+        da.day_of_week,
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'start_time', ts.start_time,
+                'end_time', ts.end_time
+            )
+        ) as time_slots
+    FROM 
+        doctor_availability da
+    JOIN 
+        time_slots ts ON da.slot_id = ts.slot_id
+    JOIN 
+        office o ON da.office_id = o.office_id
+    WHERE 
+        da.is_available = TRUE
+    GROUP BY 
+        da.doctor_id, da.office_id, o.office_name, o.office_address, da.day_of_week
+)
 SELECT 
-    da.doctor_id,
-    da.office_id,
-    o.office_name,
-    o.office_address,
-    da.day_of_week,
-    da.specific_date,
-    ts.start_time,
-    ts.end_time,
-    da.is_available,
-    da.recurrence_type
-FROM 
-    doctor_availability da
-JOIN 
-    time_slots ts ON da.slot_id = ts.slot_id
-JOIN 
-    office o ON da.office_id = o.office_id
-WHERE 
-    da.is_available = TRUE;
+    doctor_id,
+    office_id,
+    office_name,
+    office_address,
+    day_of_week,
+    time_slots
+FROM time_slots_json;
 ;

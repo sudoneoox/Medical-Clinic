@@ -6,3 +6,6 @@ CALL populate_test_data(
     3,   -- 3 admins
     4    -- 4 appointments per patient
 );
+
+CALL populate_all_doctors_availability();
+

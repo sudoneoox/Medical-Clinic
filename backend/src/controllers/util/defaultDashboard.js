@@ -7,7 +7,10 @@ import SpecialistApproval from "../../models/Tables/SpecialistApproval.js";
 import Patient from "../../models/Tables/Patient.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import User from "../../models/Tables/Users.js";
+import DoctorAvailibility from "../../models/Tables/AvailableDoctors.js";
 import { Op } from "@sequelize/core";
+import TimeSlots from "../../models/Tables/TimeSlots.js";
+import sequelize from "../../config/database.js";
 
 const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
   const { section, data } = settingsData;
@@ -219,8 +222,44 @@ const populateMYAPPOINTMENTS = async (
                   through: DoctorOffices,
                   attributes: ["office_name", "office_address"],
                 },
+                {
+                  model: DoctorAvailibility,
+                  include: [
+                    {
+                      model: TimeSlots,
+                      attributes: ["start_time", "end_time"],
+                    },
+                  ],
+                  where: {
+                    is_available: 1,
+                    // if date is null, its a weekly occuring slot,
+                    [Op.or]: [
+                      { specific_date: null },
+                      { specific_date: { [Op.gte]: new Date() } },
+                    ],
+                  },
+                },
               ],
-              attributes: ["doctor_id", "doctor_fname", "doctor_lname"],
+              attributes: [
+                "doctor_id",
+                "doctor_fname",
+                "doctor_lname",
+                [
+                  sequelize.literal(`(
+                  SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'day', day_of_week,
+                            'office_name', office_name,
+                            'office_address', office_address,
+                            'time_slots', time_slots
+                        )
+                    )
+                    FROM doctor_available_slots
+                    WHERE doctor_id = Doctor.doctor_id
+                )`),
+                  "availability",
+                ],
+              ],
             });
             break;
           }
