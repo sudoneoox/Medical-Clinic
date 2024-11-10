@@ -33,6 +33,17 @@ const SpecialistApproval = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    reason: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    notes: {
+      type: DataTypes.TEXT,
+    },
+    appointment_request_datetime: {
+      type: "TIMESTAMP",
+      allowNull: false,
+    },
   },
   {
     tableName: "specialist_approvals",

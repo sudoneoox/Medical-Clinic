@@ -177,7 +177,7 @@ const MainFrame = ({
   // WARNING: remove during deployment
   // set to true if you want to see the UI of your sidebarItem but havent set up a backend api
   // so its stuck at loading
-  const TEST = true;
+  const TEST = false;
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar

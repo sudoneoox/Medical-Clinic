@@ -9,6 +9,15 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "../../utils/Card.tsx";
 import { Alert, AlertDescription } from "../../utils/Alerts.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+  DialogFooter,
+} from "../../utils/Dialog.tsx";
+import { Button } from "../../utils/Button.tsx";
 import api from "../../api.js";
 
 const CategoryCard = ({ title, icon, description, isSelected, onClick }) => (
@@ -30,55 +39,257 @@ const CategoryCard = ({ title, icon, description, isSelected, onClick }) => (
   </div>
 );
 
-const DoctorCard = ({ doctor }) => (
-  <Card className="mb-4">
-    <CardContent className="pt-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h4 className="font-medium">
-            Dr. {doctor.doctor_fname} {doctor.doctor_lname}
-          </h4>
-          {doctor.specialties && doctor.specialties.length > 0 && (
-            <p className="text-sm text-blue-600 mt-1">
-              {doctor.specialties.map((spec) => spec.specialty_name).join(", ")}
-            </p>
-          )}
-          {doctor.offices && doctor.offices.length > 0 && (
-            <div className="mt-2">
-              <p className="text-sm text-gray-600 font-medium">Available at:</p>
-              {doctor.offices.map((office, idx) => (
-                <p key={idx} className="text-sm text-gray-600">
-                  {office.office_name} - {office.office_address}
+const DoctorCard = ({ doctor }) => {
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [requestingApproval, setRequestingApproval] = useState(false);
+  const [approvalReason, setApprovalReason] = useState("");
+  const [selectedDateTime, setSelectedDateTime] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+
+  // Calculate available time slots (9 AM to 5 PM, 30 min intervals)
+  const getTimeSlots = (selectedDate) => {
+    const slots = [];
+    const start = new Date(selectedDate);
+    start.setHours(9, 0, 0); // 9 AM
+    const end = new Date(selectedDate);
+    end.setHours(17, 0, 0); // 5 PM
+
+    while (start < end) {
+      slots.push(new Date(start));
+      start.setMinutes(start.getMinutes() + 30);
+    }
+    return slots;
+  };
+
+  const handleDateSelect = (date) => {
+    setSelectedDateTime(date);
+    setShowDatePicker(false);
+  };
+
+  const handleScheduleClick = async () => {
+    if (!selectedDateTime) {
+      setShowDatePicker(true);
+      return;
+    }
+
+    try {
+      setBookingError(null);
+      const response = await api.post("/users/portal/submitNewAppointment", {
+        user_id: localStorage.getItem("userId"),
+        user_role: localStorage.getItem("userRole"),
+        doctor_id: doctor.doctor_id,
+        appointment_datetime: selectedDateTime,
+      });
+
+      if (response.data.success) {
+        // TODO: have to implement better refresh this will put them back into the overview
+        window.location.reload();
+      }
+    } catch (error) {
+      // TRIGGER error state set as this message
+      if (error.response?.data?.message === "SPECIALIST_APPROVAL_REQUESTED") {
+        setShowApprovalModal(true);
+      } else {
+        // ANOTHER ERROR WAS ENCOUNTERED BESIDES THE TRIGGER RESPONSE
+        setBookingError(
+          error.response?.data?.message || "Error booking appointment",
+        );
+      }
+    }
+  };
+  const handleApprovalRequest = async () => {
+    if (!approvalReason.trim() || !selectedDateTime) {
+      return;
+    }
+    try {
+      setRequestingApproval(true);
+      const response = await api.post(
+        "/users/portal/requestSpecialistApproval",
+        {
+          user_id: localStorage.getItem("userId"),
+          specialist_id: doctor.doctor_id,
+          reason: approvalReason,
+          appointment_datetime: selectedDateTime,
+        },
+      );
+      if (response.data.success) {
+        setShowApprovalModal(false);
+        setApprovalReason("");
+      }
+    } catch (error) {
+      // Error occured show it
+      setBookingError(
+        error.response?.data?.message || "Error requesting approval",
+      );
+    } finally {
+      setRequestingApproval(false);
+    }
+  };
+  return (
+    <>
+      <Card className="mb-4">
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-medium">
+                Dr. {doctor.doctor_fname} {doctor.doctor_lname}
+              </h4>
+              {doctor.specialties && doctor.specialties.length > 0 && (
+                <p className="text-sm text-blue-600 mt-1">
+                  {doctor.specialties
+                    .map((spec) => spec.specialty_name)
+                    .join(", ")}
                 </p>
-              ))}
+              )}
+              {doctor.offices && doctor.offices.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 font-medium">
+                    Available at:
+                  </p>
+                  {doctor.offices.map((office, idx) => (
+                    <p key={idx} className="text-sm text-gray-600">
+                      {office.office_name} - {office.office_address}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
+            {/* TIMES */}
+            <div className="flex flex-col gap-2">
+              {selectedDateTime && (
+                <p className="text-sm text-gray-600">
+                  Selected: {selectedDateTime.toLocaleString()}
+                </p>
+              )}
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                onClick={handleScheduleClick}
+              >
+                {!selectedDateTime ? "Select Time" : "Schedule"}
+              </button>
+            </div>
+          </div>
+
+          {/* ERRORS SHOW UP HERE */}
+          {bookingError && (
+            <Alert className="mt-4" variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{bookingError}</AlertDescription>
+            </Alert>
           )}
-        </div>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          onClick={async () => {
-            try {
-              const response = await api.post(
-                "/users/portal/submitNewAppointment",
-                {
-                  user_id: localStorage.getItem("userId"),
-                  user_role: localStorage.getItem("userRole"),
-                  // TODO: have to make the button send the doctor id in which they're planning to set up an appointment with
-                  // BUG: this could possibly be removed
-                  // sidebarItem: "MY-APPOINTMENTS",
-                },
-              );
-            } catch (error) {
-              // TODO: error handling this is where the TRIGGER is going to show up
-            }
-          }}
-        >
-          Schedule
-        </button>
-      </div>
-    </CardContent>
-  </Card>
-);
+        </CardContent>
+      </Card>
+
+      {/* DATE / TIME SELECTION MODAL */}
+      <Dialog open={showDatePicker} onOpenChange={setShowDatePicker}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Appointment Date & Time</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              {/* You might want to use a proper date picker component here */}
+              <input
+                type="date"
+                className="w-full p-2 border rounded"
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  if (!isNaN(date.getTime())) {
+                    setSelectedDateTime(date);
+                  }
+                }}
+                min={new Date().toISOString().split("T")[0]}
+              />
+              {selectedDateTime && (
+                <select
+                  className="w-full p-2 border rounded"
+                  onChange={(e) => {
+                    const date = new Date(selectedDateTime);
+                    const [hours, minutes] = e.target.value.split(":");
+                    date.setHours(parseInt(hours), parseInt(minutes), 0);
+                    setSelectedDateTime(date);
+                  }}
+                >
+                  {getTimeSlots(selectedDateTime).map((slot, index) => (
+                    <option
+                      key={index}
+                      value={`${slot.getHours()}:${slot.getMinutes()}`}
+                    >
+                      {slot.toLocaleTimeString()}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDatePicker(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowDatePicker(false);
+                handleScheduleClick();
+              }}
+              disabled={!selectedDateTime}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Specialist Approval Modal */}
+      {/* Also handles (Trigger was triggered show UI for it)  */}
+      {showApprovalModal && (
+        <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Specialist Approval Required</DialogTitle>
+              <DialogDescription>
+                This doctor is a specialist. You need approval from your primary
+                doctor first. Would you like to submit an approval request?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <textarea
+                className="w-full p-2 border rounded"
+                placeholder="Reason for specialist appointment..."
+                value={approvalReason}
+                onChange={(e) => setApprovalReason(e.target.value)}
+                rows={4}
+              />
+              {selectedDateTime && (
+                <p className="text-sm text-gray-600">
+                  Requested appontment time: {selectedDateTime.toLocaleString()}
+                </p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowApprovalModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleApprovalRequest}
+                disabled={
+                  requestingApproval ||
+                  !approvalReason.trim() ||
+                  !selectedDateTime
+                }
+              >
+                {requestingApproval ? "Requesting..." : "Request Approval"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+};
 
 const AppointmentCard = ({ appointment, type }) => {
   const formatDate = (dateString) => {

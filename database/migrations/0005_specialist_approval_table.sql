@@ -6,5 +6,8 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     specialist_status ENUM('APPROVED', 'PENDING', 'REJECTED') DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
     patient_id INTEGER NOT NULL,
     reffered_doctor_id INTEGER NOT NULL,
-    specialist_id INTEGER NOT NULL
+    specialist_id INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    notes TEXT,
+    appointment_requested_datetime TIMESTAMP NOT NULL
 );

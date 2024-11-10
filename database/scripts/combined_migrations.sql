@@ -57,7 +57,10 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     specialist_status ENUM('APPROVED', 'PENDING', 'REJECTED') DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
     patient_id INTEGER NOT NULL,
     reffered_doctor_id INTEGER NOT NULL,
-    specialist_id INTEGER NOT NULL
+    specialist_id INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    notes TEXT,
+    appointment_requested_datetime TIMESTAMP NOT NULL
 );
 ;
 CREATE TABLE IF NOT EXISTS office (
@@ -1168,33 +1171,26 @@ BEFORE INSERT ON appointments
 FOR EACH ROW
 BEGIN
     DECLARE is_specialist BOOLEAN;
-    DECLARE is_primary BOOLEAN;
+    DECLARE has_approval BOOLEAN;
+    DECLARE is_primary_doctor BOOLEAN;
     SELECT COUNT(*) > 0 INTO is_specialist
     FROM doctor_specialties ds
     WHERE ds.doctor_id = NEW.doctor_id;
-    SELECT COUNT(*) > 0 INTO is_primary
+    SELECT COUNT(*) > 0 INTO is_primary_doctor
     FROM patient_doctor_junction pdj
     WHERE pdj.patient_id = NEW.patient_id 
     AND pdj.doctor_id = NEW.doctor_id
     AND pdj.is_primary = 1;
-    IF is_specialist AND NOT is_primary THEN
-        SET @primary_doctor_id = (
-            SELECT doctor_id 
-            FROM patient_doctor_junction 
-            WHERE patient_id = NEW.patient_id 
-            AND is_primary = 1
-            LIMIT 1
-        );
-        INSERT INTO specialist_approvals (
-            patient_id,
-            reffered_doctor_id,
-            specialist_id
-        ) VALUES (
-            NEW.patient_id,
-            @primary_doctor_id,
-            NEW.doctor_id
-        );
-        SET NEW.status = 'PENDING';
+    IF is_specialist AND NOT is_primary_doctor THEN
+        SELECT COUNT(*) > 0 INTO has_approval
+        FROM specialist_approvals
+        WHERE patient_id = NEW.patient_id
+        AND specialist_id = NEW.doctor_id
+        AND specialist_status = 'APPROVED';
+        IF NOT has_approval THEN
+          SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
+        END IF;
     END IF;
 END//
 DELIMITER ;
