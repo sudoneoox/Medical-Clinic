@@ -9,6 +9,11 @@ export const formatTimeSlots = (slots) => {
 };
 
 export const groupSlotsByDay = (availability) => {
+  if (!Array.isArray(availability)) {
+    console.error("Availability is not an array:", availability);
+    return {};
+  }
+
   const grouped = {};
   availability.forEach((slot) => {
     if (!grouped[slot.office_name]) {
@@ -17,22 +22,14 @@ export const groupSlotsByDay = (availability) => {
         days: {},
       };
     }
-    grouped[slot.office_name].days[slot.day] = slot.time_slots;
+    if (!grouped[slot.office_name].days[slot.day]) {
+      grouped[slot.office_name].days[slot.day] = [];
+    }
+    if (Array.isArray(slot.time_slots)) {
+      grouped[slot.office_name].days[slot.day].push(...slot.time_slots);
+    }
   });
   return grouped;
-};
-
-export const getDayOfWeek = (date) => {
-  const days = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-  ];
-  return days[date.getDay()];
 };
 
 export const formatDate = (dateString) => {

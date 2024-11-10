@@ -13,7 +13,7 @@ import DoctorCard from "./cards/DoctorCard";
 import AppointmentCard from "./cards/AppointmentCard";
 import api from "../../../api.js";
 
-const Appointments = () => {
+const MyAppointments = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -150,4 +150,4 @@ const Appointments = () => {
   );
 };
 
-export default Appointments;
+export default MyAppointments;

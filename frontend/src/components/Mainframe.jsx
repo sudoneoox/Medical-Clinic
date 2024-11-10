@@ -3,7 +3,7 @@ import Overview from "./OverviewCards.jsx";
 import Calendar from "./sidebarItems/calendar/Calendar.jsx";
 import Patients from "./PatientsCards.jsx";
 import PatientRecords from "./sidebarItems/PatientsRecords.jsx";
-import Appointments from "./sidebarItems/my-appointments/Appointments.jsx";
+import MyAppointments from "./sidebarItems/my-appointments/MyAppointments.jsx";
 import Analytics from "./sidebarItems/analytics/Analytics.jsx";
 import UserManagement from "./sidebarItems/UserManagement.jsx";
 import Settings from "./sidebarItems/settings/Settings.jsx";
@@ -217,8 +217,9 @@ const MainFrame = ({
                     <PatientRecords data={contentData.patients} />
                   )}
 
-                  {currentSelected === "MY APPOINTMENTS" && <Appointments />}
-                  {currentSelected === "APPOINTMENTS" && <Appointments />}
+                  {currentSelected === "MY APPOINTMENTS" && <MyAppointments />}
+                  {/* BUG: Receptionist Appointments being implemented by danil */}
+                  {/* {currentSelected === "APPOINTMENTS" && <Appointments />} */}
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />

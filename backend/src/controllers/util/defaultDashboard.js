@@ -371,8 +371,118 @@ const populateMYAPPOINTMENTS = async (
   }
 };
 
+const submitNewAppointment = async (req, res) => {
+  const { user_id, doctor_id, office_name, appointment_datetime } = req.body;
+
+  try {
+    // Get patient_id from user_id
+    const patient = await Patient.findOne({
+      where: { user_id },
+    });
+
+    // Get office_id from office_name
+    const office = await Office.findOne({
+      where: { office_name },
+    });
+
+    // format datetime for mysql
+    const formattedDateTime = new Date(appointment_datetime)
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+
+    // Create the appointment
+    const appointment = await Appointment.create({
+      patient_id: patient.patient_id,
+      doctor_id,
+      office_id: office.office_id,
+      appointment_datetime: formattedDateTime,
+      duration: "00:30:00", // Default 30 min duration
+      status: "PENDING", // Will be updated by trigger if specialist approval needed
+      reason: req.body.reason || "Regular checkup",
+    });
+
+    res.json({
+      success: true,
+      data: appointment,
+    });
+  } catch (error) {
+    console.error("Appointment creation error", error);
+    // The specialist approval trigger will throw SPECIALIST_APPROVAL_REQUIRED
+    if (error.message.includes("SPECIALIST_APPROVAL_REQUIRED")) {
+      res.status(400).json({
+        message: "SPECIALIST_APPROVAL_REQUIRED",
+      });
+    } else {
+      res.status(500).json({
+        message: error.message || "Error creating appointment",
+      });
+    }
+  }
+};
+
+const requestSpecialistApproval = async (req, res) => {
+  const {
+    user_id,
+    specialist_id,
+    primary_doctor_id,
+    reason,
+    appointment_datetime,
+    office_name,
+  } = req.body;
+
+  try {
+    // Get patient_id from user_id
+    const patient = await Patient.findOne({
+      where: { user_id },
+    });
+
+    // Get office_id from office_name
+    const office = await Office.findOne({
+      where: { office_name },
+    });
+
+    // First create a pending appointment
+    const appointment = await Appointment.create({
+      patient_id: patient.patient_id,
+      doctor_id: specialist_id,
+      office_id: office.office_id,
+      appointment_datetime,
+      duration: "00:30:00", // Default 30 min duration
+      status: "PENDING_APPROVAL",
+      reason: reason,
+    });
+
+    // Create the specialist approval request
+    const approvalRequest = await SpecialistApproval.create({
+      appointment_id: appointment.appointment_id,
+      patient_id: patient.patient_id,
+      specialist_id: specialist_id,
+      primary_doctor_id: primary_doctor_id,
+      request_reason: reason,
+      status: "PENDING",
+      requested_datetime: new Date(),
+    });
+
+    res.json({
+      success: true,
+      data: {
+        appointment,
+        approvalRequest,
+      },
+    });
+  } catch (error) {
+    console.error("Error requesting specialist approval:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error requesting specialist approval",
+    });
+  }
+};
 const defaultDashboard = {
   populateMYAPPOINTMENTS,
   updateSETTINGS,
+  submitNewAppointment,
+  requestSpecialistApproval,
 };
 export default defaultDashboard;

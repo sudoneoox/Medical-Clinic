@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "../../../../utils/Card.tsx";
 import { Alert, AlertDescription } from "../../../../utils/Alerts.tsx";
+import { parseAvailability } from "../utils/Parsers.js";
 import DateTimePickerModal from "../modals/DateTimePickerModal";
 import SpecialistApprovalModal from "../modals/SpecialistApprovalModal";
 import { groupSlotsByDay, formatTimeSlots } from "../utils/timeFormatters";
@@ -15,39 +16,20 @@ const DoctorCard = ({ doctor }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [bookingError, setBookingError] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
+  const [primaryDoctor, setPrimaryDoctor] = useState(null);
 
-  const handleScheduleClick = async () => {
-    if (!selectedDateTime || !selectedOffice) {
-      setShowDatePicker(true);
-      return;
-    }
-
+  const fetchPrimaryDoctor = async () => {
     try {
-      setBookingError(null);
-      const response = await api.post("/users/portal/submitNewAppointment", {
+      const response = await api.post("/users/portal/getPrimaryDoctor", {
         user_id: localStorage.getItem("userId"),
-        user_role: localStorage.getItem("userRole"),
-        doctor_id: doctor.doctor_id,
-        office_name: selectedOffice,
-        appointment_datetime: selectedDateTime,
       });
-
-      if (response.data.success) {
-        window.location.reload();
-      }
+      setPrimaryDoctor(response.data.data);
     } catch (error) {
-      if (error.response?.data?.message === "SPECIALIST_APPROVAL_REQUESTED") {
-        setShowApprovalModal(true);
-      } else {
-        setBookingError(
-          error.response?.data?.message || "Error booking appointment",
-        );
-      }
+      console.error("Error fetching primary doctor:", error);
     }
   };
-
   const handleApprovalRequest = async () => {
-    if (!approvalReason.trim() || !selectedDateTime) {
+    if (!approvalReason.trim() || !selectedDateTime || !primaryDoctor) {
       return;
     }
     try {
@@ -57,13 +39,20 @@ const DoctorCard = ({ doctor }) => {
         {
           user_id: localStorage.getItem("userId"),
           specialist_id: doctor.doctor_id,
+          primary_doctor_id: primaryDoctor.doctor_id,
           reason: approvalReason,
-          appointment_datetime: selectedDateTime,
+          appointment_datetime: selectedDateTime
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " "),
+          office_name: selectedOffice,
         },
       );
+
       if (response.data.success) {
         setShowApprovalModal(false);
         setApprovalReason("");
+        window.location.reload();
       }
     } catch (error) {
       setBookingError(
@@ -74,8 +63,55 @@ const DoctorCard = ({ doctor }) => {
     }
   };
 
+  useEffect(() => {
+    if (showApprovalModal) {
+      fetchPrimaryDoctor();
+    }
+  }, [showApprovalModal]);
+
+  const handleScheduleClick = () => {
+    console.log("Button Clicked in handleScheduleClick");
+    setShowDatePicker(true);
+  };
+  const handleAppointmentSubmit = async () => {
+    if (!selectedDateTime || !selectedOffice) {
+      return;
+    }
+    try {
+      setBookingError(null);
+      // format date to mysql timestamp
+      const formattedDateTime = selectedDateTime
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+      const response = await api.post("/users/portal/submitNewAppointment", {
+        user_id: localStorage.getItem("userId"),
+        user_role: localStorage.getItem("userRole"),
+        doctor_id: doctor.doctor_id,
+        office_name: selectedOffice,
+        appointment_datetime: formattedDateTime,
+      });
+
+      if (response.data.success) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log("GOT ERROR ", error.response?.data?.message);
+      // TRIGGER
+      if (error.response?.data?.message === "SPECIALIST_APPROVAL_REQUIRED") {
+        setShowDatePicker(false);
+        setShowApprovalModal(true);
+      } else {
+        console.log("ERROR IN SCHEDULING");
+        setBookingError(
+          error.response?.data?.message || "Error booking appointment",
+        );
+      }
+    }
+  };
+
   return (
-    <>
+    <div className="relative">
       <Card className="mb-4">
         <CardContent className="pt-6">
           <div className="flex justify-between items-start">
@@ -98,7 +134,7 @@ const DoctorCard = ({ doctor }) => {
                   {doctor.availability && (
                     <div className="mt-2">
                       {Object.entries(
-                        groupSlotsByDay(JSON.parse(doctor.availability)),
+                        groupSlotsByDay(parseAvailability(doctor.availability)),
                       ).map(([officeName, data], idx) => (
                         <div
                           key={idx}
@@ -139,7 +175,7 @@ const DoctorCard = ({ doctor }) => {
                 </p>
               )}
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
                 onClick={handleScheduleClick}
               >
                 {!selectedDateTime ? "Select Time" : "Schedule"}
@@ -156,19 +192,18 @@ const DoctorCard = ({ doctor }) => {
         </CardContent>
       </Card>
 
-      <DateTimePickerModal
-        open={showDatePicker}
-        onOpenChange={setShowDatePicker}
-        doctor={doctor}
-        selectedDateTime={selectedDateTime}
-        setSelectedDateTime={setSelectedDateTime}
-        selectedOffice={selectedOffice}
-        setSelectedOffice={setSelectedOffice}
-        onConfirm={() => {
-          setShowDatePicker(false);
-          handleScheduleClick();
-        }}
-      />
+      {showDatePicker && (
+        <DateTimePickerModal
+          open={showDatePicker}
+          onOpenChange={setShowDatePicker}
+          doctor={doctor}
+          selectedDateTime={selectedDateTime}
+          setSelectedDateTime={setSelectedDateTime}
+          selectedOffice={selectedOffice}
+          setSelectedOffice={setSelectedOffice}
+          onConfirm={handleAppointmentSubmit}
+        />
+      )}
 
       <SpecialistApprovalModal
         open={showApprovalModal}
@@ -178,8 +213,9 @@ const DoctorCard = ({ doctor }) => {
         selectedDateTime={selectedDateTime}
         requestingApproval={requestingApproval}
         onConfirm={handleApprovalRequest}
+        primaryDoctor={primaryDoctor}
       />
-    </>
+    </div>
   );
 };
 
