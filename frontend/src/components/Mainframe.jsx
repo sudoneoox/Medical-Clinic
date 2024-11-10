@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Overview from "./OverviewCards.jsx";
-import Calendar from "./sidebarItems/Calendar.jsx";
+import Calendar from "./sidebarItems/calendar/Calendar.jsx";
 import Patients from "./PatientsCards.jsx";
 import PatientRecords from "./sidebarItems/PatientsRecords.jsx";
 import Appointments from "./sidebarItems/my-appointments/Appointments.jsx";
 import Analytics from "./sidebarItems/analytics/Analytics.jsx";
 import UserManagement from "./sidebarItems/UserManagement.jsx";
-import Settings from "./sidebarItems/UserSettings.jsx";
+import Settings from "./sidebarItems/settings/Settings.jsx";
 import { cn } from "../utils/utils.js";
 import { Bell, UserRound } from "lucide-react";
 import api, { API } from "../api.js";
