@@ -212,6 +212,7 @@ const populateMYAPPOINTMENTS = async (
                 {
                   model: Specialty,
                   through: DoctorSpecialties,
+                  attributes: ["specialty_name", "specialty_code"],
                 },
                 {
                   model: Office,

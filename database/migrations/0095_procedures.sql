@@ -101,3 +101,65 @@ BEGIN
         a.appointment_datetime;
 END //
 DELIMITER ;
+
+
+-- generates doctor availibility
+DELIMITER //
+
+CREATE PROCEDURE generate_doctor_weekly_schedule(
+    IN p_doctor_id INT,
+    IN p_office_id INT,
+    IN p_start_time TIME,
+    IN p_end_time TIME,
+    IN p_days_of_week VARCHAR(500) -- Comma-separated list of days
+)
+BEGIN
+    DECLARE day_name VARCHAR(20);
+    DECLARE done BOOLEAN DEFAULT FALSE;
+    DECLARE slot_id_var INT;
+    
+    -- Create cursor for days
+    DECLARE day_cursor CURSOR FOR 
+        SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(p_days_of_week, ',', numbers.n), ',', -1) day_name
+        FROM (
+            SELECT 1 + units.i + tens.i * 10 n
+            FROM (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) units,
+                 (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens
+            WHERE 1 + units.i + tens.i * 10 <= (LENGTH(p_days_of_week) - LENGTH(REPLACE(p_days_of_week, ',', '')) + 1)
+        ) numbers;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    START TRANSACTION;
+    
+    -- For each day
+    OPEN day_cursor;
+    
+    day_loop: LOOP
+        FETCH day_cursor INTO day_name;
+        IF done THEN
+            LEAVE day_loop;
+        END IF;
+        
+        -- For each time slot that falls within the doctor's availability
+        INSERT INTO doctor_availability (doctor_id, office_id, day_of_week, slot_id, is_available)
+        SELECT 
+            p_doctor_id,
+            p_office_id,
+            TRIM(day_name),
+            ts.slot_id,
+            TRUE
+        FROM 
+            time_slots ts
+        WHERE 
+            ts.start_time >= p_start_time 
+            AND ts.end_time <= p_end_time;
+            
+    END LOOP;
+    
+    CLOSE day_cursor;
+    
+    COMMIT;
+END //
+
+DELIMITER ;

@@ -286,3 +286,18 @@ ADD CONSTRAINT fk_notification_receiver
     FOREIGN KEY (receiver_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
+
+
+ALTER TABLE doctor_availability
+ADD CONSTRAINT fk_doctor_availibility_doctor
+    FOREIGN KEY (doctor_id) 
+    REFERENCES doctors(doctor_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_doctor_availibility_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_doctor_availibility_time
+    FOREIGN KEY (slot_id)
+    REFERENCES time_slots(slot_id)
+    ON DELETE CASCADE;

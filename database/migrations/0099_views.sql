@@ -94,4 +94,24 @@ ORDER BY
     o.office_id, date;
 
 
-
+-- get time slots for doctor availibility
+CREATE OR REPLACE VIEW doctor_available_slots AS
+SELECT 
+    da.doctor_id,
+    da.office_id,
+    o.office_name,
+    o.office_address,
+    da.day_of_week,
+    da.specific_date,
+    ts.start_time,
+    ts.end_time,
+    da.is_available,
+    da.recurrence_type
+FROM 
+    doctor_availability da
+JOIN 
+    time_slots ts ON da.slot_id = ts.slot_id
+JOIN 
+    office o ON da.office_id = o.office_id
+WHERE 
+    da.is_available = TRUE;

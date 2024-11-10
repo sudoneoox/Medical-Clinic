@@ -29,6 +29,8 @@ import EmployeeNo from "./Tables/ValidEmployeeNo.js";
 import Admins from "./Tables/Admin.js";
 import Notifs from "./Tables/Notifs.js";
 import MedicalRecordNotes from "./Tables/MedicalRecordNotes.js";
+import DoctorAvailibility from "./Tables/AvailableDoctors.js";
+import TimeSlots from "./Tables/TimeSlots.js";
 
 const initAssociations = () => {
   User.hasOne(Doctor, {
@@ -210,6 +212,16 @@ const initAssociations = () => {
   Notifs.belongsTo(User, {
     foreignKey: { name: "receiver_id", onDelete: "CASCADE" },
     as: "receiver",
+  });
+  DoctorAvailibility.belongsTo(Doctor, {
+    foreignKey: { name: "doctor_id", onDelete: "CASCADE" },
+  });
+
+  DoctorAvailibility.belongsTo(Office, {
+    foreignKey: { name: "office_id", onDelete: "CASCADE" },
+  });
+  DoctorAvailibility.belongsTo(TimeSlots, {
+    foreignKey: { name: "slot_id", onDelete: "CASCADE" },
   });
 };
 

@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS doctor_offices (
     effective_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     effective_end_date TIMESTAMP,
     schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
+    default_appointment_duration TIME DEFAULT '00:30:00',
     PRIMARY KEY (doctor_id, office_id, day_of_week)
 );
 ;
@@ -367,6 +368,45 @@ CREATE TABLE IF NOT EXISTS notifications (
     expires_at TIMESTAMP NULL,
     metadata JSON,
     UNIQUE(notification_id)
+);
+;
+CREATE TABLE IF NOT EXISTS time_slots (
+    slot_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    UNIQUE(start_time, end_time)
+);
+INSERT INTO time_slots (start_time, end_time) 
+VALUES 
+    ('09:00:00', '09:30:00'),
+    ('09:30:00', '10:00:00'),
+    ('10:00:00', '10:30:00'),
+    ('10:30:00', '11:00:00'),
+    ('11:00:00', '11:30:00'),
+    ('11:30:00', '12:00:00'),
+    ('12:00:00', '12:30:00'),
+    ('12:30:00', '13:00:00'),
+    ('13:00:00', '13:30:00'),
+    ('13:30:00', '14:00:00'),
+    ('14:00:00', '14:30:00'),
+    ('14:30:00', '15:00:00'),
+    ('15:00:00', '15:30:00'),
+    ('15:30:00', '16:00:00'),
+    ('16:00:00', '16:30:00'),
+    ('16:30:00', '17:00:00');
+;
+CREATE TABLE IF NOT EXISTS doctor_availability (
+    availability_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INTEGER NOT NULL,
+    office_id INTEGER NOT NULL,
+    day_of_week ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY') NOT NULL,
+    slot_id INTEGER NOT NULL,
+    is_available TINYINT DEFAULT 1,
+    recurrence_type ENUM('WEEKLY', 'ONE_TIME') DEFAULT 'WEEKLY',
+    specific_date DATE NULL, -- Only used when recurrence_type is ONE_TIME
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_availability (doctor_id, office_id, day_of_week, slot_id, specific_date)
 );
 ;
 INSERT INTO race_code (race_code, race_text) VALUES
@@ -1282,6 +1322,51 @@ BEGIN
         a.appointment_datetime;
 END //
 DELIMITER ;
+DELIMITER //
+CREATE PROCEDURE generate_doctor_weekly_schedule(
+    IN p_doctor_id INT,
+    IN p_office_id INT,
+    IN p_start_time TIME,
+    IN p_end_time TIME,
+    IN p_days_of_week VARCHAR(500) -- Comma-separated list of days
+)
+BEGIN
+    DECLARE day_name VARCHAR(20);
+    DECLARE done BOOLEAN DEFAULT FALSE;
+    DECLARE slot_id_var INT;
+    DECLARE day_cursor CURSOR FOR 
+        SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(p_days_of_week, ',', numbers.n), ',', -1) day_name
+        FROM (
+            SELECT 1 + units.i + tens.i * 10 n
+            FROM (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) units,
+                 (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens
+            WHERE 1 + units.i + tens.i * 10 <= (LENGTH(p_days_of_week) - LENGTH(REPLACE(p_days_of_week, ',', '')) + 1)
+        ) numbers;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    START TRANSACTION;
+    OPEN day_cursor;
+    day_loop: LOOP
+        FETCH day_cursor INTO day_name;
+        IF done THEN
+            LEAVE day_loop;
+        END IF;
+        INSERT INTO doctor_availability (doctor_id, office_id, day_of_week, slot_id, is_available)
+        SELECT 
+            p_doctor_id,
+            p_office_id,
+            TRIM(day_name),
+            ts.slot_id,
+            TRUE
+        FROM 
+            time_slots ts
+        WHERE 
+            ts.start_time >= p_start_time 
+            AND ts.end_time <= p_end_time;
+    END LOOP;
+    CLOSE day_cursor;
+    COMMIT;
+END //
+DELIMITER ;
 ;
 CREATE INDEX idx_users_role ON users(user_role);
 CREATE INDEX idx_users_email ON users(user_email);
@@ -1596,6 +1681,19 @@ ADD CONSTRAINT fk_notification_receiver
     FOREIGN KEY (receiver_id) 
     REFERENCES users(user_id)
     ON DELETE CASCADE;
+ALTER TABLE doctor_availability
+ADD CONSTRAINT fk_doctor_availibility_doctor
+    FOREIGN KEY (doctor_id) 
+    REFERENCES doctors(doctor_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_doctor_availibility_office
+    FOREIGN KEY (office_id)
+    REFERENCES office(office_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_doctor_availibility_time
+    FOREIGN KEY (slot_id)
+    REFERENCES time_slots(slot_id)
+    ON DELETE CASCADE;
 ;
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
@@ -1682,4 +1780,24 @@ GROUP BY
     o.office_id, o.office_name, DATE(a.appointment_datetime)
 ORDER BY
     o.office_id, date;
+CREATE OR REPLACE VIEW doctor_available_slots AS
+SELECT 
+    da.doctor_id,
+    da.office_id,
+    o.office_name,
+    o.office_address,
+    da.day_of_week,
+    da.specific_date,
+    ts.start_time,
+    ts.end_time,
+    da.is_available,
+    da.recurrence_type
+FROM 
+    doctor_availability da
+JOIN 
+    time_slots ts ON da.slot_id = ts.slot_id
+JOIN 
+    office o ON da.office_id = o.office_id
+WHERE 
+    da.is_available = TRUE;
 ;

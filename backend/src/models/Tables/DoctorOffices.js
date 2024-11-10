@@ -52,6 +52,10 @@ const DoctorOffices = sequelize.define(
       type: DataTypes.ENUM("REGULAR", "TEMPORARY", "ON_CALL"),
       defaultValue: "REGULAR",
     },
+    default_appointment_duration: {
+      type: DataTypes.TIME,
+      defaultValue: "00:30:00",
+    },
   },
   {
     tableName: "doctor_offices",

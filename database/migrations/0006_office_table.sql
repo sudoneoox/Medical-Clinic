@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS doctor_offices (
     effective_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     effective_end_date TIMESTAMP,
     schedule_type ENUM('REGULAR', 'TEMPORARY', 'ON_CALL') DEFAULT 'REGULAR',
+    default_appointment_duration TIME DEFAULT '00:30:00',
     PRIMARY KEY (doctor_id, office_id, day_of_week)
 );
