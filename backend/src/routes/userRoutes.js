@@ -55,6 +55,16 @@ router.post(
 );
 
 router.post(
+  "/createmedicalrecords",
+  doctorDashboard.addMedicalRecord,
+);
+
+router.post(
+  "/editmedicalrecords/:recordId",
+  doctorDashboard.editMedicalRecord,
+);
+
+router.post(
   "/prescriptionrecords/:recordId",
   doctorDashboard.retrievePrescriptionRecords,
 );

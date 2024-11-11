@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import api, { API } from '../api.js';
 
-const MedicalRecordForm = ({ record, onClose, onSave }) => {
+const MedicalRecordForm = ({ record, patientId, onClose, onSave }) => {
+  
   const [diagnosis, setDiagnosis] = useState('');
   const [updatedAt, setUpdatedAt] = useState('');
   console.log(record,"record details for medical rec");
@@ -11,7 +12,6 @@ const MedicalRecordForm = ({ record, onClose, onSave }) => {
   useEffect(() => {
     if (record) {
       setDiagnosis(record.diagnosis);
-      setUpdatedAt(record.updated_at);
     }
   }, [record]);
 
@@ -20,17 +20,28 @@ const MedicalRecordForm = ({ record, onClose, onSave }) => {
     try {
       if (record) {
         // Update existing record
-        await api.put(`${API.URL}/api/users/medicalrecords/${record.record_id}`, {
-          diagnosis,
-          updated_at: new Date(updatedAt).toISOString(),
-        });
-      } else {
-        // Create new record
-        await api.post(`${API.URL}/api/users/medicalrecords`, {
+        console.log("Entering edit rec");
+        await api.post(`${API.URL}/api/users/editmedicalrecords/${record.record_id}`, {
           diagnosis,
           updated_at: new Date().toISOString(),
         });
+        console.log(diagnosis);
+        
+      } else {
+        // Create new record
+        try {
+          const res = await api.post(`${API.URL}/api/users/createmedicalrecords`, {
+            diagnosis,
+            patientId,
+            user_id: localStorage.getItem("userId"), // user id of logged in doctor
+          });
+          console.log("Added medical record");
+        } catch (error) {
+          console.log(error);
+        }
       }
+      console.log("save button worked");
+      
       onSave(); // Notify parent to refresh data
       onClose(); // Close the form
     } catch (error) {
@@ -41,7 +52,7 @@ const MedicalRecordForm = ({ record, onClose, onSave }) => {
   return (
     
     <div className="modal">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form className="space-y-4">
         <h2 className="text-2xl font-bold">{record ? 'Edit' : 'Add'} Medical Record</h2>
         <div>
           <label className="block">Diagnosis</label>
@@ -53,7 +64,7 @@ const MedicalRecordForm = ({ record, onClose, onSave }) => {
             className="border rounded-md p-2 w-full"
           />
         </div>
-        <div>
+        {/* <div>
           <label className="block">Updated Date</label>
           <input
             type="datetime-local"
@@ -61,12 +72,12 @@ const MedicalRecordForm = ({ record, onClose, onSave }) => {
             onChange={(e) => setUpdatedAt(e.target.value)}
             className="border rounded-md p-2 w-full"
           />
-        </div>
+        </div> */}
         <div className="flex justify-end">
           <button type="button" onClick={onClose} className="mr-2 bg-gray-500 text-white px-3 py-1 rounded">
             Cancel
           </button>
-          <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">
+          <button onClick={handleSubmit} type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">
             Save
           </button>
         </div>

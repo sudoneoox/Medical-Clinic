@@ -239,14 +239,17 @@ const populatePATIENTS = async (user, doctor, res) => {
         },
       ],
     });
+    console.log("Accesed patient populate", patients.doctor_id);
+    
     return res.json({
-      doctorInfo: {
-        name: `${doctor.doctor_fname} ${doctor.doctor_lname}`,
-        email: user.user_email,
-        phone: user.user_phone,
-        experience: doctor.years_of_experience,
-      },
+      // doctorInfo: {
+      //   name: `${doctor.doct or_fname} ${doctor.doctor_lname}`,
+      //   email: user.user_email,
+      //   phone: user.user_phone,
+      //   experience: doctor.years_of_experience,
+      // },
       patients: patients?.patients || [],
+      doctorId: patients?.doctor_id,
     });
   } catch (error) {
     console.error("Error in populatePatientsForDoctor:", error);
@@ -260,10 +263,10 @@ const populatePATIENTS = async (user, doctor, res) => {
 const retrieveMedicalRecords = async (req, res) => {
   try {
     const patientid = req.params.patientId;
-    console.log(`Fetching billing records for patient ID: ${patientid}`);
+    console.log(`Fetching medical records for patient ID: ${patientid}`);
 
     const medicalrecords = await MedicalRecord.findAll({
-      where: { patient_id: patientid },
+      where: { patient_id: patientid, is_deleted: 0 },
     });
 
     return res.json(medicalrecords);
@@ -281,7 +284,7 @@ const retrievePrescriptionRecords = async (req, res) => {
   try {
     const recordId = req.params.recordId;
     const prescriptionrecords = await Prescription.findAll({
-      where: { medical_record_id: recordId },
+      where: { medical_record_id: recordId, is_deleted: 0 },
     });
 
     return res.json(prescriptionrecords);
@@ -297,6 +300,49 @@ const retrievePrescriptionRecords = async (req, res) => {
   // start here
 };
 
+const addMedicalRecord = async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({where: {user_id:req.body.user_id}});
+    console.log(req.body.patientId, "Patient ID");
+    console.log(doctor.doctor_id, "Doctor ID");
+    console.log(req.body.updated_at, "Updated at");
+    
+    newMedicalRecord = await MedicalRecord.create({
+      diagnosis: req.body.diagnosis,
+      doctor_id: doctor.doctor_id,
+      patient_id: req.body.patientId,
+    });
+    return res.status(100).json({ message: "Successfully added medical record" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error Adding medical record", error: error.message });
+  }
+}
+
+const editMedicalRecord = async (req, res) => {
+  try {
+    console.log("Entering med edit");
+    
+    const recordId = req.params.recordId;
+    console.log(recordId, "Record ID");
+    
+    const editMedicalRecord = await MedicalRecord.findOne({
+      where: {
+        is_deleted: 0,
+        record_id: recordId,
+      }
+    });
+    await editMedicalRecord.update({diagnosis: req.body.diagnosis});
+
+    return res.status(100).json({ message: "Successfully edited medical record" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error editing medical record", error: error.message });
+  }
+}
+
 const doctorDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
@@ -304,6 +350,8 @@ const doctorDashboard = {
   populatePATIENTS,
   retrieveMedicalRecords,
   retrievePrescriptionRecords,
+  addMedicalRecord,
+  editMedicalRecord,
 };
 
 export default doctorDashboard;
