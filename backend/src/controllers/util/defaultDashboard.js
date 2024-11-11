@@ -186,7 +186,7 @@ const populateMYAPPOINTMENTS = async (
             data = await Appointment.findAll({
               where: {
                 patient_id: relatedEntity.patient_id,
-                status: "PENDING",
+                status: "PENDING_DOCTOR_APPROVAL",
               },
               include: [
                 {
@@ -439,18 +439,24 @@ const requestSpecialistApproval = async (req, res) => {
       where: { office_name },
     });
 
-    // First create a pending appointment
-    const appointment = await Appointment.create({
-      patient_id: patient.patient_id,
-      doctor_id: specialist_id,
-      office_id: office.office_id,
-      appointment_datetime,
-      duration: "00:30:00", // Default 30 min duration
-      status: "PENDING",
-      reason: reason,
-    });
+    // create a pending appointment
+    const appointment = await Appointment.create(
+      {
+        patient_id: patient.patient_id,
+        doctor_id: specialist_id,
+        office_id: office.office_id,
+        appointment_datetime,
+        duration: "00:30:00", // Default 30 min duration
+        status: "PENDING_DOCTOR_APPROVAL",
+        reason: reason,
+      },
+      {
+        hooks: false,
+      },
+    );
 
     // Create the specialist approval request
+    console.log("PRIMARY DOCTOR IN SPECIALIST APPROVAL", primary_doctor_id);
     const approvalRequest = await SpecialistApproval.create({
       appointment_id: appointment.appointment_id,
       patient_id: patient.patient_id,
@@ -458,7 +464,6 @@ const requestSpecialistApproval = async (req, res) => {
       reffered_doctor_id: primary_doctor_id,
       reason: reason,
       specialist_status: "PENDING",
-      appointment_requested_datetime: new Date(),
     });
 
     res.json({

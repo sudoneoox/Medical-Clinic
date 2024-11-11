@@ -17,8 +17,9 @@ const DoctorCard = ({ doctor }) => {
   const [bookingError, setBookingError] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [primaryDoctor, setPrimaryDoctor] = useState(null);
-  const [isAppointmentPending, setIsAppointmentPending] = useState(false);
-
+  //BUG: trigger doesnt work on first doctor on list
+  //need to chagne up doctor how theyre fetching their approval
+  //this sucks need to clean up and also the way i implemented it is so messy but were on short time
   const fetchPrimaryDoctor = async () => {
     try {
       const response = await api.post("/users/portal/getPrimaryDoctor", {
@@ -26,6 +27,9 @@ const DoctorCard = ({ doctor }) => {
       });
       console.log("inside primary doctor", response.data.data);
       setPrimaryDoctor(response.data.data);
+      if (response?.data?.data) {
+        localStorage.setItem("primaryDoctor", primaryDoctor.doctor.doctor_id);
+      }
     } catch (error) {
       console.error("Error fetching primary doctor:", error);
     }
@@ -41,7 +45,7 @@ const DoctorCard = ({ doctor }) => {
         {
           user_id: localStorage.getItem("userId"),
           specialist_id: doctor.doctor_id,
-          primary_doctor_id: primaryDoctor.doctor_id,
+          primary_doctor_id: localStorage.getItem("primaryDoctor"),
           reason: approvalReason,
           appointment_datetime: selectedDateTime
             .toISOString()
@@ -102,6 +106,7 @@ const DoctorCard = ({ doctor }) => {
       // TRIGGER
       if (error.response?.data?.message === "SPECIALIST_APPROVAL_REQUIRED") {
         setShowDatePicker(false);
+        fetchPrimaryDoctor();
         setShowApprovalModal(true);
       } else {
         console.log("ERROR IN SCHEDULING");

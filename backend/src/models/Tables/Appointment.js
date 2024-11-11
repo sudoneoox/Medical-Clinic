@@ -47,6 +47,7 @@ const Appointment = sequelize.define(
         "COMPLETED",
         "NO SHOW",
         "PENDING",
+        "PENDING_DOCTOR_APPROVAL",
       ),
       allowNull: false,
     },

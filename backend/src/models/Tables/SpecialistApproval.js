@@ -40,8 +40,9 @@ const SpecialistApproval = sequelize.define(
     notes: {
       type: DataTypes.TEXT,
     },
-    appointment_request_datetime: {
+    appointment_requested_datetime: {
       type: "TIMESTAMP",
+      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       allowNull: false,
     },
     appointment_id: {

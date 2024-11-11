@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     booked_by INTEGER NULL,
     attending_nurse INTEGER NULL,
     reason VARCHAR(100),
-    status ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW', 'PENDING') NOT NULL,
+    status ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW', 'PENDING', 'PENDING_DOCTOR_APPROVAL') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -1282,23 +1282,25 @@ BEGIN
     DECLARE is_specialist BOOLEAN;
     DECLARE has_approval BOOLEAN;
     DECLARE is_primary_doctor BOOLEAN;
-    SELECT COUNT(*) > 0 INTO is_specialist
-    FROM doctor_specialties ds
-    WHERE ds.doctor_id = NEW.doctor_id;
-    SELECT COUNT(*) > 0 INTO is_primary_doctor
-    FROM patient_doctor_junction pdj
-    WHERE pdj.patient_id = NEW.patient_id 
-    AND pdj.doctor_id = NEW.doctor_id
-    AND pdj.is_primary = 1;
-    IF is_specialist AND NOT is_primary_doctor THEN
-        SELECT COUNT(*) > 0 INTO has_approval
-        FROM specialist_approvals
-        WHERE patient_id = NEW.patient_id
-        AND specialist_id = NEW.doctor_id
-        AND specialist_status = 'APPROVED';
-        IF NOT has_approval THEN
-          SIGNAL SQLSTATE '45000'
-          SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
+    IF NEW.status != 'PENDING_DOCTOR_APPROVAL' THEN
+        SELECT COUNT(*) > 0 INTO is_specialist
+        FROM doctor_specialties ds
+        WHERE ds.doctor_id = NEW.doctor_id;
+        SELECT COUNT(*) > 0 INTO is_primary_doctor
+        FROM patient_doctor_junction pdj
+        WHERE pdj.patient_id = NEW.patient_id 
+        AND pdj.doctor_id = NEW.doctor_id
+        AND pdj.is_primary = 1;
+        IF is_specialist AND NOT is_primary_doctor THEN
+            SELECT COUNT(*) > 0 INTO has_approval
+            FROM specialist_approvals
+            WHERE patient_id = NEW.patient_id
+            AND specialist_id = NEW.doctor_id
+            AND specialist_status = 'APPROVED';
+            IF NOT has_approval THEN
+              SIGNAL SQLSTATE '45000'
+              SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
+            END IF;
         END IF;
     END IF;
 END//
