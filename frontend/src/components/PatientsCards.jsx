@@ -29,13 +29,16 @@ const PatientList = ({ data = [] }) => {
   const [currentRecord, setCurrentRecord] = useState(null);
   const [currentPrescription, setCurrentPrescription] = useState(null);
   console.log(data);
-   
 
   const fetchMedicalRecords = async (patientId) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.post(`${API.URL}/api/users/medicalrecords/${patientId}`);
+      const response = await api.post(
+        `${API.URL}/api/users/medicalrecords/${patientId}`,
+      );
+      console.log(response.data);
+      
       setMedicalRecords(response.data);
     } catch (error) {
       setError(error.message);
@@ -80,7 +83,7 @@ const PatientList = ({ data = [] }) => {
   };
 
   // Functions to open forms
-  const openMedicalRecordForm = (record) => {
+  const openMedicalRecordForm = (record ) => {
     setCurrentRecord(record);
     setCurrentView("Medical Form");
     setIsMedicalRecordFormOpen(true);
@@ -107,7 +110,7 @@ const PatientList = ({ data = [] }) => {
     }
      return (
       <>
-                <div className="space-y-4">
+        <div className="space-y-4">
           {data.length === 0 ? (
             <p>No patients found.</p>
           ) : (
@@ -153,7 +156,7 @@ const PatientList = ({ data = [] }) => {
               <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
             </div>
             <button
-              onClick={() => openMedicalRecordForm(null)} // Open form for adding a new record
+              onClick={() => openMedicalRecordForm(null, selectedPatient.patient_id)} // Open form for adding a new record
               className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
             >
               <Plus className="inline-block w-4 h-4 mr-1" /><p>Medical Record</p>
@@ -286,12 +289,14 @@ const PatientList = ({ data = [] }) => {
     return (
       <MedicalRecordForm
         record={currentRecord}
+        patientId = {selectedPatient.patient_id}
         onClose={() => {
           setIsMedicalRecordFormOpen(false);
           setCurrentView("MEDICAL RECORDS");
         }}
         onSave={() => {
           // Logic to refresh medical records after saving
+          fetchMedicalRecords(selectedPatient.patient_id);
           setCurrentRecord(null);
           setIsMedicalRecordFormOpen(false);
           setCurrentView("MEDICAL RECORDS");
