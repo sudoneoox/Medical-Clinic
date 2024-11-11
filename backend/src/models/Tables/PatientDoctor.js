@@ -5,8 +5,8 @@ const PatientDoctor = sequelize.define(
   "PatientDoctor",
   {
     is_primary: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      type: DataTypes.TINYINT,
+      defaultValue: 0,
     },
     doctor_id: {
       type: DataTypes.INTEGER,

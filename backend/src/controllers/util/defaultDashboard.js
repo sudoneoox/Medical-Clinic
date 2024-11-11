@@ -5,6 +5,7 @@ import DoctorSpecialties from "../../models/Tables/DoctorSpecialties.js";
 import Office from "../../models/Tables/Office.js";
 import SpecialistApproval from "../../models/Tables/SpecialistApproval.js";
 import Patient from "../../models/Tables/Patient.js";
+import PatientDoctor from "../../models/Tables/PatientDoctor.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import User from "../../models/Tables/Users.js";
 import DoctorAvailibility from "../../models/Tables/AvailableDoctors.js";
@@ -144,10 +145,8 @@ const populateMYAPPOINTMENTS = async (
   appointmentData,
   res,
 ) => {
-  console.log(appointmentData);
   const { appointmentType, action } = appointmentData;
   console.log("RECEIVED INSIDE populateAPPOINTMENTS");
-  console.log(user.user_role, appointmentType, action);
 
   try {
     let data;
@@ -360,7 +359,6 @@ const populateMYAPPOINTMENTS = async (
       default:
         throw new Error(`Invalid user role ${user.user_role} for appointments`);
     }
-    console.log("FINISHED DATA: ", data);
     res.json({ success: true, data });
   } catch (error) {
     console.error("Error fetching appointments:", error);
@@ -430,7 +428,6 @@ const requestSpecialistApproval = async (req, res) => {
     appointment_datetime,
     office_name,
   } = req.body;
-
   try {
     // Get patient_id from user_id
     const patient = await Patient.findOne({
@@ -449,7 +446,7 @@ const requestSpecialistApproval = async (req, res) => {
       office_id: office.office_id,
       appointment_datetime,
       duration: "00:30:00", // Default 30 min duration
-      status: "PENDING_APPROVAL",
+      status: "PENDING",
       reason: reason,
     });
 
@@ -458,10 +455,10 @@ const requestSpecialistApproval = async (req, res) => {
       appointment_id: appointment.appointment_id,
       patient_id: patient.patient_id,
       specialist_id: specialist_id,
-      primary_doctor_id: primary_doctor_id,
-      request_reason: reason,
-      status: "PENDING",
-      requested_datetime: new Date(),
+      reffered_doctor_id: primary_doctor_id,
+      reason: reason,
+      specialist_status: "PENDING",
+      appointment_requested_datetime: new Date(),
     });
 
     res.json({
@@ -479,10 +476,43 @@ const requestSpecialistApproval = async (req, res) => {
     });
   }
 };
+
+const getPrimaryDoctor = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    let doctor = await PatientDoctor.findOne({
+      where: {
+        patient_id: user_id,
+        is_primary: 1,
+      },
+      include: [
+        {
+          model: Doctor,
+        },
+      ],
+    });
+    doctor = doctor.doctor;
+    res.json({
+      data: {
+        doctor,
+      },
+    });
+
+    console.log("INSIDE GET PRIMARY DOCTOR", doctor);
+  } catch (error) {
+    console.error("Error fetching primary doctor:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching primary doctor",
+    });
+  }
+};
+
 const defaultDashboard = {
   populateMYAPPOINTMENTS,
   updateSETTINGS,
   submitNewAppointment,
   requestSpecialistApproval,
+  getPrimaryDoctor,
 };
 export default defaultDashboard;

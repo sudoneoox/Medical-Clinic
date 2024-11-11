@@ -28,7 +28,8 @@ const SpecialistApprovalModal = ({
               {primaryDoctor ? (
                 <>
                   Request will be sent to your primary doctor: Dr.{" "}
-                  {primaryDoctor.doctor_fname} {primaryDoctor.doctor_lname}
+                  {primaryDoctor.doctor.doctor_fname}{" "}
+                  {primaryDoctor.doctor.doctor_lname}
                 </>
               ) : (
                 "Loading primary doctor information..."

@@ -17,12 +17,14 @@ const DoctorCard = ({ doctor }) => {
   const [bookingError, setBookingError] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [primaryDoctor, setPrimaryDoctor] = useState(null);
+  const [isAppointmentPending, setIsAppointmentPending] = useState(false);
 
   const fetchPrimaryDoctor = async () => {
     try {
       const response = await api.post("/users/portal/getPrimaryDoctor", {
         user_id: localStorage.getItem("userId"),
       });
+      console.log("inside primary doctor", response.data.data);
       setPrimaryDoctor(response.data.data);
     } catch (error) {
       console.error("Error fetching primary doctor:", error);
@@ -204,17 +206,23 @@ const DoctorCard = ({ doctor }) => {
           onConfirm={handleAppointmentSubmit}
         />
       )}
-
-      <SpecialistApprovalModal
-        open={showApprovalModal}
-        onOpenChange={setShowApprovalModal}
-        approvalReason={approvalReason}
-        setApprovalReason={setApprovalReason}
-        selectedDateTime={selectedDateTime}
-        requestingApproval={requestingApproval}
-        onConfirm={handleApprovalRequest}
-        primaryDoctor={primaryDoctor}
-      />
+      {showApprovalModal && (
+        <SpecialistApprovalModal
+          open={showApprovalModal}
+          onOpenChange={(open) => {
+            setShowApprovalModal(open);
+            if (!open) {
+              setApprovalReason("");
+            }
+          }}
+          approvalReason={approvalReason}
+          setApprovalReason={setApprovalReason}
+          selectedDateTime={selectedDateTime}
+          requestingApproval={requestingApproval}
+          onConfirm={handleApprovalRequest}
+          primaryDoctor={primaryDoctor}
+        />
+      )}
     </div>
   );
 };

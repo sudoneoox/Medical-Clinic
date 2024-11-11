@@ -179,6 +179,9 @@ const initAssociations = () => {
   });
 
   SpecialistApproval.belongsTo(Patient, { foreignKey: "patient_id" });
+  SpecialistApproval.belongsTo(Appointment, {
+    foreignKey: { name: "appointment_id", onDelete: "CASCADE" },
+  });
   SpecialistApproval.belongsTo(Doctor, {
     foreignKey: "reffered_doctor_id",
     as: "referringDoctor",

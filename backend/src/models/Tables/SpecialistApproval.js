@@ -17,7 +17,7 @@ const SpecialistApproval = sequelize.define(
       type: "TIMESTAMP",
     },
     specialist_status: {
-      type: DataTypes.SPECIALIST_REQUEST_STATUS,
+      type: DataTypes.ENUM("APPROVED", "PENDING", "REJECTED"),
       allowNull: false,
       defaultValue: "PENDING",
     },
@@ -42,6 +42,10 @@ const SpecialistApproval = sequelize.define(
     },
     appointment_request_datetime: {
       type: "TIMESTAMP",
+      allowNull: false,
+    },
+    appointment_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },

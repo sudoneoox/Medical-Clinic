@@ -103,7 +103,6 @@ const populateCALENDAR = async (user, patient, res) => {
         },
       ],
     });
-    console.log(appointments);
 
     return res.json({
       appointments: appointments?.appointments || [],

@@ -63,6 +63,7 @@ router.post(
   "/portal/requestSpecialistApproval",
   defaultDashboard.requestSpecialistApproval,
 );
+router.post("/portal/getPrimaryDoctor", defaultDashboard.getPrimaryDoctor);
 
 router.post(
   "/prescriptionrecords/:recordId",

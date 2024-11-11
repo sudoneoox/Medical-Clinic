@@ -146,7 +146,6 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
                 "years_of_experience",
               ],
             });
-            console.log("received in DOCTORS", doctors[0].specialtiesDoctors);
 
             data = doctors.map((doc) => ({
               id: doc.doctor_id,
@@ -365,8 +364,6 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
 // TODO: switch off the deprecated functions
 const populateANALYTICS = async (user, admin, analyticData, res) => {
   const { analyticType, subCategory, office } = analyticData;
-  console.log("RECEIVED INSIDE populateANALYTICS");
-  console.log(analyticType, subCategory, office);
   try {
     let data;
     switch (analyticType) {

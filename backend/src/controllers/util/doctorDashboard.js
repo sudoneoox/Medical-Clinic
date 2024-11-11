@@ -260,7 +260,6 @@ const populatePATIENTS = async (user, doctor, res) => {
 const retrieveMedicalRecords = async (req, res) => {
   try {
     const patientid = req.params.patientId;
-    console.log(`Fetching billing records for patient ID: ${patientid}`);
 
     const medicalrecords = await MedicalRecord.findAll({
       where: { patient_id: patientid },
@@ -287,12 +286,10 @@ const retrievePrescriptionRecords = async (req, res) => {
     return res.json(prescriptionrecords);
   } catch (error) {
     console.error("Error fetching prescription data:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error fetching prescription data",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Error fetching prescription data",
+      error: error.message,
+    });
   }
   // start here
 };

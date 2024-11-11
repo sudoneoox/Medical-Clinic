@@ -43,6 +43,10 @@ ADD CONSTRAINT fk_approval_requesting_doctor
 ADD CONSTRAINT fk_approval_specialist
     FOREIGN KEY (specialist_id) 
     REFERENCES doctors(doctor_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_approval_appointment
+    FOREIGN KEY (appointment_id)
+    REFERENCES appointments(appointment_id)
     ON DELETE CASCADE;
 
 -- Appointments table relations

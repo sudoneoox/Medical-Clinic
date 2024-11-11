@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     specialist_id INTEGER NOT NULL,
     reason TEXT NOT NULL,
     notes TEXT,
-    appointment_requested_datetime TIMESTAMP NOT NULL
+    appointment_requested_datetime TIMESTAMP NOT NULL,
+    appointment_id INTEGER NOT NULL
 );
 ;
 CREATE TABLE IF NOT EXISTS office (
@@ -1557,6 +1558,10 @@ ADD CONSTRAINT fk_approval_requesting_doctor
 ADD CONSTRAINT fk_approval_specialist
     FOREIGN KEY (specialist_id) 
     REFERENCES doctors(doctor_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_approval_appointment
+    FOREIGN KEY (appointment_id)
+    REFERENCES appointments(appointment_id)
     ON DELETE CASCADE;
 ALTER TABLE appointments
 ADD CONSTRAINT fk_appointment_patient 
