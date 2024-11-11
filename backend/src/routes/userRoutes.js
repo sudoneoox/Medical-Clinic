@@ -55,18 +55,15 @@ router.post(
   doctorDashboard.retrieveMedicalRecords,
 );
 
-  "/createmedicalrecords",
-  doctorDashboard.addMedicalRecord,
-);
+router.post("/createmedicalrecords", doctorDashboard.addMedicalRecord);
+
+router.post("/editmedicalrecords/:recordId", doctorDashboard.editMedicalRecord);
 
 router.post(
-  "/editmedicalrecords/:recordId",
-  doctorDashboard.editMedicalRecord,
-);
-
   "/portal/submitNewAppointment",
   defaultDashboard.submitNewAppointment,
 );
+
 router.post(
   "/portal/requestSpecialistApproval",
   defaultDashboard.requestSpecialistApproval,
