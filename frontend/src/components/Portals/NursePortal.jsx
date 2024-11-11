@@ -6,7 +6,6 @@ import {
   ChartNoAxesGantt,
   Settings,
   CalendarDays,
-  PillBottle,
   UserRoundCheck,
 } from "lucide-react";
 
@@ -24,7 +23,6 @@ const NursePortal = ({ userFullName }) => {
     },
 
     { label: "Patient Care", path: "/patient-care", icon: <UserRoundCheck /> },
-    { label: "Medications", path: "/medications", icon: <PillBottle /> },
     {
       section: "account",
       label: "Settings",
