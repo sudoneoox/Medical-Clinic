@@ -5,7 +5,7 @@ import Patients from "./PatientsCards.jsx";
 import PatientRecords from "./sidebarItems/PatientsRecords.jsx";
 import MyAppointments from "./sidebarItems/my-appointments/MyAppointments.jsx";
 import Analytics from "./sidebarItems/analytics/Analytics.jsx";
-import UserManagement from "./sidebarItems/UserManagement.jsx";
+import UserManagement from "./sidebarItems/user-management/UserManagement.jsx";
 import Settings from "./sidebarItems/settings/Settings.jsx";
 import { cn } from "../utils/utils.js";
 import { Bell, UserRound } from "lucide-react";

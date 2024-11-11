@@ -8,12 +8,8 @@ import { Op } from "sequelize";
 import Demographics from "../../models/Tables/Demographics.js";
 import Nurse from "../../models/Tables/Nurse.js";
 import Receptionist from "../../models/Tables/Receptionist.js";
-import ReceptionistOffices from "../../models/Tables/ReceptionistOffices.js";
 import PatientDoctor from "../../models/Tables/PatientDoctor.js";
-import NurseOffices from "../../models/Tables/NurseOffices.js";
 import Specialty from "../../models/Tables/Specialties.js";
-import DoctorOffices from "../../models/Tables/DoctorOffices.js";
-import DoctorSpecialties from "../../models/Tables/DoctorSpecialties.js";
 import Office from "../../models/Tables/Office.js";
 import sequelize from "@sequelize/core";
 import EmployeeNo from "../../models/Tables/ValidEmployeeNo.js";
@@ -160,7 +156,9 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
                 ) || [],
               offices:
                 doc.officesDoctors?.map((off) => off.office.office_name) || [],
-              joinDate: doc.user.account_created_at,
+              joinDate: new Date(
+                doc.user.account_created_at,
+              ).toLocaleDateString("en-US"),
             }));
             break;
           }
@@ -206,7 +204,9 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               experience: nurse.years_of_experience,
               offices:
                 nurse.officesNurses?.map((off) => off.office.office_name) || [],
-              joinDate: nurse.user.account_created_at,
+              joinDate: new Date(
+                nurse.user.account_created_at,
+              ).toLocaleDateString("en-US"),
             }));
             break;
           }
@@ -249,7 +249,9 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
                 receptionist.officesReceptionists?.map(
                   (off) => off.office.office_name,
                 ) || [],
-              joinDate: receptionist.user.account_created_at,
+              joinDate: new Date(
+                receptionist.user.account_created_at,
+              ).toLocaleDateString("en-US"),
             }));
             break;
           }
@@ -273,14 +275,12 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               attributes: ["user_email", "user_phone", "account_created_at"],
             },
             {
-              association: "doctorsPatients",
-              include: [
-                {
-                  model: Doctor,
-                  attributes: ["doctor_fname", "doctor_lname"],
-                },
-              ],
-              where: { is_primary: true },
+              model: Doctor,
+              through: {
+                model: PatientDoctor,
+                where: { is_primary: 1 },
+              },
+              attributes: ["doctor_fname", "doctor_lname"],
               required: false,
             },
           ],
@@ -291,19 +291,29 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
             "emergency_contacts",
           ],
         });
+        console.log(patients[0].doctors[0].doctor_fname);
 
-        data = patients.map((patient) => ({
-          id: patient.patient_id,
-          name: `${patient.patient_fname} ${patient.patient_lname}`,
-          email: patient.user.user_email,
-          phone: patient.user.user_phone,
-          dob: patient.user.demographics.dob,
-          emergencyContact: patient.emergency_contacts,
-          primaryDoctor: patient.doctorsPatients?.[0]?.Doctor
-            ? `Dr. ${patient.doctorsPatients[0].Doctor.doctor_fname} ${patient.doctorsPatients[0].Doctor.doctor_lname}`
-            : "No Primary Doctor",
-          joinDate: patient.user.account_created_at,
-        }));
+        data = patients.map((patient) => {
+          const primaryDoctor = patient.doctors?.find(
+            (doc) => doc.PatientDoctor.is_primary === 1,
+          );
+          return {
+            id: patient.patient_id,
+            name: `${patient.patient_fname} ${patient.patient_lname}`,
+            email: patient.user.user_email,
+            phone: patient.user.user_phone,
+            dob: new Date(patient.user.demographics.dob).toLocaleDateString(
+              "en-US",
+            ),
+            emergencyContact: patient.emergency_contacts,
+            primaryDoctor: primaryDoctor
+              ? `Dr. ${primaryDoctor.doctor_fname} ${primaryDoctor.doctor_lname}`
+              : "No Primary Doctor",
+            joinDate: new Date(
+              patient.user.account_created_at,
+            ).toLocaleDateString("en-US"),
+          };
+        });
         break;
       }
 

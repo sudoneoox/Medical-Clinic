@@ -29,7 +29,7 @@ const AppointmentCard = ({ appointment, type }) => {
               className={`px-3 py-1 rounded-full text-sm ${
                 appointment.status === "CONFIRMED"
                   ? "bg-green-100 text-green-800"
-                  : appointment.status === "PENDING"
+                  : appointment.status === "PENDING_DOCTOR_APPROVAL"
                     ? "bg-yellow-100 text-yellow-800"
                     : "bg-gray-100 text-gray-800"
               }`}
