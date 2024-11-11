@@ -42,7 +42,6 @@ DELIMITER ;
 
 
 DELIMITER //
-
 CREATE TRIGGER before_appointment_specialist_check
 BEFORE INSERT ON appointments
 FOR EACH ROW
@@ -51,31 +50,34 @@ BEGIN
     DECLARE has_approval BOOLEAN;
     DECLARE is_primary_doctor BOOLEAN;
 
-    -- Check if the doctor is a specialist
-    SELECT COUNT(*) > 0 INTO is_specialist
-    FROM doctor_specialties ds
-    WHERE ds.doctor_id = NEW.doctor_id;
-    
-    -- Check if the doctor is patient's primary
-    SELECT COUNT(*) > 0 INTO is_primary_doctor
-    FROM patient_doctor_junction pdj
-    WHERE pdj.patient_id = NEW.patient_id 
-    AND pdj.doctor_id = NEW.doctor_id
-    AND pdj.is_primary = 1;
-    
-    -- If specialist, check for approval
-    IF is_specialist AND NOT is_primary_doctor THEN
-        SELECT COUNT(*) > 0 INTO has_approval
-        FROM specialist_approvals
-        WHERE patient_id = NEW.patient_id
-        AND specialist_id = NEW.doctor_id
-        AND specialist_status = 'APPROVED';
-
-        IF NOT has_approval THEN
-          SIGNAL SQLSTATE '45000'
-          SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
+    -- Only run checks if status is not PENDING_DOCTOR_APPROVAL
+    -- needed this for a dumbass bug i kept getting 
+    IF NEW.status != 'PENDING_DOCTOR_APPROVAL' THEN
+        -- Check if the doctor is a specialist
+        SELECT COUNT(*) > 0 INTO is_specialist
+        FROM doctor_specialties ds
+        WHERE ds.doctor_id = NEW.doctor_id;
+        
+        -- Check if the doctor is patient's primary
+        SELECT COUNT(*) > 0 INTO is_primary_doctor
+        FROM patient_doctor_junction pdj
+        WHERE pdj.patient_id = NEW.patient_id 
+        AND pdj.doctor_id = NEW.doctor_id
+        AND pdj.is_primary = 1;
+        
+        -- If specialist, check for approval
+        IF is_specialist AND NOT is_primary_doctor THEN
+            SELECT COUNT(*) > 0 INTO has_approval
+            FROM specialist_approvals
+            WHERE patient_id = NEW.patient_id
+            AND specialist_id = NEW.doctor_id
+            AND specialist_status = 'APPROVED';
+            
+            IF NOT has_approval THEN
+              SIGNAL SQLSTATE '45000'
+              SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
+            END IF;
         END IF;
     END IF;
 END//
-
 DELIMITER ;

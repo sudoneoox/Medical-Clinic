@@ -5,6 +5,7 @@ import DoctorSpecialties from "../../models/Tables/DoctorSpecialties.js";
 import Office from "../../models/Tables/Office.js";
 import SpecialistApproval from "../../models/Tables/SpecialistApproval.js";
 import Patient from "../../models/Tables/Patient.js";
+import PatientDoctor from "../../models/Tables/PatientDoctor.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import User from "../../models/Tables/Users.js";
 import DoctorAvailibility from "../../models/Tables/AvailableDoctors.js";
@@ -144,10 +145,8 @@ const populateMYAPPOINTMENTS = async (
   appointmentData,
   res,
 ) => {
-  console.log(appointmentData);
   const { appointmentType, action } = appointmentData;
   console.log("RECEIVED INSIDE populateAPPOINTMENTS");
-  console.log(user.user_role, appointmentType, action);
 
   try {
     let data;
@@ -187,7 +186,7 @@ const populateMYAPPOINTMENTS = async (
             data = await Appointment.findAll({
               where: {
                 patient_id: relatedEntity.patient_id,
-                status: "PENDING",
+                status: "PENDING_DOCTOR_APPROVAL",
               },
               include: [
                 {
@@ -360,7 +359,6 @@ const populateMYAPPOINTMENTS = async (
       default:
         throw new Error(`Invalid user role ${user.user_role} for appointments`);
     }
-    console.log("FINISHED DATA: ", data);
     res.json({ success: true, data });
   } catch (error) {
     console.error("Error fetching appointments:", error);
@@ -371,8 +369,155 @@ const populateMYAPPOINTMENTS = async (
   }
 };
 
+const submitNewAppointment = async (req, res) => {
+  const { user_id, doctor_id, office_name, appointment_datetime } = req.body;
+
+  try {
+    // Get patient_id from user_id
+    const patient = await Patient.findOne({
+      where: { user_id },
+    });
+
+    // Get office_id from office_name
+    const office = await Office.findOne({
+      where: { office_name },
+    });
+
+    // format datetime for mysql
+    const formattedDateTime = new Date(appointment_datetime)
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+
+    // Create the appointment
+    const appointment = await Appointment.create({
+      patient_id: patient.patient_id,
+      doctor_id,
+      office_id: office.office_id,
+      appointment_datetime: formattedDateTime,
+      duration: "00:30:00", // Default 30 min duration
+      status: "PENDING", // Will be updated by trigger if specialist approval needed
+      reason: req.body.reason || "Regular checkup",
+    });
+
+    res.json({
+      success: true,
+      data: appointment,
+    });
+  } catch (error) {
+    console.error("Appointment creation error", error);
+    // The specialist approval trigger will throw SPECIALIST_APPROVAL_REQUIRED
+    if (error.message.includes("SPECIALIST_APPROVAL_REQUIRED")) {
+      res.status(400).json({
+        message: "SPECIALIST_APPROVAL_REQUIRED",
+      });
+    } else {
+      res.status(500).json({
+        message: error.message || "Error creating appointment",
+      });
+    }
+  }
+};
+
+const requestSpecialistApproval = async (req, res) => {
+  const {
+    user_id,
+    specialist_id,
+    primary_doctor_id,
+    reason,
+    appointment_datetime,
+    office_name,
+  } = req.body;
+  try {
+    // Get patient_id from user_id
+    const patient = await Patient.findOne({
+      where: { user_id },
+    });
+
+    // Get office_id from office_name
+    const office = await Office.findOne({
+      where: { office_name },
+    });
+
+    // create a pending appointment
+    const appointment = await Appointment.create(
+      {
+        patient_id: patient.patient_id,
+        doctor_id: specialist_id,
+        office_id: office.office_id,
+        appointment_datetime,
+        duration: "00:30:00", // Default 30 min duration
+        status: "PENDING_DOCTOR_APPROVAL",
+        reason: reason,
+      },
+      {
+        hooks: false,
+      },
+    );
+
+    // Create the specialist approval request
+    console.log("PRIMARY DOCTOR IN SPECIALIST APPROVAL", primary_doctor_id);
+    const approvalRequest = await SpecialistApproval.create({
+      appointment_id: appointment.appointment_id,
+      patient_id: patient.patient_id,
+      specialist_id: specialist_id,
+      reffered_doctor_id: primary_doctor_id,
+      reason: reason,
+      specialist_status: "PENDING",
+    });
+
+    res.json({
+      success: true,
+      data: {
+        appointment,
+        approvalRequest,
+      },
+    });
+  } catch (error) {
+    console.error("Error requesting specialist approval:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error requesting specialist approval",
+    });
+  }
+};
+
+const getPrimaryDoctor = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    let doctor = await PatientDoctor.findOne({
+      where: {
+        patient_id: user_id,
+        is_primary: 1,
+      },
+      include: [
+        {
+          model: Doctor,
+        },
+      ],
+    });
+    doctor = doctor.doctor;
+    res.json({
+      data: {
+        doctor,
+      },
+    });
+
+    console.log("INSIDE GET PRIMARY DOCTOR", doctor);
+  } catch (error) {
+    console.error("Error fetching primary doctor:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching primary doctor",
+    });
+  }
+};
+
 const defaultDashboard = {
   populateMYAPPOINTMENTS,
   updateSETTINGS,
+  submitNewAppointment,
+  requestSpecialistApproval,
+  getPrimaryDoctor,
 };
 export default defaultDashboard;

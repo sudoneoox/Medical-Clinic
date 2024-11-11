@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS specialist_approvals (
     specialist_id INTEGER NOT NULL,
     reason TEXT NOT NULL,
     notes TEXT,
-    appointment_requested_datetime TIMESTAMP NOT NULL
+    appointment_requested_datetime TIMESTAMP NOT NULL,
+    appointment_id INTEGER NOT NULL
 );

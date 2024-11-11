@@ -2,6 +2,7 @@ import express from "express";
 import userControllerFuncs from "../controllers/userController.js";
 import dashBoardControllerFuncs from "../controllers/userDashBoardController.js";
 import doctorDashboard from "../controllers/util/doctorDashboard.js";
+import defaultDashboard from "../controllers/util/defaultDashboard.js";
 import adminDashboard from "../controllers/util/adminDashboard.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -54,7 +55,6 @@ router.post(
   doctorDashboard.retrieveMedicalRecords,
 );
 
-router.post(
   "/createmedicalrecords",
   doctorDashboard.addMedicalRecord,
 );
@@ -63,6 +63,15 @@ router.post(
   "/editmedicalrecords/:recordId",
   doctorDashboard.editMedicalRecord,
 );
+
+  "/portal/submitNewAppointment",
+  defaultDashboard.submitNewAppointment,
+);
+router.post(
+  "/portal/requestSpecialistApproval",
+  defaultDashboard.requestSpecialistApproval,
+);
+router.post("/portal/getPrimaryDoctor", defaultDashboard.getPrimaryDoctor);
 
 router.post(
   "/prescriptionrecords/:recordId",

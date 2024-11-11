@@ -118,8 +118,6 @@ const registerUser = async (req, res) => {
       // Handle unique constraint violations
       const field1 = error.errors[0].path;
       const field2 = error.errors[0].value;
-      console.log(error.errors[1]);
-      res.status(409).json({ message: `${field1} ${field2} is already taken` });
     } else if (error.message === "NOT A VALID EMPLOYEE NO") {
       res.status(400).json({ message: "Invalid employee number" });
     } else if (
@@ -238,7 +236,6 @@ const loginUser = async (req, res) => {
 const retreiveBills = async (req, res) => {
   try {
     const { patientId } = req.params;
-    console.log(`Fetching billing records for patient ID: ${patientId}`);
 
     // Fetch billing records for the specified patient ID
     const billingRecords = await Billing.findAll({
@@ -262,8 +259,6 @@ const retreiveBills = async (req, res) => {
 
 const submitPayment = async (req, res) => {
   try {
-    console.log(req.body);
-
     const { selectedBillingRecord, cardNumber, expirationDate, cvv } = req.body;
     const { billing_id, patient_id } = selectedBillingRecord;
 
