@@ -5,7 +5,7 @@ import AddEmployeeForm from "./AddEmployeeForm";
 import SubCategoryCard from "./SubCategoryCards";
 import UsersCard from "./UserCards";
 import UserTable from "./UserTable";
-
+import EditUserForm from "./EditUserForm.jsx";
 import { userOptions } from "./constants";
 
 const UserManagement = ({ data }) => {
@@ -14,9 +14,16 @@ const UserManagement = ({ data }) => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
 
   const handleEdit = async (user) => {
-    console.log("editing user:", user);
+    setEditingUser(user);
+  };
+
+  const handleUpdateUser = (updatedUser) => {
+    setUserData((prevData) =>
+      prevData.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+    );
   };
 
   const handleDelete = async (user) => {
@@ -48,6 +55,12 @@ const UserManagement = ({ data }) => {
   const handleUserSelect = (userManageId) => {
     setSelectedAnalytic(userManageId);
     setSelectedSubCategory(null);
+
+    if (userManageId === "ADDEMPLOYEE") {
+      setUserData(null);
+      return;
+    }
+
     const option = userOptions.find((opt) => opt.id === userManageId);
     if (option?.subCategories) {
       setSelectedSubCategory(option.subCategories[0].id);
@@ -83,8 +96,24 @@ const UserManagement = ({ data }) => {
     setIsLoading(false);
   };
 
+  const getUserType = () => {
+    if (selectedAnalytic === "PATIENTSMANAGE") return "PATIENT";
+    if (selectedSubCategory === "DOCTORMANAGE") return "DOCTOR";
+    if (selectedSubCategory === "NURSEMANAGE") return "NURSE";
+    if (selectedSubCategory === "RECEPTIONISTMANAGE") return "RECEPTIONIST";
+    return "USER";
+  };
+
   return (
     <div className="space-y-6">
+      {editingUser && (
+        <EditUserForm
+          user={editingUser}
+          userType={getUserType()}
+          onClose={() => setEditingUser(null)}
+          onUpdate={handleUpdateUser}
+        />
+      )}
       <div>
         <h2 className="text-2xl font-bold mb-4">User Management</h2>
         <p className="text-gray-600 mb-6">Manage system users and employees</p>
@@ -142,5 +171,4 @@ const UserManagement = ({ data }) => {
     </div>
   );
 };
-
 export default UserManagement;
