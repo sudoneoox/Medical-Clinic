@@ -2,14 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import api, { API } from '../api.js';
 
-const PrescriptionForm = ({ prescription, onClose, onSave }) => {
+const PrescriptionForm = ({ prescription, recordId, onClose, onSave }) => {
   const [medicationName, setMedicationName] = useState('');
   const [dosage, setDosage] = useState('');
   const [duration, setDuration] = useState('');
+  const [frequency, setFrequency] = useState('');
   const [pharmacyDetails, setPharmacyDetails] = useState({
-    pharmacyName: '',
-    pharmacyPhone: '',
-    pharmacyAddress: '',
+    pharmacy_name: '',
+    pharmacy_phone: '',
+    pharmacy_address: '',
   });
   console.log(prescription, "Testing the prescription record");
   
@@ -19,7 +20,14 @@ const PrescriptionForm = ({ prescription, onClose, onSave }) => {
       setMedicationName(prescription.medication_name);
       setDosage(prescription.dosage);
       setDuration(prescription.duration);
-      setPharmacyDetails(prescription.pharmacy_details);
+      setFrequency(prescription.frequency);
+      
+      const details = prescription.pharmacy_details || {};
+      setPharmacyDetails({
+        pharmacy_name: details.pharmacy_name || '',
+        pharmacy_phone: details.pharmacy_phone || '',
+        pharmacy_address: details.pharmacy_address || '',
+      });
     }
   }, [prescription]);
 
@@ -28,20 +36,27 @@ const PrescriptionForm = ({ prescription, onClose, onSave }) => {
     try {
       if (prescription) {
         // Update existing prescription
-        await api.put(`${API.URL}/api/users/prescriptions/${prescription.prescription_id}`, {
-          medication_name: medicationName,
+        await api.post(`${API.URL}/api/users/editprescription/${prescription.prescription_id}`, {
+          medicationName,
+          frequency,
           dosage,
           duration,
-          pharmacy_details: pharmacyDetails,
+          pharmacyDetails,
         });
       } else {
         // Create new prescription
-        await api.post(`${API.URL}/api/users/prescriptions`, {
-          medication_name: medicationName,
-          dosage,
-          duration,
-          pharmacy_details: pharmacyDetails,
-        });
+        try {
+          await api.post(`${API.URL}/api/users/newprescription`, {
+            medical_record_id: recordId,
+            medicationName,
+            frequency,
+            dosage,
+            duration,
+            pharmacyDetails,
+          });
+        } catch (error) {
+          console.log(error);
+        }
       }
       onSave(); // Notify parent to refresh data
       onClose(); // Close the form
@@ -85,28 +100,38 @@ const PrescriptionForm = ({ prescription, onClose, onSave }) => {
           />
         </div>
         <div>
+          <label className="block">Frequency</label>
+          <input
+            type="text"
+            value={frequency}
+            onChange={(e) => setFrequency(e.target.value)}
+            required
+            className="border rounded-md p-2 w-full"
+          />
+        </div>
+        <div>
           <h3 className="font-semibold">Pharmacy Details</h3>
           <label className="block">Name</label>
           <input
             type="text"
-            value={pharmacyDetails.pharmacyName}
-            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacyName: e.target.value })}
+            value={pharmacyDetails.pharmacy_name}
+            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacy_name: e.target.value })}
             required
             className="border rounded-md p-2 w-full"
           />
           <label className="block">Phone</label>
           <input
             type="text"
-            value={pharmacyDetails.pharmacyPhone}
-            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacyPhone: e.target.value })}
+            value={pharmacyDetails.pharmacy_phone}
+            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacy_phone: e.target.value })}
             required
             className="border rounded-md p-2 w-full"
           />
           <label className="block">Address</label>
           <input
             type="text"
-            value={pharmacyDetails.pharmacyAddress}
-            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacyAddress: e.target.value })}
+            value={pharmacyDetails.pharmacy_address}
+            onChange={(e) => setPharmacyDetails({ ...pharmacyDetails, pharmacy_address: e.target.value })}
             required
             className="border rounded-md p-2 w-full"
           />

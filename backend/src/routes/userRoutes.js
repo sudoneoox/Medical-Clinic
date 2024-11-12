@@ -59,6 +59,12 @@ router.post("/createmedicalrecords", doctorDashboard.addMedicalRecord);
 
 router.post("/editmedicalrecords/:recordId", doctorDashboard.editMedicalRecord);
 
+router.post("/deletemedicalrecord/:recordId", doctorDashboard.deleteMedicalRecord);
+
+router.post("/newprescription", doctorDashboard.addPrescription);
+
+router.post("/editprescription/:prescriptionId", doctorDashboard.editPrescription);
+
 router.post(
   "/portal/submitNewAppointment",
   defaultDashboard.submitNewAppointment,
