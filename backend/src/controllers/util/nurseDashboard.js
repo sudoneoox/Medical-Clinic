@@ -51,10 +51,6 @@ const populateOVERVIEW = async (user, nurse, res) => {
   }
 };
 
-const populatePATIENTCARE = async (user, nurse, res) => {
-  console.log("INSIDE nurse Patient care");
-};
-
 const populateCALENDAR = async (user, nurse, res) => {
   try {
     // Fetch nurse's assigned appointments
@@ -157,15 +153,69 @@ const populateCALENDAR = async (user, nurse, res) => {
   }
 };
 
-const populateMEDICATIONS = async (user, nurse, res) => {
-  console.log("INSIDE nurse medications");
+const getNurseAppointments = async (req, res) => {
+  try {
+    // get nurse ID from the user ID
+    const nurse = await Nurse.findOne({
+      where: { user_id: req.body.user_id },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({
+        message: "Nurse not found",
+        appointments: [],
+      });
+    }
+
+    // get all appointments where this nurse is assigned
+    const appointments = await Appointment.findAll({
+      where: {
+        attending_nurse: nurse.nurse_id,
+        // Optionally filter by status if you don't want to show cancelled appointments
+        status: {
+          [Op.not]: "CANCELLED",
+          [Op.not]: "NO SHOW",
+          [Op.not]: "CANCELLED",
+        },
+      },
+      include: [
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname"],
+        },
+        {
+          model: Office,
+          attributes: ["office_name"],
+        },
+      ],
+      order: [["appointment_datetime", "ASC"]],
+    });
+
+    return res.json({
+      appointments: appointments.map((apt) => ({
+        appointment_id: apt.appointment_id,
+        appointment_datetime: apt.appointment_datetime,
+        duration: apt.duration,
+        status: apt.status,
+        reason: apt.reason,
+        patient_fname: apt.patient.patient_fname,
+        patient_lname: apt.patient.patient_lname,
+        office_name: apt.office.office_name,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching nurse appointments:", error);
+    return res.status(500).json({
+      message: "Error fetching appointments",
+      error: error.message,
+    });
+  }
 };
 
 const nurseDashboard = {
   populateOVERVIEW,
-  populatePATIENTCARE,
-  populateMEDICATIONS,
   populateCALENDAR,
+  getNurseAppointments,
 };
 
 export default nurseDashboard;

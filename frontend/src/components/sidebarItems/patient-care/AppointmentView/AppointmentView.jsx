@@ -7,30 +7,76 @@ import {
   CardTitle,
 } from "../../../../utils/Card.tsx";
 import { ScrollArea } from "../../../../utils/ScrollArea.tsx";
-import AppointmentList from "./AppointmentList";
+import AppointmentCard from "./AppointmentCard.jsx";
+import Error from "./Error.jsx";
 
 const AppointmentView = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        // TODO: set up backend gets appointments tied to nurse
-        const response = await api.post("/users/portal/nurse/appointments", {
-          user_id: localStorage.getItem("userId"),
-          nurse_id: localStorage.getItem("nurseId"),
-        });
-        setAppointments(response.data.appointments);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
   }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await api.post("/users/portal/nurse/appointments", {
+        user_id: localStorage.getItem("userId"),
+      });
+      setAppointments(response.data.appointments);
+    } catch (error) {
+      setError(error.message);
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (appointmentId, newStatus) => {
+    try {
+      await api.put(
+        `/users/portal/nurse/appointments/${appointmentId}/status`,
+        {
+          status: newStatus,
+          user_id: localStorage.getItem("userId"),
+        },
+      );
+      await fetchAppointments();
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+    }
+  };
+
+  const handleAddNote = async (appointmentId, noteText) => {
+    try {
+      await api.post(
+        `/users/portal/nurse/appointments/${appointmentId}/notes`,
+        {
+          note_text: noteText,
+          user_id: localStorage.getItem("userId"),
+        },
+      );
+      await fetchAppointments();
+    } catch (error) {
+      console.error("Error adding note:", error);
+    }
+  };
+
+  const handleEditNote = async (noteId, newText) => {
+    try {
+      await api.put(`/users/portal/nurse/appointments/notes/${noteId}`, {
+        note_text: newText,
+        user_id: localStorage.getItem("userId"),
+      });
+      await fetchAppointments();
+    } catch (error) {
+      console.error("Error editing note:", error);
+    }
+  };
+  if (error) {
+    return <Error error={error} />;
+  }
 
   return (
     <Card>
@@ -41,15 +87,29 @@ const AppointmentView = () => {
         <ScrollArea className="h-[600px] pr-4">
           {loading ? (
             <div className="flex items-center justify-center h-32">
-              <span className="text-gray-500">Loading appointments...</span>
+              <div className="text-gray-500">Loading appointments...</div>
             </div>
           ) : (
-            <AppointmentList appointments={appointments} />
+            <div className="space-y-4">
+              {appointments.map((appointment) => (
+                <AppointmentCard
+                  key={appointment.appointment_id}
+                  appointment={appointment}
+                  onStatusUpdate={handleStatusUpdate}
+                  onAddNote={handleAddNote}
+                  onEditNote={handleEditNote}
+                />
+              ))}
+              {appointments.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  No appointments found
+                </div>
+              )}
+            </div>
           )}
         </ScrollArea>
       </CardContent>
     </Card>
   );
 };
-
 export default AppointmentView;

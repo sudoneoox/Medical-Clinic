@@ -6,6 +6,7 @@ import defaultDashboard from "../controllers/util/defaultDashboard.js";
 import adminDashboard from "../controllers/util/adminDashboard.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import nurseDashboard from "../controllers/util/nurseDashboard.js";
 
 dotenv.config();
 const JWT_SECRET =
@@ -71,7 +72,6 @@ router.post(
   "/editprescription/:prescriptionId",
   doctorDashboard.editPrescription,
 );
-
 router.post(
   "/portal/submitNewAppointment",
   defaultDashboard.submitNewAppointment,
@@ -102,5 +102,8 @@ router.post("/validate-session", verifyToken, (req, res) => {
   // if middlewaire verifyToken didnt fail return success
   res.json({ message: "Session valid" });
 });
+
+// nurse
+router.post("/portal/nurse/appointments", nurseDashboard.getNurseAppointments);
 
 export default router;
