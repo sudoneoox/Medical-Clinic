@@ -163,6 +163,22 @@ const populateAPPOINTMENTS = async (user, patient, res) => {
 
 const populateMEDICALRECORDS = async (user, patient, res) => {
   console.log("received in populateMEDICALRECORDS");
+  try {
+    const patientId = patient.patient_id;
+    console.log(`Fetching medical records for patient ID: ${patientId}`);
+
+    const medicalRecords = await MedicalRecord.findAll({
+      where: { patient_id: patientId, is_deleted: 0 },
+    });
+    
+    return res.json(medicalRecords);
+  } catch (error) {
+    console.error("Error fetching medical data:", error);
+    return res.status(500).json({ 
+      message: "Error fetching medical data", 
+      error: error.message 
+    });
+  }
 };
 
 const patientDashboard = {
