@@ -56,17 +56,18 @@ const PatientList = ({ data = [], userRole}) => {
   };
 
 
-  const handleViewPrescriptions = async (record_id) => {
-    setCurrentView("PRESCRIPTIONS");
+  const handleViewPrescriptions = async (record) => {
     setViewHistory([...viewHistory, currentView]);
+    setCurrentRecord(record);
     try {
-      const response = await api.post(`${API.URL}/api/users/prescriptionrecords/${record_id}`);
+      const response = await api.post(`${API.URL}/api/users/prescriptionrecords/${record.record_id}`);
       setPrescriptionRecords(response.data);
     } catch (error) {
       setError(error.message);
     } finally {
       setIsLoading(false);
     }
+    setCurrentView("PRESCRIPTIONS");
   };
 
   const goBack = () => {
@@ -96,8 +97,28 @@ const PatientList = ({ data = [], userRole}) => {
     setIsPrescriptionFormOpen(true);
   };
 
-  const handleDeletePrescriptions = (prescription) => {
+  const handleDeleteMedicalRecord = async (record) => {
+    try {
+      console.log("Deleting record", record.record_id);
+      
+      const response = await api.post(
+        `${API.URL}/api/users/deletemedicalrecord/${record.record_id}`,
+      );
+      fetchMedicalRecords(selectedPatient.patient_id);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleDeletePrescriptions = async (prescription) => {
     setCurrentPrescription(prescription);
+    try {
+      const response = await api.post(
+        `${API.URL}/api/users/deleteprescriptionrecord/${prescription.record_id}`,
+      );
+    } catch (error) {
+      setError(error.message);
+    }
     // setIsPrescriptionFormOpen(true);
   };
 
@@ -244,7 +265,7 @@ const PatientList = ({ data = [], userRole}) => {
                           <h3 className="font-bold">{prescription.medication_name}</h3>
                           <p>Dosage : {prescription.dosage}</p>
                           <p>Duration: {prescription.duration}</p>
-  
+                          <p>Frequency: {prescription.frequency}</p>
                         </div>
                       </div>
                       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
@@ -377,7 +398,7 @@ const PatientList = ({ data = [], userRole}) => {
                           <h3 className="font-bold">{prescription.medication_name}</h3>
                           <p>Dosage : {prescription.dosage}</p>
                           <p>Duration: {prescription.duration}</p>
-  
+                          <p>Frequency: {prescription.frequency}</p>
                         </div>
                         <div className="flex justify-evenly items-center px-3">
                           <button
@@ -434,15 +455,19 @@ const PatientList = ({ data = [], userRole}) => {
       );
     }
     if (currentView === "Prescription Form" && isPrescriptionFormOpen) {
+      console.log("Reccord ID:",currentRecord.record_id );
+      
       return (
         <PrescriptionForm
           prescription={currentPrescription}
+          recordId = {currentRecord.record_id}
           onClose={() => {
             setIsPrescriptionFormOpen(false);
             setCurrentView("PRESCRIPTIONS");
           }}
           onSave={() => {
             // Logic to refresh prescription records after saving
+            handleViewPrescriptions(currentRecord);
             setCurrentPrescription(null);
             setIsPrescriptionFormOpen(false);
             setCurrentView("PRESCRIPTIONS");

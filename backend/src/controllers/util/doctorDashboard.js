@@ -322,25 +322,130 @@ const addMedicalRecord = async (req, res) => {
 const editMedicalRecord = async (req, res) => {
   try {
     console.log("Entering med edit");
-    
+
+    // Set CORS headers explicitly
+    // res.setHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "http://localhost:3000");
+    // res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    // res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    // res.setHeader("Access-Control-Allow-Credentials", "true");
+
     const recordId = req.params.recordId;
     console.log(recordId, "Record ID");
-    
+
     const editMedicalRecord = await MedicalRecord.findOne({
       where: {
         is_deleted: 0,
         record_id: recordId,
-      }
+      },
     });
-    await editMedicalRecord.update({diagnosis: req.body.diagnosis});
 
-    return res.status(100).json({ message: "Successfully edited medical record" });
+    if (editMedicalRecord) {
+      await editMedicalRecord.update({
+        diagnosis: req.body.diagnosis,
+        updated_at: new Date(),
+      });
+      return res.status(200).json({ message: "Successfully edited medical record" });
+    } else {
+      return res.status(404).json({ message: "Medical record not found" });
+    }
+  } catch (error) {
+    console.error("Error editing medical record:", error);
+    return res.status(500).json({
+      message: "Error editing medical record",
+      error: error.message,
+    });
+  }
+};
+
+const deleteMedicalRecord = async (req, res) => {
+  try {
+    const recordId = req.params.recordId;
+    console.log("Deleting medical record" , recordId);
+
+    const deleteRecord = await MedicalRecord.findOne({
+      where: {
+        is_deleted: 0,
+        record_id: recordId,
+      },
+    })
+    if (deleteRecord) {
+      await deleteRecord.update({
+        is_deleted: 1,
+        updated_at: new Date(),
+      });
+      return res.status(200).json({ message: "Successfully deleted medical record" });
+    } else {
+      return res.status(404).json({ message: "Medical record not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting medical record:", error);
+    return res.status(500).json({
+      message: "Error deleting medical record",
+      error: error.message,
+    });
+  }
+}
+
+const addPrescription = async (req, res) => {
+  try {
+    console.log(req.body.pharmacyDetails);
+    console.log(req.body.medicationName , "Medication Name");
+    console.log(req.body.dosage, "Dosage");
+    console.log(req.body.duration, "Duration");
+    console.log(req.body.medical_record_id, "Medical Record ID");
+    
+    newPrescription = await Prescription.create({
+      medication_name: req.body.medicationName,
+      medical_record_id: req.body.medical_record_id,
+      dosage: req.body.dosage,
+      duration: req.body.duration,
+      frequency: req.body.frequency,
+      pharmacy_details: req.body.pharmacyDetails,
+    });
+    return res.status(201).json({ message: "Successfully added prescription" });
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Error editing medical record", error: error.message });
+      .json({ message: "Error Adding prescription", error: error.message });
   }
 }
+
+const editPrescription = async (req, res) => {
+  try {
+    console.log("Entering prescription edit");
+
+    const recordId = req.params.prescriptionId;
+    console.log(recordId, "Record ID");
+
+    const editPrescriptionRecord = await Prescription.findOne({
+      where: {
+        // is_deleted: 0,
+        prescription_id: recordId,
+      },
+    });
+
+    if (editPrescriptionRecord) {
+      await editPrescriptionRecord.update({
+        medication_name: req.body.medicationName,
+        dosage: req.body.dosage,
+        duration: req.body.duration,
+        frequency: req.body.frequency,
+        pharmacy_details: req.body.pharmacyDetails,
+      });
+      console.log("Found the record");
+      
+      return res.status(200).json({ message: "Successfully edited prescription record" });
+    } else {
+      return res.status(404).json({ message: "Prescription record not found" });
+    }
+  } catch (error) {
+    console.error("Error editing prescription record:", error);
+    return res.status(500).json({
+      message: "Error editing prescription record",
+      error: error.message,
+    });
+  }
+};
 
 const doctorDashboard = {
   populateOVERVIEW,
@@ -351,6 +456,9 @@ const doctorDashboard = {
   retrievePrescriptionRecords,
   addMedicalRecord,
   editMedicalRecord,
+  deleteMedicalRecord,
+  addPrescription,
+  editPrescription,
 };
 
 export default doctorDashboard;

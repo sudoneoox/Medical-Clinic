@@ -396,7 +396,7 @@ const submitNewAppointment = async (req, res) => {
       office_id: office.office_id,
       appointment_datetime: formattedDateTime,
       duration: "00:30:00", // Default 30 min duration
-      status: "PENDING", // Will be updated by trigger if specialist approval needed
+      status: "CONFIRMED",
       reason: req.body.reason || "Regular checkup",
     });
 
@@ -407,12 +407,22 @@ const submitNewAppointment = async (req, res) => {
   } catch (error) {
     console.error("Appointment creation error", error);
     // The specialist approval trigger will throw SPECIALIST_APPROVAL_REQUIRED
-    if (error.message.includes("SPECIALIST_APPROVAL_REQUIRED")) {
-      res.status(400).json({
+    const errorMessage =
+      error.original?.sqlMessage || error.parent?.sqlMessage || error.message;
+    if (errorMessage.includes("SPECIALIST_APPROVAL_REQUIRED")) {
+      return res.status(400).json({
+        success: false,
         message: "SPECIALIST_APPROVAL_REQUIRED",
+      });
+    }
+    if (errorMessage.includes("BILLING_LIMIT_REACHED")) {
+      res.status(400).json({
+        success: false,
+        message: "BILLING_LIMIT_REACHED",
       });
     } else {
       res.status(500).json({
+        success: false,
         message: error.message || "Error creating appointment",
       });
     }
@@ -485,9 +495,22 @@ const requestSpecialistApproval = async (req, res) => {
 const getPrimaryDoctor = async (req, res) => {
   try {
     const { user_id } = req.body;
-    let doctor = await PatientDoctor.findOne({
+
+    // First get patient_id from user_id
+    const patient = await Patient.findOne({
+      where: { user_id },
+    });
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
+    }
+
+    let doctorRelation = await PatientDoctor.findOne({
       where: {
-        patient_id: user_id,
+        patient_id: patient.patient_id, // Use patient_id instead of user_id
         is_primary: 1,
       },
       include: [
@@ -496,19 +519,120 @@ const getPrimaryDoctor = async (req, res) => {
         },
       ],
     });
-    doctor = doctor.doctor;
+
+    if (!doctorRelation) {
+      return res.status(404).json({
+        success: false,
+        message: "Primary doctor not found",
+      });
+    }
+
     res.json({
+      success: true,
       data: {
-        doctor,
+        doctor: doctorRelation.doctor,
       },
     });
-
-    console.log("INSIDE GET PRIMARY DOCTOR", doctor);
   } catch (error) {
     console.error("Error fetching primary doctor:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Error fetching primary doctor",
+    });
+  }
+};
+
+const handleSpecialistApproval = async (req, res) => {
+  const { approval_id, action, doctor_id } = req.body;
+
+  try {
+    await sequelize.transaction(async (t) => {
+      // First, find the specialist approval
+      const approval = await SpecialistApproval.findOne(
+        {
+          where: {
+            approval_id,
+            reffered_doctor_id: doctor_id,
+            specialist_status: "PENDING",
+          },
+          include: [
+            {
+              model: Appointment,
+              required: true,
+            },
+          ],
+        },
+        { transaction: t },
+      );
+
+      if (!approval) {
+        throw new Error("Approval request not found or already processed");
+      }
+
+      // Update the approval status
+      await approval.update(
+        {
+          specialist_status: action === "approve" ? "APPROVED" : "REJECTED",
+          approved_at: action === "approve" ? new Date() : null,
+        },
+        { transaction: t },
+      );
+
+      // Update the appointment status accordingly
+      await Appointment.update(
+        {
+          status: action === "approve" ? "CONFIRMED" : "CANCELLED",
+        },
+        {
+          where: {
+            appointment_id: approval.appointment_id,
+          },
+        },
+        { transaction: t },
+      );
+
+      // If approved, create a billing record
+      if (action === "approve") {
+        await sequelize.query(
+          `INSERT INTO billing (
+            patient_id, 
+            appointment_id, 
+            amount_due,
+            amount_paid,
+            payment_status,
+            billing_due,
+            created_at
+          ) VALUES (
+            :patient_id,
+            :appointment_id,
+            :amount_due,
+            0,
+            'NOT PAID',
+            DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY),
+            NOW()
+          )`,
+          {
+            replacements: {
+              patient_id: approval.patient_id,
+              appointment_id: approval.appointment_id,
+              amount_due: 150.0, // You might want to make this dynamic
+            },
+            type: sequelize.QueryTypes.INSERT,
+            transaction: t,
+          },
+        );
+      }
+    });
+
+    res.json({
+      success: true,
+      message: `Specialist appointment ${action === "approve" ? "approved" : "rejected"} successfully`,
+    });
+  } catch (error) {
+    console.error("Error handling specialist approval:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error processing approval request",
     });
   }
 };
@@ -519,5 +643,6 @@ const defaultDashboard = {
   submitNewAppointment,
   requestSpecialistApproval,
   getPrimaryDoctor,
+  handleSpecialistApproval,
 };
 export default defaultDashboard;

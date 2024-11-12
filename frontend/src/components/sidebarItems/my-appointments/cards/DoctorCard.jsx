@@ -17,6 +17,30 @@ const DoctorCard = ({ doctor }) => {
   const [bookingError, setBookingError] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [primaryDoctor, setPrimaryDoctor] = useState(null);
+  const [isPrimaryDoctor, setIsPrimaryDoctor] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkPrimaryDoctor = async () => {
+      try {
+        const response = await api.post("/users/portal/getPrimaryDoctor", {
+          user_id: localStorage.getItem("userId"),
+        });
+        if (response?.data?.data?.doctor) {
+          setIsPrimaryDoctor(
+            response.data.data.doctor.doctor_id === doctor.doctor_id,
+          );
+        }
+      } catch (error) {
+        console.error("Error checking primary doctor:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkPrimaryDoctor();
+  }, [doctor.doctor_id]);
+
   //BUG: trigger doesnt work on first doctor on list
   //need to chagne up doctor how theyre fetching their approval
   //this sucks need to clean up and also the way i implemented it is so messy but were on short time
@@ -25,18 +49,27 @@ const DoctorCard = ({ doctor }) => {
       const response = await api.post("/users/portal/getPrimaryDoctor", {
         user_id: localStorage.getItem("userId"),
       });
-      console.log("inside primary doctor", response.data.data);
-      setPrimaryDoctor(response.data.data);
-      if (response?.data?.data) {
-        localStorage.setItem("primaryDoctor", primaryDoctor.doctor.doctor_id);
+      console.log("PRIMARY DOCTOR FOUND ", response.data.data.doctor);
+      if (response?.data?.data?.doctor) {
+        setPrimaryDoctor(response.data.data);
+        localStorage.setItem(
+          "primaryDoctor",
+          response.data.data.doctor.doctor_id,
+        );
+        return response.data.data.doctor;
       }
+      return null;
     } catch (error) {
       console.error("Error fetching primary doctor:", error);
     }
   };
   const handleApprovalRequest = async () => {
-    if (!approvalReason.trim() || !selectedDateTime || !primaryDoctor) {
+    if (!approvalReason.trim() || !selectedDateTime) {
+      setBookingError("Please fill in all the required fields");
       return;
+    }
+    if (!primaryDoctor) {
+      setBookingError("Unable to find primary doctor information");
     }
     try {
       setRequestingApproval(true);
@@ -58,7 +91,6 @@ const DoctorCard = ({ doctor }) => {
       if (response.data.success) {
         setShowApprovalModal(false);
         setApprovalReason("");
-        window.location.reload();
       }
     } catch (error) {
       setBookingError(
@@ -68,12 +100,6 @@ const DoctorCard = ({ doctor }) => {
       setRequestingApproval(false);
     }
   };
-
-  useEffect(() => {
-    if (showApprovalModal) {
-      fetchPrimaryDoctor();
-    }
-  }, [showApprovalModal]);
 
   const handleScheduleClick = () => {
     console.log("Button Clicked in handleScheduleClick");
@@ -99,17 +125,33 @@ const DoctorCard = ({ doctor }) => {
       });
 
       if (response.data.success) {
-        window.location.reload();
+        setShowDatePicker(false);
+        return;
       }
     } catch (error) {
       console.log("GOT ERROR ", error.response?.data?.message);
-      // TRIGGER
-      if (error.response?.data?.message === "SPECIALIST_APPROVAL_REQUIRED") {
+      if (error.response?.data?.message === "DUPLICATE_APPOINTMENT_TIME") {
+        setBookingError(
+          "This time slot is already booked. Please select a different time.",
+        );
+      } else if (error.response?.data?.message === "BILLING_LIMIT_REACHED") {
         setShowDatePicker(false);
-        fetchPrimaryDoctor();
+        setBookingError(
+          "Unable to schedule appointment: You have 3 or more unpaid bills. Please settle your outstanding payments before scheduling new appointments.",
+        );
+      } else if (
+        error.response?.data?.message === "SPECIALIST_APPROVAL_REQUIRED"
+      ) {
+        setShowDatePicker(false);
+        const primaryDoc = await fetchPrimaryDoctor();
+        if (!primaryDoc) {
+          setBookingError(
+            "Unable to proceed: Primary Doctor information not found",
+          );
+          return;
+        }
         setShowApprovalModal(true);
       } else {
-        console.log("ERROR IN SCHEDULING");
         setBookingError(
           error.response?.data?.message || "Error booking appointment",
         );
@@ -126,6 +168,11 @@ const DoctorCard = ({ doctor }) => {
               <h4 className="font-medium">
                 Dr. {doctor.doctor_fname} {doctor.doctor_lname}
               </h4>
+              {isPrimaryDoctor && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  Primary Doctor
+                </span>
+              )}
               {doctor.specialties && doctor.specialties.length > 0 && (
                 <p className="text-sm text-blue-600 mt-1">
                   {doctor.specialties

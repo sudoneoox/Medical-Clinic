@@ -36,6 +36,10 @@ const Prescription = sequelize.define(
     pharmacy_details: {
       type: DataTypes.JSON,
     },
+    is_deleted: {
+      type: DataTypes.TINYINT,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "prescription",
