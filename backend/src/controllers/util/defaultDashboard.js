@@ -293,8 +293,12 @@ const populateMYAPPOINTMENTS = async (
             });
             break;
           }
-
           case "PENDING_APPROVALS": {
+            console.log(
+              "Fetching PENDING_APPROVALS for doctor:",
+              relatedEntity.doctor_id,
+            );
+
             data = await SpecialistApproval.findAll({
               where: {
                 reffered_doctor_id: relatedEntity.doctor_id,
@@ -315,12 +319,39 @@ const populateMYAPPOINTMENTS = async (
                     },
                   ],
                 },
+                {
+                  model: Appointment,
+                  include: [
+                    {
+                      model: Office,
+                      attributes: ["office_name", "office_address"],
+                    },
+                  ],
+                },
               ],
               order: [["requested_at", "DESC"]],
             });
+
+            console.log("Raw specialist approvals:", data);
+
+            // Transform the data to match what AppointmentCard expects
+            data = data.map((approval) => ({
+              approval_id: approval.approval_id,
+              appointment_id: approval.appointment.appointment_id,
+              patient: approval.patient,
+              doctor: approval.specialist,
+              office: approval.appointment.office,
+              status: "PENDING_DOCTOR_APPROVAL",
+              appointment_datetime: approval.appointment.appointment_datetime,
+              duration: approval.appointment.duration,
+              reason: approval.reason,
+              requested_at: approval.requested_at,
+              reffered_doctor_id: approval.reffered_doctor_id, // Include this!
+            }));
+
+            console.log("Transformed approval data:", data);
             break;
           }
-
           case "SPECIALIST_REQUESTS": {
             // First get specialist approvals, then get corresponding appointments
             const approvals = await SpecialistApproval.findAll({
@@ -543,33 +574,42 @@ const getPrimaryDoctor = async (req, res) => {
 };
 
 const handleSpecialistApproval = async (req, res) => {
+  console.log("=== Starting handleSpecialistApproval ===");
+  console.log("Request body:", req.body);
   const { approval_id, action, doctor_id } = req.body;
 
   try {
     await sequelize.transaction(async (t) => {
       // First, find the specialist approval
-      const approval = await SpecialistApproval.findOne(
-        {
-          where: {
-            approval_id,
-            reffered_doctor_id: doctor_id,
-            specialist_status: "PENDING",
-          },
-          include: [
-            {
-              model: Appointment,
-              required: true,
-            },
-          ],
+      console.log("Looking for approval with ID:", approval_id);
+      console.log("Doctor ID:", doctor_id);
+
+      const approval = await SpecialistApproval.findOne({
+        where: {
+          approval_id: approval_id,
+          reffered_doctor_id: doctor_id,
+          specialist_status: "PENDING",
         },
-        { transaction: t },
-      );
+        include: [
+          {
+            model: Appointment,
+            required: true,
+          },
+        ],
+        transaction: t,
+      });
+
+      console.log("Found approval:", approval);
 
       if (!approval) {
         throw new Error("Approval request not found or already processed");
       }
 
       // Update the approval status
+      console.log(
+        "Updating approval status to:",
+        action === "approve" ? "APPROVED" : "REJECTED",
+      );
       await approval.update(
         {
           specialist_status: action === "approve" ? "APPROVED" : "REJECTED",
@@ -578,7 +618,8 @@ const handleSpecialistApproval = async (req, res) => {
         { transaction: t },
       );
 
-      // Update the appointment status accordingly
+      // Update the appointment status
+      console.log("Updating appointment status");
       await Appointment.update(
         {
           status: action === "approve" ? "CONFIRMED" : "CANCELLED",
@@ -587,12 +628,13 @@ const handleSpecialistApproval = async (req, res) => {
           where: {
             appointment_id: approval.appointment_id,
           },
+          transaction: t,
         },
-        { transaction: t },
       );
 
       // If approved, create a billing record
       if (action === "approve") {
+        console.log("Creating billing record");
         await sequelize.query(
           `INSERT INTO billing (
             patient_id, 
@@ -615,7 +657,7 @@ const handleSpecialistApproval = async (req, res) => {
             replacements: {
               patient_id: approval.patient_id,
               appointment_id: approval.appointment_id,
-              amount_due: 150.0, // You might want to make this dynamic
+              amount_due: 150.0,
             },
             type: sequelize.QueryTypes.INSERT,
             transaction: t,
@@ -629,14 +671,14 @@ const handleSpecialistApproval = async (req, res) => {
       message: `Specialist appointment ${action === "approve" ? "approved" : "rejected"} successfully`,
     });
   } catch (error) {
-    console.error("Error handling specialist approval:", error);
+    console.error("Error in handleSpecialistApproval:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: error.message || "Error processing approval request",
     });
   }
 };
-
 const defaultDashboard = {
   populateMYAPPOINTMENTS,
   updateSETTINGS,

@@ -55,12 +55,6 @@ const MyAppointments = () => {
             icon: <ClipboardCheck className="w-6 h-6 text-yellow-500" />,
             description: "Review specialist appointment requests",
           },
-          {
-            id: "SPECIALIST_REQUESTS",
-            title: "Specialist Appointments",
-            icon: <Check className="w-6 h-6 text-green-500" />,
-            description: "View appointments pending your approval",
-          },
         ];
 
   const fetchData = async (appointmentType) => {
@@ -93,11 +87,17 @@ const MyAppointments = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Appointments</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
+            ? "Pending Specialist Approvals"
+            : "Appointments"}
+        </h2>
         <p className="text-gray-600 mb-6">
-          {userRole === "PATIENT"
-            ? "View and manage your appointments"
-            : "Manage your appointments and approval requests"}
+          {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
+            ? "Review and manage specialist appointment requests"
+            : userRole === "PATIENT"
+              ? "View and manage your appointments"
+              : "Manage your appointments and approval requests"}
         </p>
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">
