@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api, { API } from "../api.js";
 
 import {
@@ -13,10 +13,13 @@ import MedicalRecordForm from './MedicalRecordForm.jsx'; // Import the MedicalRe
 import PrescriptionForm from './PrescriptionsForm.jsx'; // Import the PrescriptionForm
 
 
-const PatientList = ({ data = [] }) => {
-  const [currentView, setCurrentView] = useState("PATIENT LIST");
+const PatientList = ({ data = [], userRole}) => {
+  const initialView = userRole === "Patient" ? "MEDICAL RECORDS" : "PATIENT LIST";
+  const patientId = userRole === "Patient" ? data[0].patient_id : null;
+  
+  const [currentView, setCurrentView] = useState(initialView);
   const [viewHistory, setViewHistory] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState(patientId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [medicalRecords, setMedicalRecords] = useState([]);
@@ -28,7 +31,6 @@ const PatientList = ({ data = [] }) => {
   const [isPrescriptionFormOpen, setIsPrescriptionFormOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [currentPrescription, setCurrentPrescription] = useState(null);
-  console.log(data);
 
   const fetchMedicalRecords = async (patientId) => {
     setIsLoading(true);
@@ -37,7 +39,6 @@ const PatientList = ({ data = [] }) => {
       const response = await api.post(
         `${API.URL}/api/users/medicalrecords/${patientId}`,
       );
-      console.log(response.data);
       
       setMedicalRecords(response.data);
     } catch (error) {
@@ -100,6 +101,12 @@ const PatientList = ({ data = [] }) => {
     // setIsPrescriptionFormOpen(true);
   };
 
+    useEffect(() => {
+      if (userRole === "Patient" && patientId) {
+        fetchMedicalRecords(patientId);
+      }
+    }, [userRole, patientId]);
+
   if (currentView === "PATIENT LIST") {
     if (isLoading) {
       return (
@@ -139,191 +146,313 @@ const PatientList = ({ data = [] }) => {
     
   } 
 
-  if (currentView === "MEDICAL RECORDS") {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-        </div>
-      );
-    }
-     return (
-      <>
-        <div className="space-y-4">
-          <div className="flex justify-between">
-            <div className="flex items-center justify-center">
-              <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
-              <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
-            </div>
-            <button
-              onClick={() => openMedicalRecordForm(null, selectedPatient.patient_id)} // Open form for adding a new record
-              className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
-            >
-              <Plus className="inline-block w-4 h-4 mr-1" /><p>Medical Record</p>
-            </button>
+  if(userRole === "Patient") {
+    if (currentView === "MEDICAL RECORDS") {
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
           </div>
-
-          {isLoading ? (
-            <p>Loading medical records...</p>
-          ) : error ? (
-            <p>Error fetching medical records: {error}</p>
-          ) : (
-            <div>
-              {medicalRecords.length === 0 ? (
-                <p>No medical records found for this patient.</p>
-              ) : (
-                medicalRecords.map((record, index) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-2">
-                    <div>
-                      <p className="font-medium">{record.diagnosis}</p>
-                      <p className="text-sm text-gray-600">Updated Date: {new Date(record.updated_at).toLocaleString()}</p>
-                    </div>
-                    <div className="flex justify-evenly items-center px-3">
-                      <button
-                        onClick={() => openMedicalRecordForm(record)} // Open form for editing the record
-                        className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
-                      >
-                        <Pencil className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleViewPrescriptions(record.record_id)}
-                        className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
-                      >
-                        <PillBottle className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeletePrescriptions(record.record_id)}
-                        className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+        );
+      }
+       return (
+        <>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center">
+                <h2 className="text-2xl font-bold">Medical Records</h2>
+              </div>
             </div>
-          )}
-        </div>
-      </>
-     )
-    
-  } 
-  if (currentView === "PRESCRIPTIONS") {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-        </div>
-      );
-    }
-     return (
-      <>
-                <div className="space-y-4">
-          <div className="flex justify-between">
-            <div className="flex items-center justify-center">
-              <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
-              <h2 className="text-2xl font-bold">Prescriptions</h2>
-            </div>
-            <button
-              onClick={() => openPrescriptionForm(null)} // Open form for adding a new prescription
-              className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
-            >
-              <Plus className="inline-block w-4 h-4 mr-1" /><p>Prescriptions</p>
-            </button>
+  
+            {isLoading ? (
+              <p>Loading medical records...</p>
+            ) : error ? (
+              <p>Error fetching medical records: {error}</p>
+            ) : (
+              <div>
+                {medicalRecords.length === 0 ? (
+                  <p>No medical records found for this patient.</p>
+                ) : (
+                  medicalRecords.map((record, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-2">
+                      <div>
+                        <p className="font-medium">{record.diagnosis}</p>
+                        <p className="text-sm text-gray-600">Updated Date: {new Date(record.updated_at).toLocaleString()}</p>
+                      </div>
+                      <div className="flex justify-evenly items-center px-3">
+                        {/* <button
+                          onClick={() => openMedicalRecordForm(record)} // Open form for editing the record
+                          className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </button> */}
+                        <button
+                          onClick={() => 
+                            handleViewPrescriptions(record.record_id)}
+                          className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <PillBottle className="w-5 h-5" />
+                        </button>
+                        {/* <button
+                          onClick={() => handleDeletePrescriptions(record.record_id)}
+                          className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button> */}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
-
-          {isLoading ? (
-            <p>Loading prescriptions...</p>
-          ) : error ? (
-            <p>Error fetching prescriptions: {error}</p>
-          ) : (
-            <div>
-              {prescriptionRecords.length === 0 ? (
-                <p>No prescriptions found for this patient.</p>
-              ) : (
-                prescriptionRecords.map((prescription) => (
-                  <div key={prescription.prescription_id} className="border rounded-md p-4 mb-2">
-                    <div className="flex justify-between">
-                      <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer w-3/4">
-                        <h3 className="font-bold">{prescription.medication_name}</h3>
-                        <p>Dosage : {prescription.dosage}</p>
-                        <p>Duration: {prescription.duration}</p>
-
+        </>
+       )
+      
+    } 
+    if (currentView === "PRESCRIPTIONS") {
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          </div>
+        );
+      }
+       return (
+        <>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center">
+                <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
+                <h2 className="text-2xl font-bold">Prescriptions</h2>
+              </div>
+            </div>
+  
+            {isLoading ? (
+              <p>Loading prescriptions...</p>
+            ) : error ? (
+              <p>Error fetching prescriptions: {error}</p>
+            ) : (
+              <div>
+                {prescriptionRecords.length === 0 ? (
+                  <p>No prescriptions found for this patient.</p>
+                ) : (
+                  prescriptionRecords.map((prescription) => (
+                    <div key={prescription.prescription_id} className="border rounded-md p-4 mb-2">
+                      <div className="flex justify-between">
+                        <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer w-3/4">
+                          <h3 className="font-bold">{prescription.medication_name}</h3>
+                          <p>Dosage : {prescription.dosage}</p>
+                          <p>Duration: {prescription.duration}</p>
+  
+                        </div>
+                      </div>
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
+                        {expandedPrescription === prescription.prescription_id && (
+                          <div className="mt-2">
+                            <h4 className="font-semibold">Pharmacy Details:</h4>
+                            <p>Name: {prescription.pharmacy_details.pharmacy_name}</p>
+                            <p>Phone: {prescription.pharmacy_details.pharmacy_phone}</p>
+                            <p>Address: {prescription.pharmacy_details.pharmacy_address}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </>
+       )
+      
+    } 
+  } else {
+    if (currentView === "MEDICAL RECORDS") {
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          </div>
+        );
+      }
+       return (
+        <>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center">
+                <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
+                <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
+              </div>
+              <button
+                onClick={() => openMedicalRecordForm(null, selectedPatient.patient_id)} // Open form for adding a new record
+                className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
+              >
+                <Plus className="inline-block w-4 h-4 mr-1" /><p>Medical Record</p>
+              </button>
+            </div>
+  
+            {isLoading ? (
+              <p>Loading medical records...</p>
+            ) : error ? (
+              <p>Error fetching medical records: {error}</p>
+            ) : (
+              <div>
+                {medicalRecords.length === 0 ? (
+                  <p>No medical records found for this patient.</p>
+                ) : (
+                  medicalRecords.map((record, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-2">
+                      <div>
+                        <p className="font-medium">{record.diagnosis}</p>
+                        <p className="text-sm text-gray-600">Updated Date: {new Date(record.updated_at).toLocaleString()}</p>
                       </div>
                       <div className="flex justify-evenly items-center px-3">
                         <button
-                          onClick={() => openPrescriptionForm(prescription)} // Open form for editing the prescription
+                          onClick={() => openMedicalRecordForm(record)} // Open form for editing the record
                           className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
                         >
                           <Pencil className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => handleDeletePrescriptions(prescription.prescription_id)}
+                          onClick={() => handleViewPrescriptions(record.record_id)}
+                          className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <PillBottle className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePrescriptions(record.record_id)}
                           className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
-                      {expandedPrescription === prescription.prescription_id && (
-                        <div className="mt-2">
-                          <h4 className="font-semibold">Pharmacy Details:</h4>
-                          <p>Name: {prescription.pharmacy_details.pharmacy_name}</p>
-                          <p>Phone: {prescription.pharmacy_details.pharmacy_phone}</p>
-                          <p>Address: {prescription.pharmacy_details.pharmacy_address}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </>
+       )
+      
+    } 
+    if (currentView === "PRESCRIPTIONS") {
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          </div>
+        );
+      }
+       return (
+        <>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center">
+                <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
+                <h2 className="text-2xl font-bold">Prescriptions</h2>
+              </div>
+              <button
+                onClick={() => openPrescriptionForm(null)} // Open form for adding a new prescription
+                className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
+              >
+                <Plus className="inline-block w-4 h-4 mr-1" /><p>Prescriptions</p>
+              </button>
             </div>
-          )}
-        </div>
-      </>
-     )
-    
-  } 
-  if (currentView === "Medical Form" && isMedicalRecordFormOpen) {
-    return (
-      <MedicalRecordForm
-        record={currentRecord}
-        patientId = {selectedPatient.patient_id}
-        onClose={() => {
-          setIsMedicalRecordFormOpen(false);
-          setCurrentView("MEDICAL RECORDS");
-        }}
-        onSave={() => {
-          // Logic to refresh medical records after saving
-          fetchMedicalRecords(selectedPatient.patient_id);
-          setCurrentRecord(null);
-          setIsMedicalRecordFormOpen(false);
-          setCurrentView("MEDICAL RECORDS");
+  
+            {isLoading ? (
+              <p>Loading prescriptions...</p>
+            ) : error ? (
+              <p>Error fetching prescriptions: {error}</p>
+            ) : (
+              <div>
+                {prescriptionRecords.length === 0 ? (
+                  <p>No prescriptions found for this patient.</p>
+                ) : (
+                  prescriptionRecords.map((prescription) => (
+                    <div key={prescription.prescription_id} className="border rounded-md p-4 mb-2">
+                      <div className="flex justify-between">
+                        <div onClick={() => togglePrescriptionDetails(prescription.prescription_id)} className="cursor-pointer w-3/4">
+                          <h3 className="font-bold">{prescription.medication_name}</h3>
+                          <p>Dosage : {prescription.dosage}</p>
+                          <p>Duration: {prescription.duration}</p>
+  
+                        </div>
+                        <div className="flex justify-evenly items-center px-3">
+                          <button
+                            onClick={() => openPrescriptionForm(prescription)} // Open form for editing the prescription
+                            className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
+                          >
+                            <Pencil className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeletePrescriptions(prescription.prescription_id)}
+                            className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? 'max-h-40' : 'max-h-0'}`}>
+                        {expandedPrescription === prescription.prescription_id && (
+                          <div className="mt-2">
+                            <h4 className="font-semibold">Pharmacy Details:</h4>
+                            <p>Name: {prescription.pharmacy_details.pharmacy_name}</p>
+                            <p>Phone: {prescription.pharmacy_details.pharmacy_phone}</p>
+                            <p>Address: {prescription.pharmacy_details.pharmacy_address}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </>
+       )
+      
+    } 
+    if (currentView === "Medical Form" && isMedicalRecordFormOpen) {
+      return (
+        <MedicalRecordForm
+          record={currentRecord}
+          patientId = {selectedPatient.patient_id}
+          onClose={() => {
+            setIsMedicalRecordFormOpen(false);
+            setCurrentView("MEDICAL RECORDS");
+          }}
+          onSave={() => {
+            // Logic to refresh medical records after saving
+            fetchMedicalRecords(selectedPatient.patient_id);
+            setCurrentRecord(null);
+            setIsMedicalRecordFormOpen(false);
+            setCurrentView("MEDICAL RECORDS");
+          }}
+        />
+      );
+    }
+    if (currentView === "Prescription Form" && isPrescriptionFormOpen) {
+      return (
+        <PrescriptionForm
+          prescription={currentPrescription}
+          onClose={() => {
+            setIsPrescriptionFormOpen(false);
+            setCurrentView("PRESCRIPTIONS");
+          }}
+          onSave={() => {
+            // Logic to refresh prescription records after saving
+            setCurrentPrescription(null);
+            setIsPrescriptionFormOpen(false);
+            setCurrentView("PRESCRIPTIONS");
         }}
       />
-    );
-  }
-  if (currentView === "Prescription Form" && isPrescriptionFormOpen) {
-    return (
-      <PrescriptionForm
-        prescription={currentPrescription}
-        onClose={() => {
-          setIsPrescriptionFormOpen(false);
-          setCurrentView("PRESCRIPTIONS");
-        }}
-        onSave={() => {
-          // Logic to refresh prescription records after saving
-          setCurrentPrescription(null);
-          setIsPrescriptionFormOpen(false);
-          setCurrentView("PRESCRIPTIONS");
-      }}
-    />
-    );
+      );
+    }
   }
 
   return null;
 };
 
 export default PatientList;
-

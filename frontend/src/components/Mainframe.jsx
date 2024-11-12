@@ -127,7 +127,11 @@ const MainFrame = ({
                   )}
 
                   {currentSelected === "PATIENTS" && (
-                    <Patients data={contentData.patients} />
+                    <Patients data={contentData.patients} userRole={userRole} />
+                  )}
+
+                  {currentSelected === "MEDICAL RECORDS" && (
+                    <Patients data={contentData} userRole={userRole} />
                   )}
 
                   {currentSelected === "PATIENT RECORDS" && (
