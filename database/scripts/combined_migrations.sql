@@ -1306,6 +1306,22 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+DELIMITER //
+CREATE TRIGGER check_patient_unpaid_bills
+BEFORE INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    DECLARE unpaid_count INT;
+    SELECT COUNT(DISTINCT appointment_id) INTO unpaid_count
+    FROM billing
+    WHERE patient_id = NEW.patient_id
+    AND payment_status IN ('NOT PAID', 'IN PROGRESS');
+    IF unpaid_count >= 3 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'BILLS_UNPAID_EXCEEDED';
+    END IF;
+END //
+DELIMITER ;
 ;
 DELIMITER //
 CREATE PROCEDURE schedule_appointment(

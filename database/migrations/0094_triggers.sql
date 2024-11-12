@@ -81,3 +81,30 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+
+
+
+-- business constraint patient cant make appointments
+-- if more than two bills are in pending or not paid
+DELIMITER //
+
+CREATE TRIGGER check_patient_unpaid_bills
+BEFORE INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    DECLARE unpaid_count INT;
+    
+    -- Count number of unpaid or in-progress bills for the patient
+    SELECT COUNT(DISTINCT appointment_id) INTO unpaid_count
+    FROM billing
+    WHERE patient_id = NEW.patient_id
+    AND payment_status IN ('NOT PAID', 'IN PROGRESS');
+    
+    -- If patient has 3 or more unpaid bills, prevent new appointment
+    IF unpaid_count >= 3 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'BILLS_UNPAID_EXCEEDED';
+    END IF;
+END //
+
+DELIMITER ;
