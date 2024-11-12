@@ -37,7 +37,7 @@ const PatientList = ({ data = [] }) => {
       const response = await api.post(
         `${API.URL}/api/users/medicalrecords/${patientId}`,
       );
-      console.log(response.data);
+      // console.log(response.data);
       
       setMedicalRecords(response.data);
     } catch (error) {
@@ -55,17 +55,18 @@ const PatientList = ({ data = [] }) => {
   };
 
 
-  const handleViewPrescriptions = async (record_id) => {
-    setCurrentView("PRESCRIPTIONS");
+  const handleViewPrescriptions = async (record) => {
     setViewHistory([...viewHistory, currentView]);
+    setCurrentRecord(record);
     try {
-      const response = await api.post(`${API.URL}/api/users/prescriptionrecords/${record_id}`);
+      const response = await api.post(`${API.URL}/api/users/prescriptionrecords/${record.record_id}`);
       setPrescriptionRecords(response.data);
     } catch (error) {
       setError(error.message);
     } finally {
       setIsLoading(false);
     }
+    setCurrentView("PRESCRIPTIONS");
   };
 
   const goBack = () => {
@@ -95,8 +96,28 @@ const PatientList = ({ data = [] }) => {
     setIsPrescriptionFormOpen(true);
   };
 
-  const handleDeletePrescriptions = (prescription) => {
+  const handleDeleteMedicalRecord = async (record) => {
+    try {
+      console.log("Deleting record", record.record_id);
+      
+      const response = await api.post(
+        `${API.URL}/api/users/deletemedicalrecord/${record.record_id}`,
+      );
+      fetchMedicalRecords(selectedPatient.patient_id);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleDeletePrescriptions = async (prescription) => {
     setCurrentPrescription(prescription);
+    try {
+      const response = await api.post(
+        `${API.URL}/api/users/deleteprescriptionrecord/${prescription.record_id}`,
+      );
+    } catch (error) {
+      setError(error.message);
+    }
     // setIsPrescriptionFormOpen(true);
   };
 
@@ -156,7 +177,7 @@ const PatientList = ({ data = [] }) => {
               <h2 className="text-2xl font-bold">Medical Records for {selectedPatient.patient_fname} {selectedPatient.patient_lname}</h2>
             </div>
             <button
-              onClick={() => openMedicalRecordForm(null, selectedPatient.patient_id)} // Open form for adding a new record
+              onClick={() => openMedicalRecordForm(null)} // Open form for adding a new record
               className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
             >
               <Plus className="inline-block w-4 h-4 mr-1" /><p>Medical Record</p>
@@ -186,13 +207,13 @@ const PatientList = ({ data = [] }) => {
                         <Pencil className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleViewPrescriptions(record.record_id)}
+                        onClick={() => handleViewPrescriptions(record)}
                         className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
                       >
                         <PillBottle className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleDeletePrescriptions(record.record_id)}
+                        onClick={() => handleDeleteMedicalRecord(record)}
                         className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -248,6 +269,7 @@ const PatientList = ({ data = [] }) => {
                         <h3 className="font-bold">{prescription.medication_name}</h3>
                         <p>Dosage : {prescription.dosage}</p>
                         <p>Duration: {prescription.duration}</p>
+                        <p>Frequency: {prescription.frequency}</p>
 
                       </div>
                       <div className="flex justify-evenly items-center px-3">
@@ -305,15 +327,19 @@ const PatientList = ({ data = [] }) => {
     );
   }
   if (currentView === "Prescription Form" && isPrescriptionFormOpen) {
+    console.log("Reccord ID:",currentRecord.record_id );
+    
     return (
       <PrescriptionForm
         prescription={currentPrescription}
+        recordId = {currentRecord.record_id}
         onClose={() => {
           setIsPrescriptionFormOpen(false);
           setCurrentView("PRESCRIPTIONS");
         }}
         onSave={() => {
           // Logic to refresh prescription records after saving
+          handleViewPrescriptions(currentRecord);
           setCurrentPrescription(null);
           setIsPrescriptionFormOpen(false);
           setCurrentView("PRESCRIPTIONS");
