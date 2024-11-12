@@ -22,7 +22,7 @@ const ReceptionistPortal = ({ userFullName }) => {
       icon: <CalendarDays />,
     },
 
-    { label: "Appointments", path: "/appointments", icon: <Clock9 /> },
+    { label: "Appointments", path: "/portal/appointments", icon: <Clock9 /> },
     { label: "Patient Records", path: "/records", icon: <UserSearch /> },
     {
       section: "account",

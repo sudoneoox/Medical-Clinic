@@ -31,6 +31,7 @@ const router = express.Router();
 
 router.post("/register", userControllerFuncs.registerUser);
 router.post("/login", userControllerFuncs.loginUser);
+router.post("/portal/appointments", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/analytics", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/management", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/settings", dashBoardControllerFuncs.portalRoleSwitcher);
@@ -74,6 +75,8 @@ router.post(
   "/prescriptionrecords/:recordId",
   doctorDashboard.retrievePrescriptionRecords,
 );
+
+router.post( "/recappointments/:patientId", userControllerFuncs.retreiveAppointments);
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 
