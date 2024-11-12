@@ -114,8 +114,9 @@ const PatientList = ({ data = [], userRole}) => {
     setCurrentPrescription(prescription);
     try {
       const response = await api.post(
-        `${API.URL}/api/users/deleteprescriptionrecord/${prescription.record_id}`,
+        `${API.URL}/api/users/deleteprescriptionrecord/${prescription.prescription_id}`,
       );
+      handleViewPrescriptions(currentRecord);
     } catch (error) {
       setError(error.message);
     }
@@ -336,13 +337,13 @@ const PatientList = ({ data = [], userRole}) => {
                           <Pencil className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => handleViewPrescriptions(record.record_id)}
+                          onClick={() => handleViewPrescriptions(record)}
                           className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
                         >
                           <PillBottle className="w-5 h-5" />
                         </button>
                         <button
-                          onClick={() => handleDeletePrescriptions(record.record_id)}
+                          onClick={() => handleDeleteMedicalRecord(record)}
                           className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -408,7 +409,7 @@ const PatientList = ({ data = [], userRole}) => {
                             <Pencil className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => handleDeletePrescriptions(prescription.prescription_id)}
+                            onClick={() => handleDeletePrescriptions(prescription)}
                             className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
                           >
                             <Trash2 className="w-5 h-5" />

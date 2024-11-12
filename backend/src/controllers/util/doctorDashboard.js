@@ -447,6 +447,34 @@ const editPrescription = async (req, res) => {
   }
 };
 
+const deletePrescription = async (req, res) => {
+  try {
+    const recordId = req.params.prescriptionId;
+    console.log("Deleting prescription record" , recordId);
+
+    const deleteRecord = await Prescription.findOne({
+      where: {
+        is_deleted: 0,
+        prescription_id: recordId,
+      },
+    })
+    if (deleteRecord) {
+      await deleteRecord.update({
+        is_deleted: 1,
+      });
+      return res.status(200).json({ message: "Successfully deleted prescription record" });
+    } else {
+      return res.status(404).json({ message: "Prescription record not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting prescription record:", error);
+    return res.status(500).json({
+      message: "Error deleting prescription record",
+      error: error.message,
+    });
+  }
+}
+
 const doctorDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
@@ -459,6 +487,7 @@ const doctorDashboard = {
   deleteMedicalRecord,
   addPrescription,
   editPrescription,
+  deletePrescription,
 };
 
 export default doctorDashboard;
