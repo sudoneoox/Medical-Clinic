@@ -209,7 +209,7 @@ const PatientList = ({ data = [], userRole}) => {
                         </button> */}
                         <button
                           onClick={() => 
-                            handleViewPrescriptions(record.record_id)}
+                            handleViewPrescriptions(record)}
                           className="text-green-500 hover:text-green-600 transition duration-200 ease-in-out ml-2"
                         >
                           <PillBottle className="w-5 h-5" />
