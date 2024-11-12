@@ -73,6 +73,11 @@ router.post(
 );
 
 router.post(
+  "/deleteprescriptionrecord/:prescriptionId",
+  doctorDashboard.deletePrescription,
+);
+
+router.post(
   "/portal/submitNewAppointment",
   defaultDashboard.submitNewAppointment,
 );
