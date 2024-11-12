@@ -18,6 +18,12 @@ const SpecialistApprovalModal = ({
   onConfirm,
   primaryDoctor,
 }) => {
+  const isDisabled =
+    !approvalReason.trim() ||
+    !selectedDateTime ||
+    !primaryDoctor ||
+    requestingApproval;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="fixed inset-0 z-50 flex items-center justify-center">
@@ -54,15 +60,7 @@ const SpecialistApprovalModal = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={onConfirm}
-              disabled={
-                requestingApproval ||
-                !approvalReason.trim() ||
-                !selectedDateTime ||
-                !primaryDoctor
-              }
-            >
+            <Button onClick={onConfirm} disabled={isDisabled}>
               {requestingApproval ? "Requesting..." : "Request Approval"}
             </Button>
           </DialogFooter>

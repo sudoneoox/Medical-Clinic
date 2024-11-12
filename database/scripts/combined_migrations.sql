@@ -1245,23 +1245,6 @@ CALL populate_test_data(
 CALL populate_all_doctors_availability();
 ;
 DELIMITER //
-CREATE TRIGGER check_daily_appointment_limit
-BEFORE INSERT ON appointments
-FOR EACH ROW
-BEGIN
-    DECLARE daily_count INT;
-    SELECT COUNT(*) INTO daily_count
-    FROM appointments
-    WHERE doctor_id = NEW.doctor_id
-    AND DATE(appointment_datetime) = DATE(NEW.appointment_datetime)
-    AND status != 'CANCELLED';
-    IF daily_count >= 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Daily appointment limit reached for this doctor';
-    END IF;
-END //
-DELIMITER ;
-DELIMITER //
 CREATE TRIGGER before_notification_insert 
 BEFORE INSERT ON notifications
 FOR EACH ROW
@@ -1279,32 +1262,33 @@ DELIMITER //
 CREATE TRIGGER before_appointment_specialist_check
 BEFORE INSERT ON appointments
 FOR EACH ROW
-BEGIN
-    DECLARE is_specialist BOOLEAN;
-    DECLARE has_approval BOOLEAN;
-    DECLARE is_primary_doctor BOOLEAN;
-    IF NEW.status != 'PENDING_DOCTOR_APPROVAL' THEN
-        SELECT COUNT(*) > 0 INTO is_specialist
-        FROM doctor_specialties ds
-        WHERE ds.doctor_id = NEW.doctor_id;
-        SELECT COUNT(*) > 0 INTO is_primary_doctor
+label_name: BEGIN  -- Add a label
+    DECLARE is_specialist TINYINT(1);
+    DECLARE is_primary_doctor TINYINT(1);
+    IF NEW.status = 'PENDING_DOCTOR_APPROVAL' THEN
+        LEAVE label_name;  -- Use LEAVE instead of RETURN
+    END IF;
+    SELECT EXISTS (
+        SELECT 1
         FROM patient_doctor_junction pdj
         WHERE pdj.patient_id = NEW.patient_id 
         AND pdj.doctor_id = NEW.doctor_id
-        AND pdj.is_primary = 1;
-        IF is_specialist AND NOT is_primary_doctor THEN
-            SELECT COUNT(*) > 0 INTO has_approval
-            FROM specialist_approvals
-            WHERE patient_id = NEW.patient_id
-            AND specialist_id = NEW.doctor_id
-            AND specialist_status = 'APPROVED';
-            IF NOT has_approval THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = "SPECIALIST_APPROVAL_REQUIRED";
-            END IF;
+        AND pdj.is_primary = 1
+    ) INTO is_primary_doctor;
+    IF is_primary_doctor = 0 THEN
+        SELECT EXISTS (
+            SELECT 1
+            FROM doctor_specialties ds
+            WHERE ds.doctor_id = NEW.doctor_id
+        ) INTO is_specialist;
+        IF is_specialist = 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SPECIALIST_APPROVAL_REQUIRED';
         END IF;
+    ELSE
+        SET NEW.status = 'CONFIRMED';
     END IF;
-END//
+END //
 DELIMITER ;
 DELIMITER //
 CREATE TRIGGER check_patient_unpaid_bills
@@ -1318,9 +1302,27 @@ BEGIN
     AND payment_status IN ('NOT PAID', 'IN PROGRESS');
     IF unpaid_count >= 3 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'BILLS_UNPAID_EXCEEDED';
+        SET MESSAGE_TEXT = 'BILLING_LIMIT_REACHED';
     END IF;
 END //
+DELIMITER ;
+DELIMITER //
+CREATE TRIGGER check_duplicate_appointments
+BEFORE INSERT ON appointments
+FOR EACH ROW
+BEGIN
+    DECLARE existing_count INT;
+    SELECT COUNT(*) INTO existing_count
+    FROM appointments
+    WHERE doctor_id = NEW.doctor_id
+    AND DATE(appointment_datetime) = DATE(NEW.appointment_datetime)
+    AND TIME(appointment_datetime) = TIME(NEW.appointment_datetime)
+    AND status != 'CANCELLED';
+    IF existing_count > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'DUPLICATE_APPOINTMENT_TIME';
+    END IF;
+END//
 DELIMITER ;
 ;
 DELIMITER //
