@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS prescription (
     duration VARCHAR(50) NOT NULL,  -- MySQL doesn't have an INTERVAL type
     date_issued TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     pharmacy_details JSON,
+    is_deleted TINYINT DEFAULT 0,
     UNIQUE(prescription_id)
 );
 ;
