@@ -11,6 +11,8 @@ import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
 import Admins from "../models/Tables/Admin.js";
 import User from "../models/Tables/Users.js";
 import jwt from "jsonwebtoken";
+import Appointment from "../models/Tables/Appointment.js";
+import { error } from "console";
 
 const registerUser = async (req, res) => {
   try {
@@ -233,6 +235,29 @@ const loginUser = async (req, res) => {
   }
 };
 
+const retrieveAppointments = async (req, res) => {
+  try {
+    const { patientId } = req.param;
+
+    const appointmentsRecords = await Appointment.findAll({
+      where: { patient_id: patientId },
+    });
+    
+    if (appointmentsRecords.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No billing records found for this patient." });
+    }
+
+    return res.json("Error fetching billing data:", error);
+  } catch (error) {
+    console.error("Error fetching appointment data", error);
+    return res
+      .status(500)
+      .json({ message: "Error fetching appointment data", error: error.message });
+  }
+};
+
 const retreiveBills = async (req, res) => {
   try {
     const { patientId } = req.params;
@@ -293,6 +318,7 @@ const userControllerFuncs = {
   registerUser,
   retreiveBills,
   submitPayment,
+  retrieveAppointments,//add the function!!!
 };
 
 export default userControllerFuncs;

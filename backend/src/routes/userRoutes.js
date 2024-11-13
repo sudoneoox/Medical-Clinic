@@ -42,12 +42,12 @@ router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/calendar", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post(
   "/portal/medical-records",
-  dashBoardControllerFuncs.portalRoleSwitcher,
+  dashBoardControllerFuncs.portalRoleSwitcher
 );
 
 router.post(
   "/portal/my-appointments",
-  dashBoardControllerFuncs.portalRoleSwitcher,
+  dashBoardControllerFuncs.portalRoleSwitcher
 );
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 
@@ -76,7 +76,7 @@ router.post(
   doctorDashboard.retrievePrescriptionRecords,
 );
 
-router.post( "/recappointments/:patientId", userControllerFuncs.retreiveAppointments);
+router.post( "/recappointments/:patientId", userControllerFuncs.retrieveAppointments);
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 

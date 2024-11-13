@@ -59,7 +59,7 @@ const PatientRecords = ({ data = [] }) => {
   // Patient List View
   if (currentView === "PATIENT_LIST") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4"><p className="text-2xl font-bold">Find Patient Records</p>
         <div className="flex items-center gap-2 w-full md:w-96">
           <Search className="w-5 h-5 text-gray-400" />
           <input
