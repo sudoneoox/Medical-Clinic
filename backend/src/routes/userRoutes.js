@@ -111,4 +111,8 @@ router.post("/validate-session", verifyToken, (req, res) => {
 // nurse
 router.post("/portal/nurse/appointments", nurseDashboard.getNurseAppointments);
 
+router.post("/portal/nurse/allergies", nurseDashboard.getAllergies);
+router.post("/portal/nurse/prescriptions", nurseDashboard.getPrescriptions);
+router.post("/portal/nurse/medical-records", nurseDashboard.getMedicalRecords);
+
 export default router;

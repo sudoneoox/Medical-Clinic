@@ -20,12 +20,10 @@ const RecordsView = () => {
     const fetchMedicalRecords = async () => {
       try {
         // TODO: fetch medical records of patient tied to that nurse
-        // Somewhat similiar to what rahul did
         const response = await api.post("/users/portal/nurse/medical-records", {
-          nurse_id: localStorage.getItem("nurseId"),
           user_id: localStorage.getItem("userId"),
         });
-        setRecords(response.data.records);
+        setRecords(response.data.patientRecords);
       } catch (error) {
         console.error("Error fetching medical records:", error);
       } finally {
