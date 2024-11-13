@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     duration TIME NOT NULL,
     booked_by INTEGER NULL,
     attending_nurse INTEGER NULL,
+    has_bill TINYINT DEFAULT 0,
     reason VARCHAR(100),
     status ENUM('CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO SHOW', 'PENDING', 'PENDING_DOCTOR_APPROVAL') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

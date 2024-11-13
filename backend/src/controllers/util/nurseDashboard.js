@@ -6,6 +6,7 @@ import Office from "../../models/Tables/Office.js";
 import logic from "./shared/logic.js";
 import NurseOffices from "../../models/Tables/NurseOffices.js";
 import { Op } from "sequelize";
+import Billing from "../../models/Tables/Billing.js";
 
 const populateOVERVIEW = async (user, nurse, res) => {
   try {
@@ -175,7 +176,6 @@ const getNurseAppointments = async (req, res) => {
         status: {
           [Op.not]: "CANCELLED",
           [Op.not]: "NO SHOW",
-          [Op.not]: "CANCELLED",
         },
       },
       include: [
@@ -212,10 +212,119 @@ const getNurseAppointments = async (req, res) => {
   }
 };
 
+const getNurseAppointmentsBilling = async (req, res) => {
+  try {
+    // get nurse ID from the user ID
+    const nurse = await Nurse.findOne({
+      where: { user_id: req.body.user_id },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({
+        message: "Nurse not found",
+        appointments: [],
+      });
+    }
+
+    // get all appointments where this nurse is assigned
+    const appointments = await Appointment.findAll({
+      where: {
+        attending_nurse: nurse.nurse_id,
+        has_bill: 0,
+        // Optionally filter by status if you don't want to show cancelled appointments
+        status: {
+          [Op.eq]: "CONFIRMED",
+        },
+      },
+      include: [
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname","patient_id"],
+        },
+        {
+          model: Office,
+          attributes: ["office_name"],
+        },
+      ],
+      order: [["appointment_datetime", "ASC"]],
+    });
+
+    return res.json({
+      appointments: appointments.map((apt) => ({
+        appointment_id: apt.appointment_id,
+        appointment_datetime: apt.appointment_datetime,
+        duration: apt.duration,
+        status: apt.status,
+        reason: apt.reason,
+        patient_fname: apt.patient.patient_fname,
+        patient_lname: apt.patient.patient_lname,
+        patient_id: apt.patient.patient_id,
+        office_name: apt.office.office_name,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching nurse appointments:", error);
+    return res.status(500).json({
+      message: "Error fetching appointments",
+      error: error.message,
+    });
+  }
+};
+
+const createBills = async (req, res) => {
+  try {
+    const amountDueDate = new Date();
+    // Add 14 days (2 weeks) to the current date
+    amountDueDate.setDate(amountDueDate.getDate() + 14);
+    const nurse = await Nurse.findOne({
+      where: { user_id: req.body.userId },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({
+        message: "Nurse not found",
+        appointments: [],
+      });
+    }
+    const newBill = await Billing.create({
+      appointment_id: req.body.appointment_id,
+      patient_id: req.body.patientId,
+      payment_status: "NOT PAID",
+      amount_due: req.body.billingData.amount_due,
+      amount_paid: 0,
+      billing_due: amountDueDate,
+      handled_by: nurse.nurse_id,
+    });
+
+    const updateAppointment = await Appointment.findOne({
+      where: {appointment_id: req.body.appointment_id},
+    })
+
+    if(updateAppointment) {
+      await updateAppointment.update({
+        has_bill: 1,
+      });
+    }
+
+    // return res.status(100).json({ message: "Successfully created bills" });
+    return res.json({
+      message: "Success add bill",
+    });
+  } catch (error) {
+    console.error("Error creating bills:", error);
+    return res.status(500).json({
+      message: "Error creating bills",
+      error: error.message,
+    });
+  }
+};
+
 const nurseDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
   getNurseAppointments,
+  getNurseAppointmentsBilling,
+  createBills,
 };
 
 export default nurseDashboard;
