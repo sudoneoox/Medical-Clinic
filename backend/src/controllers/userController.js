@@ -237,7 +237,7 @@ const loginUser = async (req, res) => {
 
 const retrieveAppointments = async (req, res) => {
   try {
-    const { patientId } = req.param;
+    const { patientId } = req.params;
 
     const appointmentsRecords = await Appointment.findAll({
       where: { patient_id: patientId },
@@ -246,10 +246,10 @@ const retrieveAppointments = async (req, res) => {
     if (appointmentsRecords.length === 0) {
       return res
         .status(404)
-        .json({ message: "No billing records found for this patient." });
+        .json({ message: "No appointments records found for this patient." });
     }
 
-    return res.json("Error fetching billing data:", error);
+    return res.json(appointmentsRecords);
   } catch (error) {
     console.error("Error fetching appointment data", error);
     return res

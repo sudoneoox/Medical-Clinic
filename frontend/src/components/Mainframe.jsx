@@ -12,6 +12,7 @@ import Settings from "./sidebarItems/settings/Settings.jsx";
 import Sidebar from "./UI/MainframeSidebar.jsx";
 import Header from "./UI/MainframeHeader.jsx";
 import PatientCare from "./sidebarItems/patient-care/PatientCare.jsx";
+import AppointmentsList from "./sidebarItems/RecAppointments.jsx";
 
 import api, { API } from "../api.js";
 
@@ -135,8 +136,8 @@ const MainFrame = ({
                   )}
 
                   {currentSelected === "MY APPOINTMENTS" && <MyAppointments />}
-                  {/* BUG: Receptionist Appointments being implemented by danil */}
-                  {/* {currentSelected === "APPOINTMENTS" && <Appointments />} */}
+                  {/* BUG: Receptionist Appointments being implemented by daniil */}
+                  {currentSelected === "APPOINTMENTS" && <AppointmentsList />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />

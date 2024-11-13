@@ -49,14 +49,14 @@ const AppointmentsList = ({ data = [] }) => {
     //setCurrentView("BILLING");
   };
 
-  const handlePaymentComplete = async () => {
-    await /*fetchBillingRecords*/fetchAppointmentsRecords(selectedPatient.patient_id);
+  /*const handlePaymentComplete = async () => {
+    await /*fetchBillingRecords*//*fetchAppointmentsRecords(selectedPatient.patient_id);
     setAppointmentsFormVisible(false);
   };
 
   const handlePaymentCancel = () => {
     setAppointmentsFormVisible(false);
-  };
+  };*/
 
   // Patient List View
   if (currentView === "PATIENT_LIST") {
@@ -115,9 +115,9 @@ const AppointmentsList = ({ data = [] }) => {
     if (isAppointmentsFormVisible && selectedBillingRecord) {
       return (
         <PaymentForm
-          selectedBillingRecord={selectedBillingRecord}
+          /*selectedBillingRecord={selectedBillingRecord}
           onPaymentComplete={handlePaymentComplete}
-          onCancel={handlePaymentCancel}
+          onCancel={handlePaymentCancel}*/
         />
       );
     }
@@ -229,9 +229,9 @@ const AppointmentsList = ({ data = [] }) => {
     if (isAppointmentsFormVisible && selectedBillingRecord) {
       return (
         <PaymentForm
-          selectedBillingRecord={selectedBillingRecord}
+          /*selectedBillingRecord={selectedBillingRecord}
           onPaymentComplete={handlePaymentComplete}
-          onCancel={handlePaymentCancel}
+          onCancel={handlePaymentCancel}*/
         />
       );
     }
