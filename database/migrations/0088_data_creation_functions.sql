@@ -24,6 +24,8 @@ DETERMINISTIC
 BEGIN
     RETURN DATE_ADD(start_date, INTERVAL FLOOR(RAND() * DATEDIFF(end_date, start_date)) DAY);
 END //
+
+
 -- Helper function to generate random time between two times
 CREATE FUNCTION random_time(start_time TIME, end_time TIME)
 RETURNS TIME
@@ -53,7 +55,10 @@ BEGIN
     RETURN new_demo_id;
 END //
 
--- Create user function
+
+-- ENTITY CREATION FUNCTIONS
+
+-- Creates user record with basic account details and links to demographics
 CREATE FUNCTION create_user(
     p_username VARCHAR(50),
     p_password VARCHAR(200),
@@ -92,7 +97,7 @@ BEGIN
     RETURN new_user_id;
 END //
 
--- Create patient function
+-- Creates patient record and generates random emergency contact info
 CREATE FUNCTION create_patient(
     p_user_id INT,
     p_fname VARCHAR(50),
@@ -121,7 +126,7 @@ BEGIN
     RETURN new_patient_id;
 END //
 
--- Create doctor function (unchanged except for return)
+-- Creates doctor record with specialty and experience info
 CREATE FUNCTION create_doctor(
     p_user_id INT,
     p_employee_id INT,
@@ -150,7 +155,7 @@ BEGIN
     RETURN new_doctor_id;
 END //
 
--- Create nurse function
+-- Creates nurse record with random specialization and experience
 CREATE FUNCTION create_nurse(
     p_user_id INT,
     p_employee_id INT,
@@ -180,7 +185,7 @@ BEGIN
     RETURN new_nurse_id;
 END //
 
--- Create receptionist function (unchanged)
+-- Creates receptionist record with basic employee info
 CREATE FUNCTION create_receptionist(
     p_user_id INT,
     p_employee_id INT,
@@ -206,7 +211,7 @@ BEGIN
     RETURN new_receptionist_id;
 END //
 
--- Create Admin function (unchanged)
+-- Creates admin record with all management permissions
 CREATE FUNCTION create_admin(
     p_user_id INT,
     p_employee_id INT,
@@ -240,7 +245,7 @@ BEGIN
     RETURN new_admin_id;
 END //
 
--- Create appointment function
+-- Creates appointment record with random duration and reason
 CREATE FUNCTION create_appointment(
     p_patient_id INT,
     p_doctor_id INT,
@@ -285,7 +290,7 @@ BEGIN
     RETURN new_appointment_id;
 END //
 
--- Create medical record function
+-- Creates medical record with random diagnosis
 CREATE FUNCTION create_medical_record(
     p_patient_id INT,
     p_doctor_id INT,
@@ -328,8 +333,8 @@ BEGIN
     RETURN new_record_id;
 END //
 
--- Create billing function
-
+-- Creates billing record and related notification
+-- NOTIFS were not implemented remove
 CREATE FUNCTION create_billing(
     p_patient_id INT,
     p_appointment_id INT,
@@ -413,7 +418,10 @@ BEGIN
     SET new_billing_id = LAST_INSERT_ID();
     RETURN new_billing_id;
 END //
+
+
 -- Main procedure to populate all tables
+-- Takes parameters for number of each type of user to create
 CREATE PROCEDURE populate_test_data(
     IN num_doctors INT,
     IN num_nurses INT,
@@ -913,9 +921,9 @@ END //
 DELIMITER ;
 
 
--- recursive function to generate doctor availability
 DELIMITER //
--- singular doctor availability
+-- creates available slots for single doctor its used by the 
+-- function below this one
 CREATE PROCEDURE populate_doctor_availability(
     IN p_doctor_id INT
 )
@@ -975,8 +983,7 @@ BEGIN
     CLOSE office_cursor;
 END //
 
--- utilize the previous function to make multiple
-
+-- utilize the previous function to make multiple availability_slots
 CREATE PROCEDURE populate_all_doctors_availability()
 BEGIN
     DECLARE done INT DEFAULT FALSE;

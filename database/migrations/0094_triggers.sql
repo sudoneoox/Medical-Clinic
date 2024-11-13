@@ -1,19 +1,23 @@
 
-
+-- business constraint patient needs primary doctor approval
+-- for specialist appointment
 DELIMITER //
 CREATE TRIGGER before_appointment_specialist_check
 BEFORE INSERT ON appointments
 FOR EACH ROW
-label_name: BEGIN  -- Add a label
+specialist_check: BEGIN  
+    -- store doctor status checks
+    -- variable def.
     DECLARE is_specialist TINYINT(1);
     DECLARE is_primary_doctor TINYINT(1);
     
-    -- Skip all checks if this is already a pending approval request
+    -- if appointment is already pending approval skip validations
     IF NEW.status = 'PENDING_DOCTOR_APPROVAL' THEN
-        LEAVE label_name;  -- Use LEAVE instead of RETURN
+        LEAVE specialist_check;  -- exit at label def. 
     END IF;
     
-    -- Rest of the trigger remains the same
+    -- check if doctor is primary doctor
+    -- if true returns 1 and sets it into the is_primary_doctor variable
     SELECT EXISTS (
         SELECT 1
         FROM patient_doctor_junction pdj
@@ -22,6 +26,8 @@ label_name: BEGIN  -- Add a label
         AND pdj.is_primary = 1
     ) INTO is_primary_doctor;
     
+    -- if not primary doctor checks if the doctor is a specialist 
+    -- if true sets 1 (true) to the is_specialist variable
     IF is_primary_doctor = 0 THEN
         SELECT EXISTS (
             SELECT 1
@@ -29,11 +35,13 @@ label_name: BEGIN  -- Add a label
             WHERE ds.doctor_id = NEW.doctor_id
         ) INTO is_specialist;
         
+        -- if the doctor is a specialist -> appointment needs approval 
         IF is_specialist = 1 THEN
             SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'SPECIALIST_APPROVAL_REQUIRED';
         END IF;
     ELSE
+      -- if it is the patients primary doctor automatically confirm appointment
         SET NEW.status = 'CONFIRMED';
     END IF;
 END //
@@ -47,9 +55,12 @@ CREATE TRIGGER check_patient_unpaid_bills
 BEFORE INSERT ON appointments
 FOR EACH ROW
 BEGIN
+    -- store count of unpaid bills to variable DEClARE xxx
     DECLARE unpaid_count INT;
     
-    -- Count number of unpaid or in-progress bills for the patient
+    -- count unpaid and inprogress bills for the patient
+    -- counts distinct appointment_id so that we dont count multiple billing entries
+    -- for the same appointment
     SELECT COUNT(DISTINCT appointment_id) INTO unpaid_count
     FROM billing
     WHERE patient_id = NEW.patient_id
@@ -65,22 +76,30 @@ END //
 DELIMITER ;
 
 
--- duplicate appoitment times
+-- Trigger dont allow duplicate appointment times
 DELIMITER //
 
 CREATE TRIGGER check_duplicate_appointments
 BEFORE INSERT ON appointments
 FOR EACH ROW
 BEGIN
+    -- store count of existing appointments
     DECLARE existing_count INT;
-    
+    -- check existing appointments for this doctor
+    -- at the exact date and time
+    -- doesnt count cancelled appointments
     SELECT COUNT(*) INTO existing_count
     FROM appointments
     WHERE doctor_id = NEW.doctor_id
+    -- compare just the date part
     AND DATE(appointment_datetime) = DATE(NEW.appointment_datetime)
+    -- compare just the time part
     AND TIME(appointment_datetime) = TIME(NEW.appointment_datetime)
+    -- only do it for active appointments
     AND status != 'CANCELLED';
     
+    -- if appointments overlap ie same time and date 
+    -- raise trigger error
     IF existing_count > 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'DUPLICATE_APPOINTMENT_TIME';

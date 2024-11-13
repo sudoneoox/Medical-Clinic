@@ -1270,12 +1270,12 @@ END //
 DELIMITER ;
 ;
 CALL populate_test_data(
-    10,  -- 10 doctors
-    20,  -- 20 nurses
-    5,   -- 5 receptionists
-    100, -- 100 patients
-    3,   -- 3 admins
-    4    -- 4 appointments per patient
+    5,  -- doctors
+    5,  -- nurses
+    5,   -- receptionists
+    9, -- patients
+    2,   -- admins
+    4    -- appointments per patient
 );
 CALL populate_all_doctors_availability();
 ;
@@ -1283,11 +1283,11 @@ DELIMITER //
 CREATE TRIGGER before_appointment_specialist_check
 BEFORE INSERT ON appointments
 FOR EACH ROW
-label_name: BEGIN  -- Add a label
+specialist_check: BEGIN  
     DECLARE is_specialist TINYINT(1);
     DECLARE is_primary_doctor TINYINT(1);
     IF NEW.status = 'PENDING_DOCTOR_APPROVAL' THEN
-        LEAVE label_name;  -- Use LEAVE instead of RETURN
+        LEAVE specialist_check;  -- exit at label def. 
     END IF;
     SELECT EXISTS (
         SELECT 1

@@ -1,4 +1,3 @@
--- do complex views here
 -- Doctor Schedule View
 CREATE OR REPLACE VIEW doctor_schedule AS
 SELECT 
