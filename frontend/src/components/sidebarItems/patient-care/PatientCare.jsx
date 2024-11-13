@@ -36,7 +36,7 @@ const PatientCare = () => {
       id: "MEDICAL_RECORDS",
       title: "Medical Records",
       icon: <ClipboardList className="w-6 h-6 text-green-500" />,
-      description: "Access and manage patient medical records",
+      description: "Access patient medical records",
       subCategories: [
         {
           id: "PRESCRIPTIONS",

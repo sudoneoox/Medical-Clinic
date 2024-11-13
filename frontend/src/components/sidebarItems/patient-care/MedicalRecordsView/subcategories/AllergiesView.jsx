@@ -20,10 +20,9 @@ const AllergiesView = () => {
       try {
         // TODO: finish backend controller gets allergies from patients tied to that nurses appointments
         const response = await api.post("/users/portal/nurse/allergies", {
-          nurse_id: localStorage.getItem("nurseId"),
           user_id: localStorage.getItem("userId"),
-        });
-        setAllergies(response.data.allergies);
+        });  
+        setAllergies(response.data.patientAllergies);
       } catch (error) {
         console.error("Error fetching allergies:", error);
       } finally {

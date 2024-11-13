@@ -7,6 +7,12 @@ import Office from "../../models/Tables/Office.js";
 import logic from "./shared/logic.js";
 import NurseOffices from "../../models/Tables/NurseOffices.js";
 import { Op } from "sequelize";
+
+import Prescription from "../../models/Tables/Prescription.js";
+import MedicalRecord from "../../models/Tables/MedicalRecord.js";
+import MedicalRecordNotes from "../../models/Tables/MedicalRecordNotes.js";
+import Allergies from "../../models/Tables/Allergies.js";
+import { Sequelize } from "sequelize";
 import Billing from "../../models/Tables/Billing.js";
 
 const populateOVERVIEW = async (user, nurse, res) => {
@@ -466,6 +472,278 @@ const editAppointmentNote = async (req, res) => {
   }
 };
 
+const getNursePatientIds = async (userId) => {
+  const nurse = await Nurse.findOne({
+    where: { user_id: userId },
+  });
+
+  if (!nurse) {
+    return { error: "Nurse not found", patientIds: [] };
+  }
+
+  const appointments = await Appointment.findAll({
+    where: {
+      attending_nurse: nurse.nurse_id,
+      status: {
+        [Op.not]: "CANCELLED",
+        [Op.not]: "NO SHOW",
+      },
+    },
+    attributes: ['patient_id'],
+  });
+
+  if (appointments.length === 0) {
+    return { error: "No appointments found for this nurse", patientIds: [] };
+  }
+
+  const patientIds = [...new Set(appointments.map((appointment) => appointment.patient_id))];
+
+  return { nurse, patientIds };
+};
+
+
+const getAllergies = async (req, res) => {
+  console.log("ALLERGIES");
+
+  try {
+    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+
+    if (error) {
+      return res.status(404).json({ message: error, patientIds });
+    }
+
+    const allergies = await Allergies.findAll({
+      include: [
+        {
+          model: MedicalRecord,
+          as: "medicalRecord",
+          where: { patient_id: { [Op.in]: patientIds } },
+          include: [
+            {
+              model: Patient,
+              attributes: ["patient_fname", "patient_lname"], 
+            },
+          ],
+        },
+      ],
+      attributes: [
+        "allergy_id",
+        "allergy_type",
+        "allergen",
+        "reaction",
+        "severity",
+        "onset_date",
+      ],
+    });
+    
+    const patientAllergies = allergies.map(allergy => {
+      const patient = allergy.medicalRecord ? allergy.medicalRecord.patient : null;
+      const patientName = patient ? `${patient.patient_fname} ${patient.patient_lname}` : "Unknown Patient";
+
+      return {
+        patient_name: patientName,
+        allergy_id: allergy.allergy_id,
+        allergy_type: allergy.allergy_type,
+        allergen: allergy.allergen,
+        reaction: allergy.reaction,
+        severity: allergy.severity,
+        onset_date: allergy.onset_date,
+      };
+    });
+    
+    return res.status(200).json({ patientAllergies });
+  } catch (error) {
+    console.error('Error retrieving allergies:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getPrescriptions = async (req, res) => {
+  console.log("PRESCRIPTIONS");
+
+  try {
+    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+
+    if (error) {
+      return res.status(404).json({ message: error, patientIds });
+    }
+
+    const prescriptions = await Prescription.findAll({
+      include: [
+        {
+          model: MedicalRecord,
+          as: "medicalRecord",
+          where: { patient_id: { [Op.in]: patientIds } },
+          include: [
+            {
+              model: Patient,
+              attributes: ["patient_fname", "patient_lname"], 
+            },
+          ],
+        },
+      ],
+      attributes: [
+        "prescription_id",
+        "date_issued",
+        "medication_name",
+        "dosage",
+        "frequency",
+        "duration",
+        "pharmacy_details",
+      ],
+    });
+   
+    const patientMedications = prescriptions.map(prescription => {
+      const patient = prescription.medicalRecord ? prescription.medicalRecord.patient : null;
+      const patientName = patient ? `${patient.patient_fname} ${patient.patient_lname}` : "Unknown Patient";
+
+      return {
+        patient_name: patientName,
+        prescription_id: prescription.prescription_id,
+        date_issued: prescription.date_issued,
+        medication_name: prescription.medication_name,
+        dosage: prescription.dosage,
+        frequency: prescription.frequency,
+        duration: prescription.duration,
+        pharmacy_details: JSON.stringify(prescription.pharmacy_details),
+      };
+    });
+    
+    return res.status(200).json({ patientMedications });
+  } catch (error) {
+    console.error('Error retrieving allergies:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getMedicalRecords = async (req, res) => {
+  console.log("MEDICAL RECORDS");
+
+  try {
+    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+
+    if (error) {
+      return res.status(404).json({ message: error, patientIds });
+    }
+
+    const medicalRecords = await MedicalRecord.findAll({
+      where: { patient_id: { [Op.in]: patientIds }, is_deleted: 0 },
+      include: [
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname"], 
+        },
+        {
+          model: Doctor,
+          attributes: ["doctor_fname", "doctor_lname"], 
+        },
+        {
+          model: MedicalRecordNotes, 
+          as: 'medicalRecordNotes',
+          attributes: ["note_id", "description", "created_at", "updated_at"],
+        },
+      ],
+    });
+    
+    const patientRecords = medicalRecords.map(medicalData => {
+      console.log(medicalData.medicalRecordNotes);
+
+      return {
+        patient_fname: medicalData.patient.patient_fname,
+        patient_lname: medicalData.patient.patient_lname,
+        doctor_fname: medicalData.doctor.doctor_fname,
+        doctor_lname: medicalData.doctor.doctor_lname,
+        diagnosis: medicalData.diagnosis,
+        record_id: medicalData.record_id,
+        created_at: medicalData.created_at,
+        updated_at: medicalData.updated_at,
+        is_deleted: medicalData.is_deleted,
+        appointment_id: medicalData.appointment_id,
+        notes: medicalData.medicalRecordNotes,
+      };
+    });
+
+    return res.status(200).json({ patientRecords });
+  } catch (error) {
+    console.error("Error fetching medical records:", error);
+    return res
+      .status(500)
+      .json({ message: "Error fetching medical records", error: error.message });
+  }
+};
+
+const addNote = async (req, res) => {
+  console.log(req);
+  const { recordId } = req.params;  
+  const { note_text } = req.body.note_text;   
+  const userId = req.body.user_id;
+
+  try {
+    const nurse = await Nurse.findOne({
+      where: { user_id: userId },
+    });
+
+    // Insert a new note into the MedicalRecordNotes table
+    const newNote = await MedicalRecordNotes.create({
+      description: note_text,      
+      subject: "Medical Record",   
+      medical_record_id: recordId, 
+      created_by_user_id: nurse.nurse_id,
+    });
+
+    // Send success response with the created note
+    return res.status(201).json({
+      success: true,
+      message: "Note added successfully",
+      note: newNote,
+    });
+  } catch (error) {
+    console.error("Error adding note:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add note",
+      error: error.message,
+    });
+  }
+};
+
+const editNote = async (req, res) => {
+  const { noteId } = req.params; 
+  const { note_text, user_id } = req.body; 
+
+  try {
+    // Find the note by ID
+    const note = await MedicalRecordNotes.findOne({
+      where: {
+        note_id: noteId,
+        is_deleted: 0,
+      },
+    });
+
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    // Update the note
+    note.note_text = note_text;
+    note.updated_at = new Date();
+    note.updated_by_nurse = user_id;
+
+    await note.save();
+
+    return res.status(200).json({
+      message: "Note updated successfully",
+      updatedNote: note,
+    });
+  } catch (error) {
+    console.error("Error updating note:", error);
+    return res.status(500).json({
+      message: "Error updating note",
+      error: error.message,
+    });
+  }
+};
+
 const nurseDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
@@ -475,6 +753,11 @@ const nurseDashboard = {
   updateAppointmentStatus,
   addAppointmentNote,
   editAppointmentNote,
+  getAllergies,
+  getPrescriptions,
+  getMedicalRecords,
+  addNote,
+  editNote,
 };
 
 export default nurseDashboard;

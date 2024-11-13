@@ -142,4 +142,8 @@ router.post(
 
 router.post("/portal/nurse/billing/create", nurseDashboard.createBills);
 
+router.post("/portal/nurse/allergies", nurseDashboard.getAllergies);
+router.post("/portal/nurse/prescriptions", nurseDashboard.getPrescriptions);
+router.post("/portal/nurse/medical-records", nurseDashboard.getMedicalRecords);
+
 export default router;
