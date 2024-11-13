@@ -125,6 +125,7 @@ const DoctorCard = ({ doctor }) => {
       });
 
       if (response.data.success) {
+        console.log("Attending Nurse", response.data.attending_nurse);
         setShowDatePicker(false);
         return;
       }
@@ -133,11 +134,6 @@ const DoctorCard = ({ doctor }) => {
       if (error.response?.data?.message === "DUPLICATE_APPOINTMENT_TIME") {
         setBookingError(
           "This time slot is already booked. Please select a different time.",
-        );
-      } else if (error.response?.data?.message === "BILLING_LIMIT_REACHED") {
-        setShowDatePicker(false);
-        setBookingError(
-          "Unable to schedule appointment: You have 3 or more unpaid bills. Please settle your outstanding payments before scheduling new appointments.",
         );
       } else if (
         error.response?.data?.message === "SPECIALIST_APPROVAL_REQUIRED"
@@ -151,6 +147,11 @@ const DoctorCard = ({ doctor }) => {
           return;
         }
         setShowApprovalModal(true);
+      } else if (error.response?.data?.message === "BILLING_LIMIT_REACHED") {
+        setShowDatePicker(false);
+        setBookingError(
+          "Unable to schedule appointment: You have 3 or more unpaid bills. Please settle your outstanding payments before scheduling new appointments.",
+        );
       } else {
         setBookingError(
           error.response?.data?.message || "Error booking appointment",

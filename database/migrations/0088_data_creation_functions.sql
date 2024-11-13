@@ -17,23 +17,6 @@ BEGIN
     );
 END //
 
-
--- generate a random date within past three months
-CREATE FUNCTION random_past_date()
-RETURNS TIMESTAMP
-DETERMINISTIC
-BEGIN
-    RETURN DATE_SUB(CURRENT_TIMESTAMP, INTERVAL FLOOR(RAND() * 90) DAY);
-END //
-
--- generate random future date within next 3 months
-CREATE FUNCTION random_future_date()
-RETURNS TIMESTAMP
-DETERMINISTIC
-BEGIN
-    RETURN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL (30 + FLOOR(RAND() * 60)) DAY);
-END //
-
 -- Helper function to generate random date between two dates
 CREATE FUNCTION random_date(start_date DATE, end_date DATE)
 RETURNS DATE
@@ -41,7 +24,6 @@ DETERMINISTIC
 BEGIN
     RETURN DATE_ADD(start_date, INTERVAL FLOOR(RAND() * DATEDIFF(end_date, start_date)) DAY);
 END //
-
 -- Helper function to generate random time between two times
 CREATE FUNCTION random_time(start_time TIME, end_time TIME)
 RETURNS TIME
@@ -49,14 +31,12 @@ DETERMINISTIC
 BEGIN
     RETURN ADDTIME(start_time, SEC_TO_TIME(FLOOR(RAND() * TIME_TO_SEC(TIMEDIFF(end_time, start_time)))));
 END //
-
 -- Create demographics 
 CREATE FUNCTION create_demographics(
     p_dob DATE
 ) RETURNS INT
 BEGIN
     DECLARE new_demo_id INT;
-    
     INSERT INTO demographics (
         ethnicity_id,
         race_id,
@@ -84,6 +64,9 @@ CREATE FUNCTION create_user(
 ) RETURNS INT
 BEGIN
     DECLARE new_user_id INT;
+    DECLARE created_date TIMESTAMP;
+    
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     
     INSERT INTO users (
         user_username, 
@@ -91,14 +74,18 @@ BEGIN
         user_email, 
         user_phone, 
         user_role, 
-        demographics_id
+        demographics_id,
+        account_created_at,
+        account_last_login
     ) VALUES (
         p_username,
         p_password,
         p_email,
         p_phone,
         p_role,
-        p_demographics_id
+        p_demographics_id,
+        created_date,
+        created_date + INTERVAL FLOOR(RAND() * 10) DAY
     );
     
     SET new_user_id = LAST_INSERT_ID();
@@ -134,7 +121,7 @@ BEGIN
     RETURN new_patient_id;
 END //
 
--- Create doctor function
+-- Create doctor function (unchanged except for return)
 CREATE FUNCTION create_doctor(
     p_user_id INT,
     p_employee_id INT,
@@ -193,7 +180,7 @@ BEGIN
     RETURN new_nurse_id;
 END //
 
--- Create receptionist function
+-- Create receptionist function (unchanged)
 CREATE FUNCTION create_receptionist(
     p_user_id INT,
     p_employee_id INT,
@@ -219,7 +206,7 @@ BEGIN
     RETURN new_receptionist_id;
 END //
 
--- Create Admin function 
+-- Create Admin function (unchanged)
 CREATE FUNCTION create_admin(
     p_user_id INT,
     p_employee_id INT,
@@ -243,7 +230,7 @@ BEGIN
         p_fname,
         p_lname,
         p_user_id,
-        TRUE,  -- All permissions set to true as requested
+        TRUE,
         TRUE,
         TRUE,
         TRUE
@@ -252,7 +239,6 @@ BEGIN
     SET new_admin_id = LAST_INSERT_ID();
     RETURN new_admin_id;
 END //
-
 
 -- Create appointment function
 CREATE FUNCTION create_appointment(
@@ -265,6 +251,9 @@ CREATE FUNCTION create_appointment(
 ) RETURNS INT
 BEGIN
     DECLARE new_appointment_id INT;
+    DECLARE created_date TIMESTAMP;
+    
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     
     INSERT INTO appointments (
         patient_id,
@@ -275,7 +264,9 @@ BEGIN
         booked_by,
         attending_nurse,
         reason,
-        status
+        status,
+        created_at,
+        updated_at
     ) VALUES (
         p_patient_id,
         p_doctor_id,
@@ -285,7 +276,9 @@ BEGIN
         p_booked_by,
         p_attending_nurse,
         ELT(FLOOR(1 + RAND() * 5), 'Regular Checkup', 'Follow-up', 'Consultation', 'Vaccination', 'Prescription Renewal'),
-        'CONFIRMED'
+        'CONFIRMED',
+        created_date,
+        created_date
     );
     
     SET new_appointment_id = LAST_INSERT_ID();
@@ -300,12 +293,17 @@ CREATE FUNCTION create_medical_record(
 ) RETURNS INT
 BEGIN
     DECLARE new_record_id INT;
+    DECLARE created_date TIMESTAMP;
+    
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     
     INSERT INTO medical_records (
         diagnosis,
         patient_id,
         doctor_id,
-        appointment_id
+        appointment_id,
+        created_at,
+        updated_at
     ) VALUES (
         ELT(FLOOR(1 + RAND() * 10), 
             'Hypertension',
@@ -321,7 +319,9 @@ BEGIN
         ),
         p_patient_id,
         p_doctor_id,
-        p_appointment_id
+        p_appointment_id,
+        created_date,
+        created_date
     );
     
     SET new_record_id = LAST_INSERT_ID();
@@ -329,6 +329,7 @@ BEGIN
 END //
 
 -- Create billing function
+
 CREATE FUNCTION create_billing(
     p_patient_id INT,
     p_appointment_id INT,
@@ -340,21 +341,26 @@ BEGIN
     DECLARE paid_amount DECIMAL(7,2);
     DECLARE payment_stat VARCHAR(20);
     DECLARE created_date TIMESTAMP;
-    DECLARE due_date TIMESTAMP;
+    DECLARE billing_due_date TIMESTAMP;
+    DECLARE unpaid_count INT;
     
-        SET amount = CASE 
-        WHEN RAND() < 0.3 THEN FLOOR(50 + RAND() * 100) -- Copay range ($50-150)
-        WHEN RAND() < 0.6 THEN FLOOR(200 + RAND() * 300) -- Standard visit ($200-500)
-        ELSE FLOOR(500 + RAND() * 1500) -- Complex visit or procedure ($500-2000)
-    END + 0.00;
+    -- Check existing unpaid bills for this patient
+    SELECT COUNT(*) INTO unpaid_count
+    FROM billing
+    WHERE patient_id = p_patient_id 
+    AND payment_status IN ('NOT PAID', 'IN PROGRESS');
     
-    -- Determine payment status based on actual amounts
-    IF paid_amount = 0 THEN
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
+    SET billing_due_date = DATE_ADD(NOW(), INTERVAL (30 + FLOOR(RAND() * 60)) DAY);
+    SET amount = FLOOR(50 + RAND() * 450) + 0.99;
+    
+    -- Create unpaid bills until we reach 2 (one less than trigger)
+    IF unpaid_count < 2 THEN
+        SET paid_amount = 0;
         SET payment_stat = 'NOT PAID';
-    ELSEIF paid_amount = amount THEN
-        SET payment_stat = 'PAID';
     ELSE
-        SET payment_stat = 'IN PROGRESS';
+        SET paid_amount = amount;
+        SET payment_stat = 'PAID';
     END IF;
     
     INSERT INTO billing (
@@ -364,16 +370,22 @@ BEGIN
         amount_paid,
         payment_status,
         billing_due,
-        handled_by
+        handled_by,
+        created_at,
+        updated_at
     ) VALUES (
         p_patient_id,
         p_appointment_id,
         amount,
         paid_amount,
         payment_stat,
-        DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY),
-        p_handled_by
+        billing_due_date,
+        p_handled_by,
+        created_date,
+        created_date
     );
+    
+    -- Create notification for new billing
     INSERT INTO notifications (
         sender_id,
         receiver_id,
@@ -381,25 +393,26 @@ BEGIN
         notification_title,
         notification_content,
         priority,
+        created_at,
         metadata
     ) VALUES (
-        p_handled_by, -- sender (receptionist)
-        (SELECT user_id FROM patients WHERE patient_id = p_patient_id), -- receiver
+        p_handled_by, 
+        (SELECT user_id FROM patients WHERE patient_id = p_patient_id),
         'BILLING_REMINDER',
         CONCAT('New billing statement - $', amount),
         CONCAT('A new billing statement of $', amount, ' has been generated for your recent appointment.'),
         'MEDIUM',
+        created_date,
         JSON_OBJECT(
             'billing_id', LAST_INSERT_ID(),
             'amount', amount,
-            'due_date', DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)
+            'due_date', billing_due_date
         )
     );
     
     SET new_billing_id = LAST_INSERT_ID();
     RETURN new_billing_id;
 END //
-
 -- Main procedure to populate all tables
 CREATE PROCEDURE populate_test_data(
     IN num_doctors INT,
@@ -414,6 +427,7 @@ BEGIN
     DECLARE curr_doctor_id, curr_nurse_id, curr_receptionist_id, curr_patient_id, curr_appointment_id INT;
     DECLARE curr_user_id, curr_demo_id INT;
     DECLARE curr_employee_id INT;
+    DECLARE office_count INT;
       
     -- temp fnames
     DECLARE first_names VARCHAR(1000) DEFAULT 'James,John,Robert,Michael,William,David,Richard,Joseph,Thomas,Charles,Christopher,Daniel,Matthew,Anthony,Donald,Mark,Paul,Steven,Andrew,Kenneth,Emma,Olivia,Ava,Isabella,Sophia,Charlotte,Mia,Amelia,Harper,Evelyn,Abigail,Emily,Elizabeth,Sofia,Madison,Avery,Ella,Scarlett,Victoria,Grace';
@@ -424,8 +438,6 @@ BEGIN
     CREATE TEMPORARY TABLE temp_first_names (name VARCHAR(50));
     CREATE TEMPORARY TABLE temp_last_names (name VARCHAR(50));
 
-
-    -- Populate temporary name tables
     SET @sql = CONCAT("INSERT INTO temp_first_names VALUES ('", REPLACE(first_names, ",", "'),('"), "')");
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
@@ -436,14 +448,13 @@ BEGIN
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-
+    SELECT COUNT(*) INTO office_count FROM office;
 
     -- Create offices if they don't exist
     INSERT IGNORE INTO office (office_name, office_address, office_phone, office_email) VALUES
     ('Main Clinic', '123 Medical Ave', generate_phone(), 'main@clinic.com'),
     ('North Branch', '456 Health St', generate_phone(), 'north@clinic.com'),
     ('South Branch', '789 Care Rd', generate_phone(), 'south@clinic.com');
-
 
     -- create admins
     SET i = 0;

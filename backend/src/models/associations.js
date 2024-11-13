@@ -196,7 +196,11 @@ const initAssociations = () => {
   });
   Billing.belongsTo(Patient, { foreignKey: "patient_id" });
   Billing.belongsTo(Appointment, { foreignKey: "appointment_id" });
-  Billing.belongsTo(Receptionist, { foreignKey: "handled_by" });
+  Billing.belongsTo(Receptionist, {
+    foreignKey: {
+      name: "handled_by",
+    },
+  });
 
   Doctor.belongsTo(EmployeeNo, {
     foreignKey: { name: "doctor_employee_id", onDelete: "CASCADE" },

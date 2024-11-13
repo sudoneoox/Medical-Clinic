@@ -7,7 +7,8 @@ import Office from "../../models/Tables/Office.js";
 import logic from "./shared/logic.js";
 import NurseOffices from "../../models/Tables/NurseOffices.js";
 import { Op } from "sequelize";
-
+import sequelize from "../../config/database.js";
+import Receptionist from "../../models/Tables/Receptionist.js";
 import Prescription from "../../models/Tables/Prescription.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import MedicalRecordNotes from "../../models/Tables/MedicalRecordNotes.js";
@@ -315,6 +316,11 @@ const createBills = async (req, res) => {
         appointments: [],
       });
     }
+
+    const receptionist = await Receptionist.findOne({
+      order: sequelize.random(),
+      limit: 1,
+    });
     const newBill = await Billing.create({
       appointment_id: req.body.appointment_id,
       patient_id: req.body.patientId,
@@ -322,7 +328,7 @@ const createBills = async (req, res) => {
       amount_due: req.body.billingData.amount_due,
       amount_paid: 0,
       billing_due: amountDueDate,
-      handled_by: nurse.nurse_id,
+      handled_by: receptionist.receptionist_id,
     });
 
     const updateAppointment = await Appointment.findOne({
@@ -338,6 +344,7 @@ const createBills = async (req, res) => {
     // return res.status(100).json({ message: "Successfully created bills" });
     return res.json({
       message: "Success add bill",
+      handled_by: receptionist,
     });
   } catch (error) {
     console.error("Error creating bills:", error);
@@ -489,24 +496,27 @@ const getNursePatientIds = async (userId) => {
         [Op.not]: "NO SHOW",
       },
     },
-    attributes: ['patient_id'],
+    attributes: ["patient_id"],
   });
 
   if (appointments.length === 0) {
     return { error: "No appointments found for this nurse", patientIds: [] };
   }
 
-  const patientIds = [...new Set(appointments.map((appointment) => appointment.patient_id))];
+  const patientIds = [
+    ...new Set(appointments.map((appointment) => appointment.patient_id)),
+  ];
 
   return { nurse, patientIds };
 };
-
 
 const getAllergies = async (req, res) => {
   console.log("ALLERGIES");
 
   try {
-    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+    const { nurse, patientIds, error } = await getNursePatientIds(
+      req.body.user_id,
+    );
 
     if (error) {
       return res.status(404).json({ message: error, patientIds });
@@ -521,7 +531,7 @@ const getAllergies = async (req, res) => {
           include: [
             {
               model: Patient,
-              attributes: ["patient_fname", "patient_lname"], 
+              attributes: ["patient_fname", "patient_lname"],
             },
           ],
         },
@@ -535,10 +545,14 @@ const getAllergies = async (req, res) => {
         "onset_date",
       ],
     });
-    
-    const patientAllergies = allergies.map(allergy => {
-      const patient = allergy.medicalRecord ? allergy.medicalRecord.patient : null;
-      const patientName = patient ? `${patient.patient_fname} ${patient.patient_lname}` : "Unknown Patient";
+
+    const patientAllergies = allergies.map((allergy) => {
+      const patient = allergy.medicalRecord
+        ? allergy.medicalRecord.patient
+        : null;
+      const patientName = patient
+        ? `${patient.patient_fname} ${patient.patient_lname}`
+        : "Unknown Patient";
 
       return {
         patient_name: patientName,
@@ -550,11 +564,11 @@ const getAllergies = async (req, res) => {
         onset_date: allergy.onset_date,
       };
     });
-    
+
     return res.status(200).json({ patientAllergies });
   } catch (error) {
-    console.error('Error retrieving allergies:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Error retrieving allergies:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -562,7 +576,9 @@ const getPrescriptions = async (req, res) => {
   console.log("PRESCRIPTIONS");
 
   try {
-    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+    const { nurse, patientIds, error } = await getNursePatientIds(
+      req.body.user_id,
+    );
 
     if (error) {
       return res.status(404).json({ message: error, patientIds });
@@ -577,7 +593,7 @@ const getPrescriptions = async (req, res) => {
           include: [
             {
               model: Patient,
-              attributes: ["patient_fname", "patient_lname"], 
+              attributes: ["patient_fname", "patient_lname"],
             },
           ],
         },
@@ -592,10 +608,14 @@ const getPrescriptions = async (req, res) => {
         "pharmacy_details",
       ],
     });
-   
-    const patientMedications = prescriptions.map(prescription => {
-      const patient = prescription.medicalRecord ? prescription.medicalRecord.patient : null;
-      const patientName = patient ? `${patient.patient_fname} ${patient.patient_lname}` : "Unknown Patient";
+
+    const patientMedications = prescriptions.map((prescription) => {
+      const patient = prescription.medicalRecord
+        ? prescription.medicalRecord.patient
+        : null;
+      const patientName = patient
+        ? `${patient.patient_fname} ${patient.patient_lname}`
+        : "Unknown Patient";
 
       return {
         patient_name: patientName,
@@ -608,11 +628,11 @@ const getPrescriptions = async (req, res) => {
         pharmacy_details: JSON.stringify(prescription.pharmacy_details),
       };
     });
-    
+
     return res.status(200).json({ patientMedications });
   } catch (error) {
-    console.error('Error retrieving allergies:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Error retrieving allergies:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -620,7 +640,9 @@ const getMedicalRecords = async (req, res) => {
   console.log("MEDICAL RECORDS");
 
   try {
-    const { nurse, patientIds, error } = await getNursePatientIds(req.body.user_id);
+    const { nurse, patientIds, error } = await getNursePatientIds(
+      req.body.user_id,
+    );
 
     if (error) {
       return res.status(404).json({ message: error, patientIds });
@@ -631,21 +653,21 @@ const getMedicalRecords = async (req, res) => {
       include: [
         {
           model: Patient,
-          attributes: ["patient_fname", "patient_lname"], 
+          attributes: ["patient_fname", "patient_lname"],
         },
         {
           model: Doctor,
-          attributes: ["doctor_fname", "doctor_lname"], 
+          attributes: ["doctor_fname", "doctor_lname"],
         },
         {
-          model: MedicalRecordNotes, 
-          as: 'medicalRecordNotes',
+          model: MedicalRecordNotes,
+          as: "medicalRecordNotes",
           attributes: ["note_id", "description", "created_at", "updated_at"],
         },
       ],
     });
-    
-    const patientRecords = medicalRecords.map(medicalData => {
+
+    const patientRecords = medicalRecords.map((medicalData) => {
       console.log(medicalData.medicalRecordNotes);
 
       return {
@@ -666,16 +688,17 @@ const getMedicalRecords = async (req, res) => {
     return res.status(200).json({ patientRecords });
   } catch (error) {
     console.error("Error fetching medical records:", error);
-    return res
-      .status(500)
-      .json({ message: "Error fetching medical records", error: error.message });
+    return res.status(500).json({
+      message: "Error fetching medical records",
+      error: error.message,
+    });
   }
 };
 
 const addNote = async (req, res) => {
   console.log(req);
-  const { recordId } = req.params;  
-  const { note_text } = req.body.note_text;   
+  const { recordId } = req.params;
+  const { note_text } = req.body.note_text;
   const userId = req.body.user_id;
 
   try {
@@ -685,9 +708,9 @@ const addNote = async (req, res) => {
 
     // Insert a new note into the MedicalRecordNotes table
     const newNote = await MedicalRecordNotes.create({
-      description: note_text,      
-      subject: "Medical Record",   
-      medical_record_id: recordId, 
+      description: note_text,
+      subject: "Medical Record",
+      medical_record_id: recordId,
       created_by_user_id: nurse.nurse_id,
     });
 
@@ -708,8 +731,8 @@ const addNote = async (req, res) => {
 };
 
 const editNote = async (req, res) => {
-  const { noteId } = req.params; 
-  const { note_text, user_id } = req.body; 
+  const { noteId } = req.params;
+  const { note_text, user_id } = req.body;
 
   try {
     // Find the note by ID

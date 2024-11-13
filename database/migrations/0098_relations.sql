@@ -93,8 +93,7 @@ ADD CONSTRAINT fk_billing_appointment
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
-    REFERENCES receptionists(receptionist_id)
-    ON DELETE SET NULL;
+    REFERENCES receptionists(receptionist_id);
 
 -- Insurances table relations
 ALTER TABLE insurances

@@ -9,6 +9,8 @@ import PatientDoctor from "../../models/Tables/PatientDoctor.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import User from "../../models/Tables/Users.js";
 import DoctorAvailibility from "../../models/Tables/AvailableDoctors.js";
+import Nurse from "../../models/Tables/Nurse.js";
+import NurseOffices from "../../models/Tables/NurseOffices.js";
 import { Op } from "@sequelize/core";
 import TimeSlots from "../../models/Tables/TimeSlots.js";
 import sequelize from "../../config/database.js";
@@ -414,6 +416,14 @@ const submitNewAppointment = async (req, res) => {
       where: { office_name },
     });
 
+    // get random nurse from office
+    const nurse = await Nurse.findOne({
+      order: sequelize.random(),
+      limit: 1,
+    });
+
+    console.log("Selected attending nurse:", nurse.toJSON()); // For debugging
+
     // format datetime for mysql
     const formattedDateTime = new Date(appointment_datetime)
       .toISOString()
@@ -429,11 +439,13 @@ const submitNewAppointment = async (req, res) => {
       duration: "00:30:00", // Default 30 min duration
       status: "CONFIRMED",
       reason: req.body.reason || "Regular checkup",
+      attending_nurse: nurse.nurse_id,
     });
 
     res.json({
       success: true,
       data: appointment,
+      attending_nurse: nurse,
     });
   } catch (error) {
     console.error("Appointment creation error", error);

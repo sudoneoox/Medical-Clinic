@@ -48,7 +48,7 @@ const BillingView = () => {
         billingData,
         userId: localStorage.getItem("userId"),
       });
-
+      console.log("RECEPTIONIST TIED TO APPOINTMENT", res.data.handled_by);
       // Refresh appointments list
       await fetchNurseAppointments();
       setSelectedAppointmentId(null);
@@ -100,14 +100,20 @@ const BillingView = () => {
                         >
                           {appointment.has_bill ? "Billed" : "Pending Billing"}
                         </Badge>
-                        {!appointment.has_bill && selectedAppointmentId !== appointment.appointment_id && (
-                          <button
-                            onClick={() => setSelectedAppointmentId(appointment.appointment_id)}
-                            className="px-3 py-1 text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-sm shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out"
-                          >
-                            Create Bill
-                          </button>
-                        )}
+                        {!appointment.has_bill &&
+                          selectedAppointmentId !==
+                            appointment.appointment_id && (
+                            <button
+                              onClick={() =>
+                                setSelectedAppointmentId(
+                                  appointment.appointment_id,
+                                )
+                              }
+                              className="px-3 py-1 text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-sm shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out"
+                            >
+                              Create Bill
+                            </button>
+                          )}
                       </div>
                     </div>
 

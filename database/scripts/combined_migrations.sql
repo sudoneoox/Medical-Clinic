@@ -502,20 +502,26 @@ CREATE FUNCTION create_user(
 ) RETURNS INT
 BEGIN
     DECLARE new_user_id INT;
+    DECLARE created_date TIMESTAMP;
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     INSERT INTO users (
         user_username, 
         user_password, 
         user_email, 
         user_phone, 
         user_role, 
-        demographics_id
+        demographics_id,
+        account_created_at,
+        account_last_login
     ) VALUES (
         p_username,
         p_password,
         p_email,
         p_phone,
         p_role,
-        p_demographics_id
+        p_demographics_id,
+        created_date,
+        created_date + INTERVAL FLOOR(RAND() * 10) DAY
     );
     SET new_user_id = LAST_INSERT_ID();
     RETURN new_user_id;
@@ -640,7 +646,7 @@ BEGIN
         p_fname,
         p_lname,
         p_user_id,
-        TRUE,  -- All permissions set to true as requested
+        TRUE,
         TRUE,
         TRUE,
         TRUE
@@ -658,6 +664,8 @@ CREATE FUNCTION create_appointment(
 ) RETURNS INT
 BEGIN
     DECLARE new_appointment_id INT;
+    DECLARE created_date TIMESTAMP;
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     INSERT INTO appointments (
         patient_id,
         doctor_id,
@@ -667,7 +675,9 @@ BEGIN
         booked_by,
         attending_nurse,
         reason,
-        status
+        status,
+        created_at,
+        updated_at
     ) VALUES (
         p_patient_id,
         p_doctor_id,
@@ -677,7 +687,9 @@ BEGIN
         p_booked_by,
         p_attending_nurse,
         ELT(FLOOR(1 + RAND() * 5), 'Regular Checkup', 'Follow-up', 'Consultation', 'Vaccination', 'Prescription Renewal'),
-        'CONFIRMED'
+        'CONFIRMED',
+        created_date,
+        created_date
     );
     SET new_appointment_id = LAST_INSERT_ID();
     RETURN new_appointment_id;
@@ -689,11 +701,15 @@ CREATE FUNCTION create_medical_record(
 ) RETURNS INT
 BEGIN
     DECLARE new_record_id INT;
+    DECLARE created_date TIMESTAMP;
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
     INSERT INTO medical_records (
         diagnosis,
         patient_id,
         doctor_id,
-        appointment_id
+        appointment_id,
+        created_at,
+        updated_at
     ) VALUES (
         ELT(FLOOR(1 + RAND() * 10), 
             'Hypertension',
@@ -709,7 +725,9 @@ BEGIN
         ),
         p_patient_id,
         p_doctor_id,
-        p_appointment_id
+        p_appointment_id,
+        created_date,
+        created_date
     );
     SET new_record_id = LAST_INSERT_ID();
     RETURN new_record_id;
@@ -724,14 +742,22 @@ BEGIN
     DECLARE amount DECIMAL(7,2);
     DECLARE paid_amount DECIMAL(7,2);
     DECLARE payment_stat VARCHAR(20);
+    DECLARE created_date TIMESTAMP;
+    DECLARE billing_due_date TIMESTAMP;
+    DECLARE unpaid_count INT;
+    SELECT COUNT(*) INTO unpaid_count
+    FROM billing
+    WHERE patient_id = p_patient_id 
+    AND payment_status IN ('NOT PAID', 'IN PROGRESS');
+    SET created_date = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 90) DAY);
+    SET billing_due_date = DATE_ADD(NOW(), INTERVAL (30 + FLOOR(RAND() * 60)) DAY);
     SET amount = FLOOR(50 + RAND() * 450) + 0.99;
-    SET paid_amount = IF(RAND() < 0.7, amount, 0); -- 70% chance of payment
-    IF paid_amount = 0 THEN
+    IF unpaid_count < 2 THEN
+        SET paid_amount = 0;
         SET payment_stat = 'NOT PAID';
-    ELSEIF paid_amount = amount THEN
-        SET payment_stat = 'PAID';
     ELSE
-        SET payment_stat = 'IN PROGRESS';
+        SET paid_amount = amount;
+        SET payment_stat = 'PAID';
     END IF;
     INSERT INTO billing (
         patient_id,
@@ -740,15 +766,19 @@ BEGIN
         amount_paid,
         payment_status,
         billing_due,
-        handled_by
+        handled_by,
+        created_at,
+        updated_at
     ) VALUES (
         p_patient_id,
         p_appointment_id,
         amount,
         paid_amount,
         payment_stat,
-        DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY),
-        p_handled_by
+        billing_due_date,
+        p_handled_by,
+        created_date,
+        created_date
     );
     INSERT INTO notifications (
         sender_id,
@@ -757,18 +787,20 @@ BEGIN
         notification_title,
         notification_content,
         priority,
+        created_at,
         metadata
     ) VALUES (
-        p_handled_by, -- sender (receptionist)
-        (SELECT user_id FROM patients WHERE patient_id = p_patient_id), -- receiver
+        p_handled_by, 
+        (SELECT user_id FROM patients WHERE patient_id = p_patient_id),
         'BILLING_REMINDER',
         CONCAT('New billing statement - $', amount),
         CONCAT('A new billing statement of $', amount, ' has been generated for your recent appointment.'),
         'MEDIUM',
+        created_date,
         JSON_OBJECT(
             'billing_id', LAST_INSERT_ID(),
             'amount', amount,
-            'due_date', DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)
+            'due_date', billing_due_date
         )
     );
     SET new_billing_id = LAST_INSERT_ID();
@@ -787,6 +819,7 @@ BEGIN
     DECLARE curr_doctor_id, curr_nurse_id, curr_receptionist_id, curr_patient_id, curr_appointment_id INT;
     DECLARE curr_user_id, curr_demo_id INT;
     DECLARE curr_employee_id INT;
+    DECLARE office_count INT;
     DECLARE first_names VARCHAR(1000) DEFAULT 'James,John,Robert,Michael,William,David,Richard,Joseph,Thomas,Charles,Christopher,Daniel,Matthew,Anthony,Donald,Mark,Paul,Steven,Andrew,Kenneth,Emma,Olivia,Ava,Isabella,Sophia,Charlotte,Mia,Amelia,Harper,Evelyn,Abigail,Emily,Elizabeth,Sofia,Madison,Avery,Ella,Scarlett,Victoria,Grace';
     DECLARE last_names VARCHAR(1000) DEFAULT 'Smith,Johnson,Williams,Brown,Jones,Garcia,Miller,Davis,Rodriguez,Martinez,Hernandez,Lopez,Gonzalez,Wilson,Anderson,Thomas,Taylor,Moore,Jackson,Martin,Lee,Perez,Thompson,White,Harris,Sanchez,Clark,Ramirez,Lewis,Robinson,Walker,Young,Allen,King,Wright,Scott,Torres,Nguyen,Hill,Flores,Green,Adams,Nelson,Baker,Hall,Rivera,Campbell,Mitchell,Carter,Roberts';
     CREATE TEMPORARY TABLE temp_first_names (name VARCHAR(50));
@@ -799,6 +832,7 @@ BEGIN
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
+    SELECT COUNT(*) INTO office_count FROM office;
     INSERT IGNORE INTO office (office_name, office_address, office_phone, office_email) VALUES
     ('Main Clinic', '123 Medical Ave', generate_phone(), 'main@clinic.com'),
     ('North Branch', '456 Health St', generate_phone(), 'north@clinic.com'),
@@ -1608,8 +1642,7 @@ ADD CONSTRAINT fk_billing_appointment
     ON DELETE CASCADE,
 ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
-    REFERENCES receptionists(receptionist_id)
-    ON DELETE SET NULL;
+    REFERENCES receptionists(receptionist_id);
 ALTER TABLE insurances
 ADD CONSTRAINT fk_insurance_patient
     FOREIGN KEY (patient_id) 
