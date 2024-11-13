@@ -17,6 +17,23 @@ BEGIN
     );
 END //
 
+
+-- generate a random date within past three months
+CREATE FUNCTION random_past_date()
+RETURNS TIMESTAMP
+DETERMINISTIC
+BEGIN
+    RETURN DATE_SUB(CURRENT_TIMESTAMP, INTERVAL FLOOR(RAND() * 90) DAY);
+END //
+
+-- generate random future date within next 3 months
+CREATE FUNCTION random_future_date()
+RETURNS TIMESTAMP
+DETERMINISTIC
+BEGIN
+    RETURN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL (30 + FLOOR(RAND() * 60)) DAY);
+END //
+
 -- Helper function to generate random date between two dates
 CREATE FUNCTION random_date(start_date DATE, end_date DATE)
 RETURNS DATE
@@ -322,9 +339,14 @@ BEGIN
     DECLARE amount DECIMAL(7,2);
     DECLARE paid_amount DECIMAL(7,2);
     DECLARE payment_stat VARCHAR(20);
+    DECLARE created_date TIMESTAMP;
+    DECLARE due_date TIMESTAMP;
     
-    SET amount = FLOOR(50 + RAND() * 450) + 0.99;
-    SET paid_amount = IF(RAND() < 0.7, amount, 0); -- 70% chance of payment
+        SET amount = CASE 
+        WHEN RAND() < 0.3 THEN FLOOR(50 + RAND() * 100) -- Copay range ($50-150)
+        WHEN RAND() < 0.6 THEN FLOOR(200 + RAND() * 300) -- Standard visit ($200-500)
+        ELSE FLOOR(500 + RAND() * 1500) -- Complex visit or procedure ($500-2000)
+    END + 0.00;
     
     -- Determine payment status based on actual amounts
     IF paid_amount = 0 THEN
