@@ -18,9 +18,8 @@ const BillingForm = ({ appointment, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(appointment.appointment_id, {
+    onSubmit(appointment, {
       amount_due: parseFloat(billingData.amount_due),
-      patient_id: appointment.patient_id,
       notes: billingData.notes,
     });
   };
@@ -83,10 +82,12 @@ const BillingForm = ({ appointment, onSubmit, onCancel }) => {
         </CardContent>
 
         <CardFooter className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200 ease-in-out">
             Cancel
           </Button>
-          <Button type="submit">Create Bill</Button>
+          <Button type="submit" className="px-4 py-2 text-white bg-gradient-to-r from-blue-400 to-blue-600 rounded-md shadow-md hover:from-blue-500 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out">
+            Create Bill
+            </Button>
         </CardFooter>
       </form>
     </Card>

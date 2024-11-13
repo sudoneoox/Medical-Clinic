@@ -14,48 +14,44 @@ import { format } from "date-fns";
 const BillingView = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
 
-  // TODO: finish backend controller should fetch appointments tied to the nurse
+  // Function to fetch nurse appointments
+  const fetchNurseAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post(
+        "/users/portal/nurse/appointments/getUnpaidAppointments",
+        {
+          user_id: localStorage.getItem("userId"),
+        },
+      );
+      setAppointments(response.data.appointments);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch appointments on component mount
   useEffect(() => {
-    const fetchNurseAppointments = async () => {
-      try {
-        const response = await api.post(
-          "/users/portal/nurse/appointments/billable",
-          {
-            nurse_id: localStorage.getItem("nurseId"),
-            user_id: localStorage.getItem("userId"),
-          },
-        );
-        setAppointments(response.data.appointments);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNurseAppointments();
   }, []);
 
-  // TODO: creates bill tied to that appointment
-  const handleBillingSubmit = async (appointmentId, billingData) => {
+  // Function to handle billing submission
+  const handleBillingSubmit = async (appointment, billingData) => {
     try {
-      await api.post("/users/portal/nurse/billing/create", {
-        nurse_id: localStorage.getItem("nurseId"),
-        appointment_id: appointmentId,
-        ...billingData,
+      const res = await api.post("/users/portal/nurse/billing/create", {
+        appointment_id: appointment.appointment_id,
+        patientId: appointment.patient_id,
+        billingData,
+        userId: localStorage.getItem("userId"),
       });
 
       // Refresh appointments list
-      setAppointments(
-        appointments.map((apt) =>
-          apt.appointment_id === appointmentId
-            ? { ...apt, has_billing: true }
-            : apt,
-        ),
-      );
-      setSelectedAppointment(null);
+      await fetchNurseAppointments();
+      setSelectedAppointmentId(null);
     } catch (error) {
       console.error("Error creating billing:", error);
     }
@@ -65,7 +61,7 @@ const BillingView = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Appointment Billing</CardTitle>
+          <CardTitle>Pending Appointment Billing</CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[600px] pr-4">
@@ -99,25 +95,32 @@ const BillingView = () => {
                       <div className="flex flex-col items-end gap-2">
                         <Badge
                           className={
-                            appointment.has_billing
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
+                            "text-red-600 font-bold uppercase tracking-wide"
                           }
                         >
-                          {appointment.has_billing
-                            ? "Billed"
-                            : "Pending Billing"}
+                          {appointment.has_bill ? "Billed" : "Pending Billing"}
                         </Badge>
-                        {!appointment.has_billing && (
+                        {!appointment.has_bill && selectedAppointmentId !== appointment.appointment_id && (
                           <button
-                            onClick={() => setSelectedAppointment(appointment)}
-                            className="text-sm text-blue-600 hover:text-blue-800"
+                            onClick={() => setSelectedAppointmentId(appointment.appointment_id)}
+                            className="px-3 py-1 text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-sm shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out"
                           >
                             Create Bill
                           </button>
                         )}
                       </div>
                     </div>
+
+                    {/* Render BillingForm inline if this appointment is selected */}
+                    {selectedAppointmentId === appointment.appointment_id && (
+                      <div className="mt-4">
+                        <BillingForm
+                          appointment={appointment}
+                          onSubmit={handleBillingSubmit}
+                          onCancel={() => setSelectedAppointmentId(null)}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
                 {appointments.length === 0 && (
@@ -130,14 +133,6 @@ const BillingView = () => {
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {selectedAppointment && (
-        <BillingForm
-          appointment={selectedAppointment}
-          onSubmit={handleBillingSubmit}
-          onCancel={() => setSelectedAppointment(null)}
-        />
-      )}
     </div>
   );
 };

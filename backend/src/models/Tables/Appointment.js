@@ -37,6 +37,10 @@ const Appointment = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    has_bill: {
+      type: DataTypes.TINYINT,
+      defaultValue: 0,
+    },
     reason: {
       type: DataTypes.STRING(100),
     },
