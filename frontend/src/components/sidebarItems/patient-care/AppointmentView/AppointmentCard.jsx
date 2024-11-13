@@ -14,6 +14,9 @@ const AppointmentCard = ({
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [showNotes, setShowNotes] = useState(false);
+  if (appointment) {
+    console.log(appointment);
+  }
 
   const handleSubmitNote = async () => {
     await onAddNote(appointment.appointment_id, noteText);

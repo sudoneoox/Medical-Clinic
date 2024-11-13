@@ -2,6 +2,7 @@ import Nurse from "../../models/Tables/Nurse.js";
 import Doctor from "../../models/Tables/Doctor.js";
 import Patient from "../../models/Tables/Patient.js";
 import Appointment from "../../models/Tables/Appointment.js";
+import AppointmentNotes from "../../models/Tables/AppointmentNotes.js";
 import Office from "../../models/Tables/Office.js";
 import logic from "./shared/logic.js";
 import NurseOffices from "../../models/Tables/NurseOffices.js";
@@ -156,7 +157,7 @@ const populateCALENDAR = async (user, nurse, res) => {
 
 const getNurseAppointments = async (req, res) => {
   try {
-    // get nurse ID from the user ID
+    // First get the nurse ID from the user ID
     const nurse = await Nurse.findOne({
       where: { user_id: req.body.user_id },
     });
@@ -168,14 +169,12 @@ const getNurseAppointments = async (req, res) => {
       });
     }
 
-    // get all appointments where this nurse is assigned
+    // Then get all appointments where this nurse is assigned
     const appointments = await Appointment.findAll({
       where: {
         attending_nurse: nurse.nurse_id,
-        // Optionally filter by status if you don't want to show cancelled appointments
         status: {
-          [Op.not]: "CANCELLED",
-          [Op.not]: "NO SHOW",
+          [Op.not]: ["CANCELLED", "NO SHOW", "COMPLETED", "PENDING"],
         },
       },
       include: [
@@ -187,21 +186,46 @@ const getNurseAppointments = async (req, res) => {
           model: Office,
           attributes: ["office_name"],
         },
+        {
+          model: AppointmentNotes,
+          required: false, // Left outer join
+          include: [
+            {
+              model: Nurse,
+              as: "nurse",
+              attributes: ["nurse_fname", "nurse_lname"],
+            },
+          ],
+        },
       ],
       order: [["appointment_datetime", "ASC"]],
     });
 
+    const formattedAppointments = appointments
+      ? appointments.map((apt) => ({
+          appointment_id: apt.appointment_id,
+          appointment_datetime: apt.appointment_datetime,
+          duration: apt.duration,
+          status: apt.status,
+          reason: apt.reason,
+          patient_fname: apt.patient?.patient_fname,
+          patient_lname: apt.patient?.patient_lname,
+          office_name: apt.office?.office_name,
+          notes:
+            apt.AppointmentNotes?.map((note) => ({
+              note_id: note.note_id,
+              note_text: note.note_text,
+              created_at: note.created_at,
+              created_by_nurse: note.created_by_nurse,
+              created_by_nurse_name: note.nurse
+                ? `${note.nurse.nurse_fname} ${note.nurse.nurse_lname}`
+                : "Unknown Nurse",
+            })) || [],
+        }))
+      : [];
+
     return res.json({
-      appointments: appointments.map((apt) => ({
-        appointment_id: apt.appointment_id,
-        appointment_datetime: apt.appointment_datetime,
-        duration: apt.duration,
-        status: apt.status,
-        reason: apt.reason,
-        patient_fname: apt.patient.patient_fname,
-        patient_lname: apt.patient.patient_lname,
-        office_name: apt.office.office_name,
-      })),
+      appointments: formattedAppointments,
     });
   } catch (error) {
     console.error("Error fetching nurse appointments:", error);
@@ -211,7 +235,6 @@ const getNurseAppointments = async (req, res) => {
     });
   }
 };
-
 const getNurseAppointmentsBilling = async (req, res) => {
   try {
     // get nurse ID from the user ID
@@ -239,7 +262,7 @@ const getNurseAppointmentsBilling = async (req, res) => {
       include: [
         {
           model: Patient,
-          attributes: ["patient_fname", "patient_lname","patient_id"],
+          attributes: ["patient_fname", "patient_lname", "patient_id"],
         },
         {
           model: Office,
@@ -297,10 +320,10 @@ const createBills = async (req, res) => {
     });
 
     const updateAppointment = await Appointment.findOne({
-      where: {appointment_id: req.body.appointment_id},
-    })
+      where: { appointment_id: req.body.appointment_id },
+    });
 
-    if(updateAppointment) {
+    if (updateAppointment) {
       await updateAppointment.update({
         has_bill: 1,
       });
@@ -319,12 +342,139 @@ const createBills = async (req, res) => {
   }
 };
 
+const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { status, user_id } = req.body;
+    const { appointmentId } = req.params;
+
+    const nurse = await Nurse.findOne({
+      where: { user_id },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({ message: "Nurse not found" });
+    }
+
+    const appointment = await Appointment.findOne({
+      where: {
+        appointment_id: appointmentId,
+        attending_nurse: nurse.nurse_id,
+      },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    await appointment.update({ status });
+    return res.json({ message: "Appointment status updated successfully" });
+  } catch (error) {
+    console.error("Error updating appointment status:", error);
+    return res.status(500).json({
+      message: "Error updating appointment status",
+      error: error.message,
+    });
+  }
+};
+
+const addAppointmentNote = async (req, res) => {
+  try {
+    const { note_text, user_id } = req.body;
+    const { appointmentId } = req.params;
+
+    const nurse = await Nurse.findOne({
+      where: { user_id },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({ message: "Nurse not found" });
+    }
+
+    // Create the new note
+    const newNote = await AppointmentNotes.create({
+      appointment_id: appointmentId,
+      note_text,
+      created_by_nurse: nurse.nurse_id,
+    });
+
+    // Fetch the created note with nurse information
+    const noteWithDetails = await AppointmentNotes.findOne({
+      where: { note_id: newNote.note_id },
+      include: [
+        {
+          model: Nurse,
+          as: "nurse",
+          attributes: ["nurse_fname", "nurse_lname"],
+        },
+      ],
+    });
+
+    // Return the newly created note with all necessary information
+    return res.json({
+      message: "Note added successfully",
+      note: {
+        note_id: noteWithDetails.note_id,
+        note_text: noteWithDetails.note_text,
+        created_at: noteWithDetails.created_at,
+        created_by_nurse: noteWithDetails.created_by_nurse,
+        created_by_nurse_name: `${noteWithDetails.nurse.nurse_fname} ${noteWithDetails.nurse.nurse_lname}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error adding appointment note:", error);
+    return res.status(500).json({
+      message: "Error adding note",
+      error: error.message,
+    });
+  }
+};
+
+const editAppointmentNote = async (req, res) => {
+  try {
+    const { note_text, user_id } = req.body;
+    const { noteId } = req.params;
+
+    const nurse = await Nurse.findOne({
+      where: { user_id },
+    });
+
+    if (!nurse) {
+      return res.status(404).json({ message: "Nurse not found" });
+    }
+
+    const note = await AppointmentNotes.findOne({
+      where: {
+        note_id: noteId,
+        created_by_nurse: nurse.nurse_id,
+      },
+    });
+
+    if (!note) {
+      return res
+        .status(404)
+        .json({ message: "Note not found or unauthorized" });
+    }
+
+    await note.update({ note_text });
+    return res.json({ message: "Note updated successfully" });
+  } catch (error) {
+    console.error("Error editing appointment note:", error);
+    return res.status(500).json({
+      message: "Error editing note",
+      error: error.message,
+    });
+  }
+};
+
 const nurseDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
   getNurseAppointments,
   getNurseAppointmentsBilling,
   createBills,
+  updateAppointmentStatus,
+  addAppointmentNote,
+  editAppointmentNote,
 };
 
 export default nurseDashboard;
