@@ -104,6 +104,13 @@ const portalRoleSwitcher = async (req, res) => {
               relatedEntity,
               res,
             );
+          case "SETTINGS":
+            return await defaultDashboard.updateSETTINGS(
+              user,
+              relatedEntity,
+              { section: req.body.section, data: req.body.data },
+              res,
+            );
 
           default:
             return res.status(401).json({

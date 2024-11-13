@@ -110,6 +110,37 @@ router.post("/validate-session", verifyToken, (req, res) => {
 
 // nurse
 router.post("/portal/nurse/appointments", nurseDashboard.getNurseAppointments);
+router.put(
+  "/portal/nurse/appointments/:appointmentId/status",
+  nurseDashboard.updateAppointmentStatus,
+);
+router.post(
+  "/portal/nurse/appointments/:appointmentId/notes",
+  nurseDashboard.addAppointmentNote,
+);
+router.put(
+  "/portal/nurse/appointments/notes/:noteId",
+  nurseDashboard.editAppointmentNote,
+);
+
+router.put(
+  "/portal/nurse/appointments/:appointmentId/status",
+  nurseDashboard.updateAppointmentStatus,
+);
+router.post(
+  "/portal/nurse/appointments/:appointmentId/notes",
+  nurseDashboard.addAppointmentNote,
+);
+router.put(
+  "/portal/nurse/appointments/notes/:noteId",
+  nurseDashboard.editAppointmentNote,
+);
+router.post(
+  "/portal/nurse/appointments/getUnpaidAppointments",
+  nurseDashboard.getNurseAppointmentsBilling,
+);
+
+router.post("/portal/nurse/billing/create", nurseDashboard.createBills);
 
 router.post("/portal/nurse/allergies", nurseDashboard.getAllergies);
 router.post("/portal/nurse/prescriptions", nurseDashboard.getPrescriptions);

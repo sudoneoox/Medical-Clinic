@@ -50,19 +50,30 @@ const AppointmentView = () => {
 
   const handleAddNote = async (appointmentId, noteText) => {
     try {
-      await api.post(
+      const response = await api.post(
         `/users/portal/nurse/appointments/${appointmentId}/notes`,
         {
           note_text: noteText,
           user_id: localStorage.getItem("userId"),
         },
       );
-      await fetchAppointments();
+
+      // Update the appointments state with the new note
+      setAppointments(
+        appointments.map((apt) => {
+          if (apt.appointment_id === appointmentId) {
+            return {
+              ...apt,
+              notes: [...(apt.notes || []), response.data.note],
+            };
+          }
+          return apt;
+        }),
+      );
     } catch (error) {
       console.error("Error adding note:", error);
     }
   };
-
   const handleEditNote = async (noteId, newText) => {
     try {
       await api.put(`/users/portal/nurse/appointments/notes/${noteId}`, {

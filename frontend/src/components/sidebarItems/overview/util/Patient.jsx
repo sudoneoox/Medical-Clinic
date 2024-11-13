@@ -15,7 +15,7 @@ const Patient = ({ data }) => {
       >
         <div className="space-y-2">
           <p>Name: {fullName}</p>
-          <p>Email: {email}</p>
+          <p>Email: {data.patientInfo.email}</p>
           <p>Phone: {data.patientInfo.phone}</p>
         </div>
       </DashboardCard>

@@ -155,6 +155,10 @@ const initAssociations = () => {
   Appointment.hasOne(MedicalRecord, { foreignKey: "appointment_id" });
   Appointment.hasOne(Billing, { foreignKey: "appointment_id" });
   Appointment.hasMany(AppointmentNotes, { foreignKey: "appointment_id" });
+  AppointmentNotes.belongsTo(Nurse, {
+    foreignKey: "created_by_nurse",
+    as: "nurse",
+  });
   Appointment.hasOne(AppointmentCancellations, {
     foreignKey: "appointment_id",
   });
