@@ -14,7 +14,7 @@ const Receptionist = ({ data }) => {
       >
         <div className="space-y-2">
           <p>Name: {fullName}</p>
-          <p>Email: {email}</p>
+          <p>Email: {data.receptionistInfo.email}</p>
         </div>
       </DashboardCard>
 

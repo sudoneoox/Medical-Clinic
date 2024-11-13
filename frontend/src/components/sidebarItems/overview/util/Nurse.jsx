@@ -13,7 +13,7 @@ const Nurse = ({ data }) => {
       >
         <div className="space-y-2">
           <p>Name: {fullName}</p>
-          <p>Email: {email}</p>
+          <p>Email: {data.nurseInfo.email}</p>
           <p>Specialization: {data.nurseInfo.specialization}</p>
         </div>
       </DashboardCard>
