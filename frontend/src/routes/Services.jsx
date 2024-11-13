@@ -1,67 +1,115 @@
 import React from "react";
-import "../styles/tailwindbase.css";
-import Navbar from "../components/UI/Navbar.jsx";
-import { useLoaderData } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
+import {
+  Stethoscope,
+  Heart,
+  Brain,
+  Bone,
+  Baby,
+  Eye,
+  Thermometer,
+  Activity,
+  Pill,
+  Microscope,
+  UserCheck,
+  Calendar,
+  ChevronLeft,
+} from "lucide-react";
 
-const DepartmentCard = ({ title, description, image }) => {
+const specialtyToIcon = {
+  "Family Medicine": Stethoscope,
+  "Internal Medicine": Heart,
+  Pediatrics: Baby,
+  "Obstetrics and Gynecology": UserCheck,
+  "General Surgery": Activity,
+  Psychiatry: Brain,
+  Cardiology: Heart,
+  Dermatology: Eye,
+  Orthopedics: Bone,
+  Neurology: Brain,
+  Oncology: Microscope,
+  "Emergency Medicine": Activity,
+  Gastroenterology: Pill,
+  Endocrinology: Thermometer,
+  Urology: UserCheck,
+  // Default icon if specialty doesn't match
+  default: Activity,
+};
+
+const ServiceCard = ({ name, desc }) => {
+  const Icon = specialtyToIcon[name] || specialtyToIcon.default;
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-48 object-contain rounded-t-lg"
-      />
-      <div className="p-4">
-        <h3 className="text-lg font-bold">{title}</h3>
-        <p className="text-gray-600">{description}</p>
+    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+      <div className="p-2 w-12 h-12 bg-blue-50 rounded-lg mb-4">
+        <Icon className="w-8 h-8 text-blue-600" />
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{name}</h3>
+      <p className="text-gray-600 mb-4">{desc}</p>
+      <Link
+        to="/login"
+        className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
+      >
+        Book Appointment
+        <Calendar className="w-4 h-4 ml-2" />
+      </Link>
+    </div>
+  );
+};
+
+const ServicesPage = () => {
+  // Use the loader data
+  const { specialties } = useLoaderData();
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      {/* Header Section */}
+
+      <div className="container mx-auto px-6 mb-12">
+        <Link
+          to="/"
+          className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 mb-6 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          <p className="text-lg">Back to Homepage</p>
+        </Link>
+        <h1 className="text-4xl font-bold text-center mb-4">Our Services</h1>
+        <p className="text-gray-600 text-center max-w-3xl mx-auto"></p>
+      </div>
+
+      {/* Services Grid */}
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {specialties.map((specialty, index) => (
+            <ServiceCard
+              key={index}
+              name={specialty.name}
+              desc={specialty.desc}
+            />
+          ))}
+        </div>
+      </div>
+      {/* FOOTER  */}
+      <div className="container mx-auto px-6 mt-16">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl text-white p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Need Medical Assistance?</h2>
+          <p className="mb-6">
+            Our team of healthcare professionals is here to help you. Schedule
+            an appointment today.
+          </p>
+          <div className="space-x-4">
+            <Link
+              to="/login"
+              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors inline-flex items-center"
+            >
+              Schedule Appointment
+              <Calendar className="w-4 h-4 ml-2" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-function Services() {
-  // Fetch data when component mounts
-  const { specialties } = useLoaderData();
-
-  const navbarItems = [
-    { label: "Home", to: "/", isActive: false },
-    { label: "About", to: "/About", isActive: false },
-    { label: "Services", to: "/Services", isActive: true },
-    { label: "Contact", to: "/Contact", isActive: false },
-  ];
-
-  return (
-    <>
-      <Navbar items={navbarItems} />
-      <div>
-        {/* Banner Section */}
-        <div className="mt-16 h-auto bg-gradient-to-b from-blue-400 to-teal-600">
-          <div className="container mx-auto p-4 md:p-6 lg:p-20">
-            <h1 className="text-4xl font-bold text-white text-center">
-              Services
-            </h1>
-          </div>
-        </div>
-
-        {/* Departments Section */}
-        <div className="container mx-auto p-4 pt-6 md:p-6 lg:p-12">
-          <h2 className="text-2xl font-bold mb-4 text-center">
-            OUR DEPARTMENTS
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {specialties.map((specialty) => (
-              <DepartmentCard
-                key={specialty.code} // Use a unique key for each card
-                title={specialty.name}
-                description={specialty.desc} // You can customize this description
-                image={`images/${specialty.name}.jpeg`} // Assuming image names are based on specialty codes
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-export default Services;
+export default ServicesPage;

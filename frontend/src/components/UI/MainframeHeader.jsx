@@ -1,4 +1,4 @@
-import { Bell, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 // Header component to display user details and quick actions
 
 const Header = ({ userFullName, userRole }) => (
@@ -13,9 +13,10 @@ const Header = ({ userFullName, userRole }) => (
         </p>
       </div>
       <div className="flex items-center space-x-4">
-        <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
-          <Bell className="rounded-full" />
-        </button>
+        {/* COULD NOT IMPLEMENT  */}
+        {/* <button className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"> */}
+        {/*   <Bell className="rounded-full" /> */}
+        {/* </button> */}
         <div className="flex items-center">
           <UserRound className="h-8 w-8 mr-3 rounded-full" />
           <div>

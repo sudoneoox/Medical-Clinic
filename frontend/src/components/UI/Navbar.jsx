@@ -79,11 +79,11 @@ export default function Navbar({ items = null, customButtonProps = {} }) {
             to={`/`}
             className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
           >
-            Medical Center
+            WSYK Clinic
           </Link>
         ) : (
           <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-            Medical Center
+            WSYK Clinic
           </span>
         )}
 

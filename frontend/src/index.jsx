@@ -2,10 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Homepage from "./routes/Homepage.jsx";
 import ErrorPage from "./routes/Error-Page.jsx";
-import AboutPage from "./routes/About.jsx";
 import LoginPage from "./routes/LoginPage.jsx";
 import ServicesPage from "./routes/Services.jsx";
-import ContactPage from "./routes/Contact.jsx";
 import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
 import api, { API } from "./api.js";
@@ -60,11 +58,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "about",
-    element: <AboutPage />,
-    errorElement: <ErrorPage />,
-  },
-  {
     path: "login",
     element: <LoginPage />,
     errorElement: <ErrorPage />,
@@ -74,11 +67,6 @@ const router = createBrowserRouter([
     element: <ServicesPage />,
     errorElement: <ErrorPage />,
     loader: servicesLoader,
-  },
-  {
-    path: "contact",
-    element: <ContactPage />,
-    errorElement: <ErrorPage />,
   },
   {
     path: "registrations/new",

@@ -18,6 +18,7 @@ const UserTable = ({ data, onEdit, onDelete }) => {
 
   return (
     <div className="space-y-4">
+      {/* Search bar selection */}
       <div className="flex items-center gap-2 w-full md:w-96">
         <Search className="w-5 h-5 text-gray-400" />
         <input
@@ -28,11 +29,13 @@ const UserTable = ({ data, onEdit, onDelete }) => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-
+      {/* table container */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
+          {/* table header */}
           <thead className="bg-gray-50">
             <tr>
+              {/* generate table headers form data keys */}
               {Object.keys(data[0] || {}).map(
                 (key) =>
                   key !== "id" && (
@@ -47,14 +50,17 @@ const UserTable = ({ data, onEdit, onDelete }) => {
               <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
+          {/* table body */}
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.map((item, index) => (
+              // use fragment to group the main row and expandle emergency contact row
               <React.Fragment key={item.id}>
                 <tr>
                   {Object.entries(item).map(
                     ([key, value]) =>
                       key !== "id" && (
                         <td key={key} className="px-6 py-4 whitespace-nowrap">
+                          {/* handle different types of cell content */}
                           {key === "emergencyContact" ? (
                             <button
                               onClick={() => toggleEmergencyContact(index)}
@@ -62,6 +68,8 @@ const UserTable = ({ data, onEdit, onDelete }) => {
                             >
                               View Emergency Contacts
                             </button>
+                          ) : key === "offices" ? (
+                            (value = value[0])
                           ) : Array.isArray(value) ? (
                             value.join(", ")
                           ) : typeof value === "object" ? (
@@ -72,13 +80,15 @@ const UserTable = ({ data, onEdit, onDelete }) => {
                         </td>
                       ),
                   )}
+
+                  {/* ACTION BUTTONS */}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onEdit(item)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
+                    {/* <button */}
+                    {/*   onClick={() => onEdit(item)} */}
+                    {/*   className="text-indigo-600 hover:text-indigo-900 mr-4" */}
+                    {/* > */}
+                    {/*   <Edit className="w-5 h-5" /> */}
+                    {/* </button> */}
                     <button
                       onClick={() => onDelete(item)}
                       className="text-red-600 hover:text-red-900"
@@ -87,6 +97,8 @@ const UserTable = ({ data, onEdit, onDelete }) => {
                     </button>
                   </td>
                 </tr>
+
+                {/* EXPANDABLE emergency contact row */}
                 {expandedRow === index && item.emergencyContact && (
                   <tr>
                     <td

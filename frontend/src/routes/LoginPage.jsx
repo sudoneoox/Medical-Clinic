@@ -3,6 +3,7 @@ import Navbar from "../components/UI/Navbar.jsx";
 import "../styles/tailwindbase.css";
 import api, { API } from "../api.js";
 import { useNavigate } from "react-router-dom";
+import { Building2, Users, ClipboardList, Activity } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ export default function LoginPage() {
   return (
     <>
       <Navbar items={navbaritems} customButtonProps={userSignupButton} />
+      {/* LOGIN  */}
       <div className="flex min-h-screen bg-gray-100">
         <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
@@ -75,7 +77,6 @@ export default function LoginPage() {
                 Log in to your account
               </h2>
             </div>
-
             <div className="mt-8">
               <div className="mt-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -147,24 +148,61 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <a
-                    href="/forgot_password"
-                    className="text-blue-800 dark:text-blue-500 hover:underline"
-                  >
-                    Forgot Your password?
-                  </a>
-                </div>
+                {/* <div className="mt-6 grid grid-cols-2 gap-3"> */}
+                {/*   <a */}
+                {/*     href="/forgot_password" */}
+                {/*     className="text-blue-800 dark:text-blue-500 hover:underline" */}
+                {/*   > */}
+                {/*     Forgot Your password? */}
+                {/*   </a> */}
+                {/* </div> */}
               </div>
             </div>
           </div>
         </div>
+
         <div className="hidden lg:block relative w-0 flex-1">
-          <div className="absolute inset-0 h-full w-full bg-purple-600 flex flex-col justify-center items-center text-white p-12">
-            <img src="images/" alt="ImageAlt" className="mb-4" />
-            <h2 className="text-3xl font-bold mb-4">PlaceHolder</h2>
-            <p className="text-lg mb-4">PlaceHolder</p>
-            <p className="text-lg">PlaceHolder</p>
+          <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-blue-600 to-blue-800">
+            <div className="flex flex-col justify-center items-center h-full px-12 text-white">
+              <h2 className="text-3xl font-bold mb-8">
+                Welcome to WSYK Clinic
+              </h2>
+
+              {/* Stats/Info Grid */}
+              <div className="grid grid-cols-2 gap-8 w-full max-w-lg">
+                <div className="text-center">
+                  <Building2 className="w-12 h-12 mx-auto mb-4" />
+                  <p className="text-2xl font-bold mb-2">3</p>
+                  <p className="text-sm">Locations</p>
+                </div>
+                <div className="text-center">
+                  <Users className="w-12 h-12 mx-auto mb-4" />
+                  <p className="text-2xl font-bold mb-2">25+</p>
+                  <p className="text-sm">Healthcare Providers</p>
+                </div>
+                <div className="text-center">
+                  <ClipboardList className="w-12 h-12 mx-auto mb-4" />
+                  <p className="text-2xl font-bold mb-2">15+</p>
+                  <p className="text-sm">Specialties</p>
+                </div>
+                <div className="text-center">
+                  <Activity className="w-12 h-12 mx-auto mb-4" />
+                  <p className="text-2xl font-bold mb-2">24/7</p>
+                  <p className="text-sm">Emergency Care</p>
+                </div>
+              </div>
+
+              <div className="mt-12 text-center">
+                <p className="text-lg mb-4">
+                  Access your medical records, schedule appointments, and manage
+                  your healthcare journey.
+                </p>
+                <p className="text-sm opacity-80">
+                  New to WSYK Clinic? Sign up for a patient account to get
+                  started.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
