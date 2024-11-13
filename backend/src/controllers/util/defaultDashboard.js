@@ -73,6 +73,19 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
 
       case "password":
         // password validation
+
+        // Get current user's password
+        const currentUser = await User.findByPk(user.user_id);
+        
+        // Verify current password matches
+        if (currentUser.user_password !== data.currentPassword) {
+          return res.status(400).json({
+            success: false,
+            message: "Current password is incorrect.",
+          });
+        }
+
+        // Verify if new password matches confirm password
         if (data.newPassword !== data.confirmPassword) {
           return res.status(400).json({
             success: false,
