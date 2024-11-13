@@ -11,9 +11,10 @@ import Receptionist from "../../models/Tables/Receptionist.js";
 import PatientDoctor from "../../models/Tables/PatientDoctor.js";
 import Specialty from "../../models/Tables/Specialties.js";
 import Office from "../../models/Tables/Office.js";
-import sequelize from "@sequelize/core";
+import sequelize from "../../config/database.js";
 import EmployeeNo from "../../models/Tables/ValidEmployeeNo.js";
 import logic from "./shared/logic.js";
+import { QueryTypes } from "@sequelize/core";
 const populateOVERVIEW = async (user, admin, res) => {
   try {
     const today = new Date();
@@ -382,20 +383,22 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
 
         switch (subCategory) {
           case "GENDER": {
-            const demographicStats = await Demographics.findAll({
-              include: [
-                {
-                  model: Users,
-                  where: { user_role: "PATIENT" },
-                  ...whereClause,
-                },
-              ],
-              attributes: [
-                "gender_id",
-                [sequelize.fn("COUNT", sequelize.col("gender_id")), "count"],
-              ],
-              group: ["gender_id"],
-            });
+            const demographicStats = await sequelize.query(
+              `
+          SELECT 
+            d.gender_id, 
+            COUNT(d.gender_id) as count
+          FROM demographics AS d
+          INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+          WHERE u.user_role = 'PATIENT'
+          ${office !== "all" ? "AND u.office_id = :office" : ""}
+          GROUP BY d.gender_id
+        `,
+              {
+                replacements: { office },
+                type: QueryTypes.SELECT,
+              },
+            );
 
             data = demographicStats.map((stat) => ({
               name:
@@ -406,67 +409,67 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
                     : stat.gender_id === 3
                       ? "Non-binary"
                       : "Other",
-              value: parseInt(stat.dataValues.count),
+              value: parseInt(stat.count),
             }));
             break;
           }
 
           case "AGE": {
-            const ageStats = await Demographics.findAll({
-              include: [
-                {
-                  model: Users,
-                  where: { user_role: "PATIENT" },
-                  ...whereClause,
-                  attributes: [], // Don't include user attributes in the result
-                },
-              ],
-              attributes: [
-                [
-                  sequelize.literal(`
-          CASE 
-            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 18 THEN '0-17'
-            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 30 THEN '18-29'
-            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 50 THEN '30-49'
-            WHEN TIMESTAMPDIFF(YEAR, Demographics.dob, CURDATE()) < 70 THEN '50-69'
-            ELSE '70+'
-          END
-        `),
-                  "age_group",
-                ],
-                [
-                  sequelize.fn(
-                    "COUNT",
-                    sequelize.col("Demographics.demographics_id"),
-                  ),
-                  "count",
-                ],
-              ],
-              group: ["age_group"],
-              order: [[sequelize.literal("age_group"), "ASC"]],
-            });
+            const ageStats = await sequelize.query(
+              `
+          SELECT 
+            CASE 
+              WHEN TIMESTAMPDIFF(YEAR, d.dob, CURDATE()) < 18 THEN '0-17'
+              WHEN TIMESTAMPDIFF(YEAR, d.dob, CURDATE()) < 30 THEN '18-29'
+              WHEN TIMESTAMPDIFF(YEAR, d.dob, CURDATE()) < 50 THEN '30-49'
+              WHEN TIMESTAMPDIFF(YEAR, d.dob, CURDATE()) < 70 THEN '50-69'
+              ELSE '70+'
+            END as age_group,
+            COUNT(*) as count
+          FROM demographics AS d
+          INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+          WHERE u.user_role = 'PATIENT'
+          ${office !== "all" ? "AND u.office_id = :office" : ""}
+          GROUP BY age_group
+          ORDER BY 
+            CASE age_group
+              WHEN '0-17' THEN 1
+              WHEN '18-29' THEN 2
+              WHEN '30-49' THEN 3
+              WHEN '50-69' THEN 4
+              WHEN '70+' THEN 5
+            END
+        `,
+              {
+                replacements: { office },
+                type: QueryTypes.SELECT,
+              },
+            );
 
             data = ageStats.map((stat) => ({
-              name: stat.dataValues.age_group,
-              value: parseInt(stat.dataValues.count),
+              name: stat.age_group,
+              value: parseInt(stat.count),
             }));
             break;
           }
+
           case "ETHNICITY": {
-            const ethnicityStats = await Demographics.findAll({
-              include: [
-                {
-                  model: Users,
-                  where: { user_role: "PATIENT" },
-                  ...whereClause,
-                },
-              ],
-              attributes: [
-                "ethnicity_id",
-                [sequelize.fn("COUNT", sequelize.col("ethnicity_id")), "count"],
-              ],
-              group: ["ethnicity_id"],
-            });
+            const ethnicityStats = await sequelize.query(
+              `
+          SELECT 
+            d.ethnicity_id,
+            COUNT(d.ethnicity_id) as count
+          FROM demographics AS d
+          INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+          WHERE u.user_role = 'PATIENT'
+          ${office !== "all" ? "AND u.office_id = :office" : ""}
+          GROUP BY d.ethnicity_id
+        `,
+              {
+                replacements: { office },
+                type: QueryTypes.SELECT,
+              },
+            );
 
             data = ethnicityStats.map((stat) => ({
               name:
@@ -475,7 +478,7 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
                   : stat.ethnicity_id === 2
                     ? "Not Hispanic or Latino"
                     : "Prefer not to say",
-              value: parseInt(stat.dataValues.count),
+              value: parseInt(stat.count),
             }));
             break;
           }
