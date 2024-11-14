@@ -33,13 +33,14 @@ const UserManagement = ({ data }) => {
       )
     ) {
       try {
-        await api.post("/users/portal/management/delete", {
+        const res = await api.post("/users/portal/management/delete", {
           user_id: localStorage.getItem("userId"),
           user_role: "ADMIN",
-          targetUserId: user.id,
+          targetUserEmail: user.email,
           managementType: selectedAnalytic,
         });
         // Refresh data after deletion
+        console.log("got from deleting user", res);
         fetchUserData(selectedAnalytic, selectedSubCategory);
       } catch (error) {
         console.error("Error deleting user:", error);

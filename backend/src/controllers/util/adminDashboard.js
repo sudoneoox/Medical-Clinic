@@ -15,6 +15,7 @@ import sequelize from "../../config/database.js";
 import EmployeeNo from "../../models/Tables/ValidEmployeeNo.js";
 import logic from "./shared/logic.js";
 import { QueryTypes } from "@sequelize/core";
+
 const populateOVERVIEW = async (user, admin, res) => {
   try {
     const today = new Date();
@@ -427,7 +428,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             COUNT(*) as count
           FROM demographics AS d
           INNER JOIN users AS u ON d.demographics_id = u.demographics_id
-          WHERE u.user_role = 'PATIENT'
           ${office !== "all" ? "AND u.office_id = :office" : ""}
           GROUP BY age_group
           ORDER BY 
@@ -862,10 +862,32 @@ const getAnalyticsDetails = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    console.log(
+      " LOOOOOOK HEERE DELETIN USER WITH EMAIL",
+      req.body.targetUserEmail,
+    );
+    Users.destroy({
+      where: {
+        user_email: req.body.targetUserEmail,
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("ERROR IN DELETING USER", error);
+    res.status(500).json({
+      success: false,
+    });
+  }
+};
+
 const adminDashboard = {
   populateOVERVIEW,
   populateUSERMANAGEMENT,
   populateANALYTICS,
   getAnalyticsDetails,
+  deleteUser,
 };
 export default adminDashboard;
