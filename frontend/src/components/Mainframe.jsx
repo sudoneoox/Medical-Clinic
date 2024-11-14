@@ -136,7 +136,6 @@ const MainFrame = ({
                   )}
 
                   {currentSelected === "MY APPOINTMENTS" && <MyAppointments />}
-                  {/* BUG: Receptionist Appointments being implemented by daniil */}
                   {currentSelected === "APPOINTMENTS" && <AppointmentsList data={contentData.patients} />}
 
                   {currentSelected === "ANALYTICS" && <Analytics />}
