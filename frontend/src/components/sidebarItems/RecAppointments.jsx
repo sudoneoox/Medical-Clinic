@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 const AppointmentsList = ({ data = [] }) => {
   const [currentView, setCurrentView] = useState("PATIENT_LIST");
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [billingRecords, setAppointmentsRecords] = useState([]);
+  const [appointmentRecords, setAppointmentsRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAppointmentsFormVisible, setAppointmentsFormVisible] = useState(false);//no billing change in appointments
@@ -25,6 +25,7 @@ const AppointmentsList = ({ data = [] }) => {
       (patient.patient_id &&
         patient.patient_id.toString().includes(searchTerm)),
   );
+  console.log(filteredPatients);
   // Fetch appointments records
   const fetchAppointmentsRecords = async (patientId) => {
     setIsLoading(true);
@@ -105,7 +106,7 @@ const AppointmentsList = ({ data = [] }) => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-full">
-          //<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" /> what is the reason for this?
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
         </div>
       );
     }
@@ -149,7 +150,7 @@ const AppointmentsList = ({ data = [] }) => {
               </tr>
             </thead>
             <tbody>
-              {billingRecords.map((record, index) => (
+              {appointmentRecords.map((record, index) => (
                 <tr
                   key={index}
                   className={`hover:bg-gray-50 ${
@@ -165,22 +166,22 @@ const AppointmentsList = ({ data = [] }) => {
                   }}
                 >
                   <td className="py-2 px-4 border-b border-gray-200">
-                    {new Date(record.created_at).toLocaleDateString()}
+                    {new Date(record.appointment_datetime).toLocaleDateString()}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    {new Date(record.billing_due).toLocaleDateString()}
+                    { record.doctor.doctor_lname }
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    ${parseFloat(record.amount_due).toFixed(2)}
+                    { record.reason }
                   </td>
                   <td
                     className={`py-2 px-4 border-b border-gray-200 font-bold ${
-                      record.payment_status === "PAID"
+                      record.status === "COMPLETED" || record.status === "CONFIRMED"
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
                   >
-                    {record.payment_status}
+                    {record.status}
                   </td>
                 </tr>
               ))}
@@ -265,7 +266,7 @@ const AppointmentsList = ({ data = [] }) => {
               </tr>
             </thead>
             <tbody>
-              {billingRecords.map((record, index) => (
+              {appointmentRecords.map((record, index) => (
                 <tr
                   key={index}
                   className={`hover:bg-gray-50 ${
