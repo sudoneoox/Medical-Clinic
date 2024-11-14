@@ -6,7 +6,7 @@ import Receptionist from "../../models/Tables/Receptionist.js";
 import logic from "./shared/logic.js";
 import ReceptionistOffices from "../../models/Tables/ReceptionistOffices.js";
 import { Op } from "sequelize";
-
+import User from "../../models/Tables/Users.js";
 const populateOVERVIEW = async (user, receptionist, res) => {
   try {
     const receptionistWithData = await Receptionist.findOne({
@@ -199,11 +199,84 @@ const populatePATIENTRECORDS = async (user, receptionist, res) => {
     });
   }
 };
+
+const retrieveAppointmentsList = async (req, res) => {
+  console.log("RECEPTIONIST", req.body);
+  try {
+    const user_id = req.body.user_id;
+    const receptionist_id = await Receptionist.findOne({
+      where: { user_id: user_id },
+    });
+    console.log(receptionist_id);
+    const appointmentsRecords = await Appointment.findAll({
+      where: { booked_by: receptionist_id.receptionist_id },
+
+      include: [
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname", "patient_id"],
+        },
+      ],
+    });
+    console.log(appointmentsRecords);
+
+    return res.json(appointmentsRecords);
+  } catch (error) {
+    console.error("Error fetching appointment data", error);
+    return res.status(500).json({
+      message: "Error fetching appointment data",
+      error: error.message,
+    });
+  }
+};
+
+const retrieveAppointmentsForPatient = async (req, res) => {
+  try {
+    const patient = await Patient.findOne({
+      where: { patient_id: req.body.patient_id },
+    });
+    const receptionist_id = await Receptionist.findOne({
+      where: {
+        user_id: req.body.user_id,
+      },
+    });
+
+    const appointmentsRecords = await Appointment.findAll({
+      where: {
+        booked_by: receptionist_id.receptionist_id,
+        patient_id: patient.patient_id,
+      },
+
+      include: [
+        {
+          model: Patient,
+          attributes: ["patient_fname", "patient_lname", "patient_id"],
+        },
+        {
+          model: Doctor,
+          attributes: ["doctor_fname", "doctor_lname"],
+        },
+      ],
+    });
+    console.log(appointmentsRecords.doctor);
+
+    return res.json(appointmentsRecords);
+  } catch (error) {
+    console.error("Error fetching appointment data", error);
+    return res.status(500).json({
+      message: "Error fetching appointment data",
+      error: error.message,
+    });
+  }
+};
+
 const receptionistDashboard = {
   populateOVERVIEW,
   populateAPPOINTMENTS,
   populatePATIENTRECORDS,
   populateCALENDAR,
+  retrieveAppointmentsForPatient,
+  retrieveAppointmentsList,
 };
 
 export default receptionistDashboard;

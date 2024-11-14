@@ -45,10 +45,8 @@ const portalRoleSwitcher = async (req, res) => {
             );
           // TODO : MY-APPOINTMENTS, APPOINTMENTS
           case "APPOINTMENTS":
-            return await defaultDashboard.populateMYAPPOINTMENTS(
-              user,
-              relatedEntity,
-              req.body.appointmentData,
+            return await receptionistDashboard.retrieveAppointmentsList(
+              req,
               res,
             );
           case "CALENDAR":

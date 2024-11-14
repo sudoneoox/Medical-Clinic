@@ -7,6 +7,8 @@ import adminDashboard from "../controllers/util/adminDashboard.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nurseDashboard from "../controllers/util/nurseDashboard.js";
+import receptionistDashboard from "../controllers/util/receptionistDashboard.js";
+import patientDashboard from "../controllers/util/patientDashboard.js";
 
 dotenv.config();
 const JWT_SECRET =
@@ -98,7 +100,13 @@ router.post(
 );
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
+router.post("/appointments", dashBoardControllerFuncs.portalRoleSwitcher);
+router.post("");
 
+router.post(
+  "/portal/recappointments/forpatient",
+  receptionistDashboard.retrieveAppointmentsForPatient,
+);
 router.post("/billing/:patientId", userControllerFuncs.retreiveBills);
 
 router.post("/submit-payment", userControllerFuncs.submitPayment);

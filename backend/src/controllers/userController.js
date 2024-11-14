@@ -45,14 +45,16 @@ const registerUser = async (req, res) => {
     const userEmail = userData.email;
 
     // LOGIC: to only allow valid employees to make their accounts
-    const empNo = await EmployeeNo.findOne({
-      where: { employee_no: userData.employeeId },
-    });
-    if (empNo == null && userRole.toUpperCase() !== "PATIENT") {
-      if (empNo == null) {
-        throw new Error("NOT A VALID EMPLOYEE NO");
-      } else if (empNo.employee_role !== user.user_role.toUpperCase()) {
-        throw new Error("Invalid employee number");
+    if (userRole.toUpperCase() === "PROVIDER") {
+      const empNo = await EmployeeNo.findOne({
+        where: { employee_no: userData.employeeId },
+      });
+      if (empNo == null && userRole.toUpperCase() !== "PATIENT") {
+        if (empNo == null) {
+          throw new Error("NOT A VALID EMPLOYEE NO");
+        } else if (empNo.employee_role !== user.user_role.toUpperCase()) {
+          throw new Error("Invalid employee number");
+        }
       }
     }
 

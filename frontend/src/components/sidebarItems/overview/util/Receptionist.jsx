@@ -18,29 +18,29 @@ const Receptionist = ({ data }) => {
         </div>
       </DashboardCard>
 
-      <DashboardCard
-        title="Today's Appointments"
-        icon={<Hospital className="h-4 w-4 text-gray-500" />}
-      >
-        <AppointmentList
-          appointments={data.appointments.filter(
-            (apt) =>
-              new Date(apt.appointment_datetime).toDateString() ===
-              new Date().toDateString(),
-          )}
-        />
-      </DashboardCard>
-
-      <DashboardCard
-        title="Pending Appointments"
-        icon={<AlertCircle className="h-4 w-4 text-gray-500" />}
-      >
-        <AppointmentList
-          appointments={data.appointments.filter(
-            (apt) => new Date(apt.appointment_datetime) > new Date(),
-          )}
-        />
-      </DashboardCard>
+      {/* <DashboardCard */}
+      {/*   title="Today's Appointments" */}
+      {/*   icon={<Hospital className="h-4 w-4 text-gray-500" />} */}
+      {/* > */}
+      {/*   <AppointmentList */}
+      {/*     appointments={data.appointments.filter( */}
+      {/*       (apt) => */}
+      {/*         new Date(apt.appointment_datetime).toDateString() === */}
+      {/*         new Date().toDateString(), */}
+      {/*     )} */}
+      {/*   /> */}
+      {/* </DashboardCard> */}
+      {/**/}
+      {/* <DashboardCard */}
+      {/*   title="Pending Appointments" */}
+      {/*   icon={<AlertCircle className="h-4 w-4 text-gray-500" />} */}
+      {/* > */}
+      {/*   <AppointmentList */}
+      {/*     appointments={data.appointments.filter( */}
+      {/*       (apt) => new Date(apt.appointment_datetime) > new Date(), */}
+      {/*     )} */}
+      {/*   /> */}
+      {/* </DashboardCard> */}
     </div>
   );
 };
