@@ -76,6 +76,7 @@ router.post(
   doctorDashboard.retrievePrescriptionRecords,
 );
 
+
 router.post( "/recappointments/:patientId", userControllerFuncs.retrieveAppointments);
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
