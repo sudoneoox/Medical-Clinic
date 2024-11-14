@@ -280,7 +280,6 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               model: Doctor,
               through: {
                 model: PatientDoctor,
-                where: { is_primary: 1 },
               },
               attributes: ["doctor_fname", "doctor_lname"],
               required: false,
@@ -293,8 +292,8 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
             "emergency_contacts",
           ],
         });
-        console.log(patients[0].doctors[0].doctor_fname);
 
+        console.log(patients[0].doctors[0].PatientDoctor);
         data = patients.map((patient) => {
           const primaryDoctor = patient.doctors?.find(
             (doc) => doc.PatientDoctor.is_primary === 1,
@@ -308,9 +307,9 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               "en-US",
             ),
             emergencyContact: patient.emergency_contacts,
-            primaryDoctor: primaryDoctor
-              ? `Dr. ${primaryDoctor.doctor_fname} ${primaryDoctor.doctor_lname}`
-              : "No Primary Doctor",
+            // primaryDoctor: primaryDoctor
+            //   ? `Dr. ${primaryDoctor.doctor_fname} ${primaryDoctor.doctor_lname}`
+            //   : "No Primary Doctor",
             joinDate: new Date(
               patient.user.account_created_at,
             ).toLocaleDateString("en-US"),
