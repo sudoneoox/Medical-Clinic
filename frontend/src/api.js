@@ -6,7 +6,7 @@ let URL;
 if (!INPRODUCTION) {
   URL = "http://localhost:5000";
 } else {
-  URL = "http://4.246.236.139:5000";
+  URL = "http://4.156.152.174:5000";
 }
 
 export const API = {

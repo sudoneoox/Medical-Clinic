@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../utils/Card.tsx";
+import { Card, CardContent } from "../../../utils/Card.tsx";
 
 const AnalyticsCard = ({ option, isSelected, onClick }) => (
   <Card

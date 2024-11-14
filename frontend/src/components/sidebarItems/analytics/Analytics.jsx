@@ -24,6 +24,8 @@ const Analytics = () => {
   const [dateRange, setDateRange] = useState("all");
   const [selectedRole, setSelectedRole] = useState("all");
   const [showDetails, setShowDetails] = useState(false);
+
+  // initial api request when clicking on a category
   console.log(selectedAnalytic);
   const fetchAnalyticData = useCallback(
     async (type, subCategory, office, dateRange, role) => {
@@ -46,35 +48,6 @@ const Analytics = () => {
       }
     },
     [],
-  );
-
-  const fetchDetailedData = useCallback(
-    async (entry) => {
-      try {
-        const response = await api.post("/users/portal/analytics/details", {
-          user_id: localStorage.getItem("userId"),
-          user_role: "ADMIN",
-          analyticData: {
-            analyticType: selectedAnalytic,
-            subCategory: selectedSubCategory,
-            office: selectedOffice,
-            filter: entry.name,
-            dateRange,
-            role: selectedRole,
-          },
-        });
-        setDetailedData(response.data.details);
-      } catch (error) {
-        console.error("Error fetching detailed data:", error);
-      }
-    },
-    [
-      selectedAnalytic,
-      selectedSubCategory,
-      selectedOffice,
-      dateRange,
-      selectedRole,
-    ],
   );
 
   // Event handlers

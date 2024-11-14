@@ -627,12 +627,14 @@ const getAnalyticsDetails = async (req, res) => {
         WHEN u.user_role = 'DOCTOR' THEN doc.doctor_fname
         WHEN u.user_role = 'NURSE' THEN n.nurse_fname
         WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_fname
+        WHEN u.user_role = 'ADMIN' THEN a.admin_fname
       END as first_name,
       CASE 
         WHEN u.user_role = 'PATIENT' THEN p.patient_lname
         WHEN u.user_role = 'DOCTOR' THEN doc.doctor_lname
         WHEN u.user_role = 'NURSE' THEN n.nurse_lname
         WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_lname
+        WHEN u.user_role = 'ADMIN' THEN a.admin_lname
       END as last_name
   `;
 
@@ -652,6 +654,7 @@ const getAnalyticsDetails = async (req, res) => {
     LEFT JOIN doctors doc ON u.user_id = doc.user_id
     LEFT JOIN nurses n ON u.user_id = n.user_id
     LEFT JOIN receptionists r ON u.user_id = r.user_id
+    LEFT JOIN admins a ON u.user_id = a.user_id
   `;
 
         // Add WHERE clause based on subcategory
