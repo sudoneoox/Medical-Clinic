@@ -137,7 +137,7 @@ const MainFrame = ({
 
                   {currentSelected === "MY APPOINTMENTS" && <MyAppointments />}
                   {/* BUG: Receptionist Appointments being implemented by daniil */}
-                  {currentSelected === "APPOINTMENTS" && <AppointmentsList data={contentData}/>}
+                  {currentSelected === "APPOINTMENTS" && <AppointmentsList />}
                   {currentSelected === "ANALYTICS" && <Analytics />}
                   {currentSelected === "USER MANAGEMENT" && (
                     <UserManagement data={contentData} />

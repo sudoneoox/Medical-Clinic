@@ -239,7 +239,7 @@ const retrieveAppointments = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    const appointmentsRecords = await Billing.findAll({
+    const appointmentsRecords = await Appointment.findAll({
       where: { patient_id: patientId },
     });
     
