@@ -23,6 +23,9 @@ const DataVisualization = ({
   const [expandedRow, setExpandedRow] = useState(null);
 
   const handleRowClick = async (item, index) => {
+    console.log(item);
+    console.log(index);
+    console.log(selectedAnalytic);
     try {
       if (expandedRow === index) {
         setExpandedRow(null);

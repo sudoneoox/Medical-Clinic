@@ -377,6 +377,7 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
   const { analyticType, subCategory, office } = analyticData;
   try {
     let data;
+    
     switch (analyticType) {
       case "DEMOGRAPHICS": {
         switch (subCategory) {
@@ -487,20 +488,21 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
       }
       case "STAFF": {
         const whereClause = office !== "all" ? { office_id: office } : {};
-
+      
         const [doctors, nurses, receptionists] = await Promise.all([
           Doctor.count(whereClause),
           Nurse.count(whereClause),
           Receptionist.count(whereClause),
         ]);
-
+      
+        // Format the data to include all details for each role
         data = [
           { name: "Doctors", value: doctors },
           { name: "Nurses", value: nurses },
           { name: "Receptionists", value: receptionists },
         ];
         break;
-      }
+      }      
 
       case "APPOINTMENTS": {
         const whereClause = office !== "all" ? { office_id: office } : {};
@@ -708,7 +710,7 @@ const getAnalyticsDetails = async (req, res) => {
             FROM doctors d
             LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id
             LEFT JOIN office o ON do.office_id = o.office_id
-            WHERE '${filter}' = 'DOCTOR'
+            WHERE '${filter}' = 'DOCTORS'
             GROUP BY d.doctor_id
             
             UNION ALL
@@ -725,7 +727,7 @@ const getAnalyticsDetails = async (req, res) => {
             FROM nurses n
             LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id
             LEFT JOIN office o ON no.office_id = o.office_id
-            WHERE '${filter}' = 'NURSE'
+            WHERE '${filter}' = 'NURSES'
             GROUP BY n.nurse_id
             
             UNION ALL
@@ -742,7 +744,7 @@ const getAnalyticsDetails = async (req, res) => {
             FROM receptionists r
             LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id
             LEFT JOIN office o ON ro.office_id = o.office_id
-            WHERE '${filter}' = 'RECEPTIONIST'
+            WHERE '${filter}' = 'RECEPTIONISTS'
             GROUP BY r.receptionist_id
           )
           SELECT * FROM StaffOffices

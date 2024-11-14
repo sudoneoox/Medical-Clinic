@@ -52,6 +52,13 @@ const getDemographicId = (category, filter) => {
       "Not Hispanic or Latino": 2,
       "Prefer not to say": 3,
     },
+    AGE: {
+      "0-17": 1,
+      "18-29": 2,
+      "30-49": 3,
+      "50-69": 4,
+      "70+": 5,
+    }
   };
   return mappings[category][filter];
 };
