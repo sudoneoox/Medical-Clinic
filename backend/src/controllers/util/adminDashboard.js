@@ -379,8 +379,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
     let data;
     switch (analyticType) {
       case "DEMOGRAPHICS": {
-        const whereClause = office !== "all" ? { office_id: office } : {};
-
         switch (subCategory) {
           case "GENDER": {
             const demographicStats = await sequelize.query(
@@ -390,7 +388,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             COUNT(d.gender_id) as count
           FROM demographics AS d
           INNER JOIN users AS u ON d.demographics_id = u.demographics_id
-          WHERE u.user_role = 'PATIENT'
           ${office !== "all" ? "AND u.office_id = :office" : ""}
           GROUP BY d.gender_id
         `,
@@ -408,7 +405,9 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
                     ? "Female"
                     : stat.gender_id === 3
                       ? "Non-binary"
-                      : "Other",
+                      : stat.gender_id === 4
+                        ? "Prefer not to say"
+                        : "Other",
               value: parseInt(stat.count),
             }));
             break;
@@ -461,7 +460,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             COUNT(d.ethnicity_id) as count
           FROM demographics AS d
           INNER JOIN users AS u ON d.demographics_id = u.demographics_id
-          WHERE u.user_role = 'PATIENT'
           ${office !== "all" ? "AND u.office_id = :office" : ""}
           GROUP BY d.ethnicity_id
         `,
@@ -662,9 +660,9 @@ const getAnalyticsDetails = async (req, res) => {
       WHERE TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
         CASE 
           WHEN '${filter}' = '0-17' THEN 0
-          WHEN '${filter}' = '18-29' THEN 18
-          WHEN '${filter}' = '30-49' THEN 30
-          WHEN '${filter}' = '50-69' THEN 50
+          WHEN '${filter}' = '18-29' THEN 1
+          WHEN '${filter}' = '30-49' THEN 2
+          WHEN '${filter}' = '50-69' THEN 3
           ELSE 70
         END
       AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 

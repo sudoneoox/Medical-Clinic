@@ -240,7 +240,7 @@ const populatePATIENTS = async (user, doctor, res) => {
       ],
     });
     console.log("Accesed patient populate", patients.doctor_id);
-    
+
     return res.json({
       // doctorInfo: {
       //   name: `${doctor.doct or_fname} ${doctor.doctor_lname}`,
@@ -264,7 +264,6 @@ const retrieveMedicalRecords = async (req, res) => {
   try {
     const patientid = req.params.patientId;
     console.log(`Fetching medical records for patient ID: ${patientid}`);
-
 
     const medicalrecords = await MedicalRecord.findAll({
       where: { patient_id: patientid, is_deleted: 0 },
@@ -301,23 +300,27 @@ const retrievePrescriptionRecords = async (req, res) => {
 
 const addMedicalRecord = async (req, res) => {
   try {
-    const doctor = await Doctor.findOne({where: {user_id:req.body.user_id}});
+    const doctor = await Doctor.findOne({
+      where: { user_id: req.body.user_id },
+    });
     console.log(req.body.patientId, "Patient ID");
     console.log(doctor.doctor_id, "Doctor ID");
     console.log(req.body.updated_at, "Updated at");
-    
+
     newMedicalRecord = await MedicalRecord.create({
       diagnosis: req.body.diagnosis,
       doctor_id: doctor.doctor_id,
       patient_id: req.body.patientId,
     });
-    return res.status(100).json({ message: "Successfully added medical record" });
+    return res
+      .status(100)
+      .json({ message: "Successfully added medical record" });
   } catch (error) {
     return res
       .status(500)
       .json({ message: "Error Adding medical record", error: error.message });
   }
-}
+};
 
 const editMedicalRecord = async (req, res) => {
   try {
@@ -344,7 +347,9 @@ const editMedicalRecord = async (req, res) => {
         diagnosis: req.body.diagnosis,
         updated_at: new Date(),
       });
-      return res.status(200).json({ message: "Successfully edited medical record" });
+      return res
+        .status(200)
+        .json({ message: "Successfully edited medical record" });
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -360,20 +365,22 @@ const editMedicalRecord = async (req, res) => {
 const deleteMedicalRecord = async (req, res) => {
   try {
     const recordId = req.params.recordId;
-    console.log("Deleting medical record" , recordId);
+    console.log("Deleting medical record", recordId);
 
     const deleteRecord = await MedicalRecord.findOne({
       where: {
         is_deleted: 0,
         record_id: recordId,
       },
-    })
+    });
     if (deleteRecord) {
       await deleteRecord.update({
         is_deleted: 1,
         updated_at: new Date(),
       });
-      return res.status(200).json({ message: "Successfully deleted medical record" });
+      return res
+        .status(200)
+        .json({ message: "Successfully deleted medical record" });
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -384,23 +391,23 @@ const deleteMedicalRecord = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const addPrescription = async (req, res) => {
   try {
     console.log(req.body.pharmacyDetails);
-    console.log(req.body.medicationName , "Medication Name");
+    console.log(req.body.medicationName, "Medication Name");
     console.log(req.body.dosage, "Dosage");
     console.log(req.body.duration, "Duration");
     console.log(req.body.medical_record_id, "Medical Record ID");
-    
+
     newPrescription = await Prescription.create({
       medication_name: req.body.medicationName,
       medical_record_id: req.body.medical_record_id,
       dosage: req.body.dosage,
       duration: req.body.duration,
       frequency: req.body.frequency,
-      pharmacy_details: req.body.pharmacyDetails,
+      // pharmacy_details: req.body.pharmacyDetails,
     });
     return res.status(201).json({ message: "Successfully added prescription" });
   } catch (error) {
@@ -408,7 +415,7 @@ const addPrescription = async (req, res) => {
       .status(500)
       .json({ message: "Error Adding prescription", error: error.message });
   }
-}
+};
 
 const editPrescription = async (req, res) => {
   try {
@@ -416,13 +423,7 @@ const editPrescription = async (req, res) => {
 
     const recordId = req.params.prescriptionId;
     console.log(recordId, "Record ID");
-
-    const editPrescriptionRecord = await Prescription.findOne({
-      where: {
-        // is_deleted: 0,
-        prescription_id: recordId,
-      },
-    });
+    const editPrescriptionRecord = await Prescription.findByPk(recordId);
 
     if (editPrescriptionRecord) {
       await editPrescriptionRecord.update({
@@ -430,11 +431,13 @@ const editPrescription = async (req, res) => {
         dosage: req.body.dosage,
         duration: req.body.duration,
         frequency: req.body.frequency,
-        pharmacy_details: req.body.pharmacyDetails,
+        // pharmacy_details: req.body.pharmacyDetails,
       });
       console.log("Found the record");
-      
-      return res.status(200).json({ message: "Successfully edited prescription record" });
+
+      return res
+        .status(200)
+        .json({ message: "Successfully edited prescription record" });
     } else {
       return res.status(404).json({ message: "Prescription record not found" });
     }
@@ -450,19 +453,21 @@ const editPrescription = async (req, res) => {
 const deletePrescription = async (req, res) => {
   try {
     const recordId = req.params.prescriptionId;
-    console.log("Deleting prescription record" , recordId);
+    console.log("Deleting prescription record", recordId);
 
     const deleteRecord = await Prescription.findOne({
       where: {
         is_deleted: 0,
         prescription_id: recordId,
       },
-    })
+    });
     if (deleteRecord) {
       await deleteRecord.update({
         is_deleted: 1,
       });
-      return res.status(200).json({ message: "Successfully deleted prescription record" });
+      return res
+        .status(200)
+        .json({ message: "Successfully deleted prescription record" });
     } else {
       return res.status(404).json({ message: "Prescription record not found" });
     }
@@ -473,7 +478,7 @@ const deletePrescription = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const doctorDashboard = {
   populateOVERVIEW,
