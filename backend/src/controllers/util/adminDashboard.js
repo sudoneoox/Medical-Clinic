@@ -372,7 +372,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
     });
   }
 };
-// TODO: switch off the deprecated functions
+
 const populateANALYTICS = async (user, admin, analyticData, res) => {
   const { analyticType, subCategory, office } = analyticData;
   try {
@@ -613,6 +613,7 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
     });
   }
 };
+
 const getAnalyticsDetails = async (req, res) => {
   const { analyticType, subCategory, office, filter } = req.body.analyticData;
 
@@ -620,68 +621,246 @@ const getAnalyticsDetails = async (req, res) => {
     let details;
     switch (analyticType) {
       case "DEMOGRAPHICS": {
-        details = await Demographics.findAll({
-          attributes: [
-            "demographics_id",
-            "ethnicity_id",
-            "race_id",
-            "gender_id",
-            "dob",
-          ],
-          include: [
-            {
-              model: Users,
-              attributes: ["user_id", "user_email", "user_username"],
-              where: {
-                user_role: "PATIENT",
-                ...(office !== "all" && { office_id: office }),
-              },
-            },
-          ],
-          where: {
-            [subCategory.toLowerCase() + "_id"]: logic.getDemographicId(
-              subCategory,
-              filter,
-            ),
+        let baseQuery = `
+    SELECT 
+      u.user_role,
+      CASE 
+        WHEN u.user_role = 'PATIENT' THEN p.patient_fname
+        WHEN u.user_role = 'DOCTOR' THEN doc.doctor_fname
+        WHEN u.user_role = 'NURSE' THEN n.nurse_fname
+        WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_fname
+      END as first_name,
+      CASE 
+        WHEN u.user_role = 'PATIENT' THEN p.patient_lname
+        WHEN u.user_role = 'DOCTOR' THEN doc.doctor_lname
+        WHEN u.user_role = 'NURSE' THEN n.nurse_lname
+        WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_lname
+      END as last_name
+  `;
+
+        // Add specific fields based on subcategory
+        if (subCategory === "AGE") {
+          baseQuery += ", dem.dob";
+        } else if (subCategory === "GENDER") {
+          baseQuery += ", dem.gender_id";
+        } else if (subCategory === "ETHNICITY") {
+          baseQuery += ", dem.ethnicity_id";
+        }
+
+        baseQuery += `
+    FROM demographics dem
+    INNER JOIN users u ON dem.demographics_id = u.demographics_id
+    LEFT JOIN patients p ON u.user_id = p.user_id
+    LEFT JOIN doctors doc ON u.user_id = doc.user_id
+    LEFT JOIN nurses n ON u.user_id = n.user_id
+    LEFT JOIN receptionists r ON u.user_id = r.user_id
+  `;
+
+        // Add WHERE clause based on subcategory
+        if (subCategory === "AGE") {
+          baseQuery += `
+      WHERE TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
+        CASE 
+          WHEN '${filter}' = '0-17' THEN 0
+          WHEN '${filter}' = '18-29' THEN 18
+          WHEN '${filter}' = '30-49' THEN 30
+          WHEN '${filter}' = '50-69' THEN 50
+          ELSE 70
+        END
+      AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 
+        CASE 
+          WHEN '${filter}' = '0-17' THEN 17
+          WHEN '${filter}' = '18-29' THEN 29
+          WHEN '${filter}' = '30-49' THEN 49
+          WHEN '${filter}' = '50-69' THEN 69
+          ELSE 150
+        END
+    `;
+        } else {
+          baseQuery += `WHERE dem.${subCategory.toLowerCase()}_id = :demographicId`;
+        }
+
+        if (office !== "all") {
+          baseQuery += " AND u.office_id = :office";
+        }
+
+        details = await sequelize.query(baseQuery, {
+          replacements: {
+            demographicId: logic.getDemographicId(subCategory, filter),
+            office,
           },
-          limit: 100,
+          type: QueryTypes.SELECT,
+        });
+        break;
+      }
+      case "STAFF": {
+        const baseQuery = `
+          WITH StaffOffices AS (
+            SELECT 
+              'DOCTOR' as role,
+              d.doctor_fname as first_name,
+              d.doctor_lname as last_name,
+              d.doctor_employee_id as employee_id,
+              GROUP_CONCAT(DISTINCT o.office_name) as offices,
+              GROUP_CONCAT(DISTINCT CONCAT(do.day_of_week, ': ', 
+                TIME_FORMAT(do.shift_start, '%H:%i'), '-', 
+                TIME_FORMAT(do.shift_end, '%H:%i'))) as schedules
+            FROM doctors d
+            LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id
+            LEFT JOIN office o ON do.office_id = o.office_id
+            WHERE '${filter}' = 'DOCTOR'
+            GROUP BY d.doctor_id
+            
+            UNION ALL
+            
+            SELECT 
+              'NURSE' as role,
+              n.nurse_fname,
+              n.nurse_lname,
+              n.nurse_employee_id,
+              GROUP_CONCAT(DISTINCT o.office_name),
+              GROUP_CONCAT(DISTINCT CONCAT(no.day_of_week, ': ',
+                TIME_FORMAT(no.shift_start, '%H:%i'), '-',  
+                TIME_FORMAT(no.shift_end, '%H:%i')))
+            FROM nurses n
+            LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id
+            LEFT JOIN office o ON no.office_id = o.office_id
+            WHERE '${filter}' = 'NURSE'
+            GROUP BY n.nurse_id
+            
+            UNION ALL
+            
+            SELECT 
+              'RECEPTIONIST' as role,
+              r.receptionist_fname,
+              r.receptionist_lname,
+              r.receptionist_employee_id,
+              GROUP_CONCAT(DISTINCT o.office_name),
+              GROUP_CONCAT(DISTINCT CONCAT(ro.day_of_week, ': ',
+                TIME_FORMAT(ro.shift_start, '%H:%i'), '-',
+                TIME_FORMAT(ro.shift_end, '%H:%i')))
+            FROM receptionists r
+            LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id
+            LEFT JOIN office o ON ro.office_id = o.office_id
+            WHERE '${filter}' = 'RECEPTIONIST'
+            GROUP BY r.receptionist_id
+          )
+          SELECT * FROM StaffOffices
+          ${office !== "all" ? "WHERE offices LIKE CONCAT('%', :officeName, '%')" : ""}
+        `;
+
+        const officeName =
+          office !== "all"
+            ? OFFICE_LIST.find((o) => o.office_id.toString() === office)
+                ?.office_name
+            : null;
+
+        details = await sequelize.query(baseQuery, {
+          replacements: { officeName },
+          type: QueryTypes.SELECT,
         });
         break;
       }
 
-      case "BILLING": {
-        details = await Billing.findAll({
-          attributes: [
-            "billing_id",
-            "amount_due",
-            "amount_paid",
-            "payment_status",
-            "created_at",
-          ],
-          where: {
-            ...(office !== "all" && { office_id: office }),
-            ...(subCategory === "PAYMENT_STATUS" && { payment_status: filter }),
+      case "APPOINTMENTS": {
+        const query = `
+          SELECT 
+            a.appointment_id,
+            a.status,
+            o.office_name,
+            p.patient_fname,
+            p.patient_lname,
+            d.doctor_fname,
+            d.doctor_lname,
+            a.appointment_datetime
+          FROM appointments a
+          JOIN office o ON a.office_id = o.office_id
+          JOIN patients p ON a.patient_id = p.patient_id
+          JOIN doctors d ON a.doctor_id = d.doctor_id
+          WHERE a.status = :status
+          ${office !== "all" ? "AND a.office_id = :office" : ""}
+        `;
+
+        details = await sequelize.query(query, {
+          replacements: {
+            status: filter,
+            office,
           },
-          include: [
-            {
-              model: Patient,
-              attributes: ["patient_fname", "patient_lname"],
-            },
-          ],
-          limit: 100,
+          type: QueryTypes.SELECT,
         });
+        break;
+      }
+      case "BILLING": {
+        switch (subCategory) {
+          case "PAYMENT_STATUS": {
+            const query = `
+              SELECT 
+                b.billing_id,
+                b.amount_due,
+                b.amount_paid,
+                b.payment_status,
+                b.created_at,
+                p.patient_id,
+                p.patient_fname,
+                p.patient_lname,
+                r.receptionist_fname as handled_by_fname,
+                r.receptionist_lname as handled_by_lname
+              FROM billing b
+              JOIN patients p ON b.patient_id = p.patient_id
+              LEFT JOIN receptionists r ON b.handled_by = r.receptionist_id
+              WHERE b.payment_status = :status
+              ${office !== "all" ? "AND b.office_id = :office" : ""}
+            `;
+
+            details = await sequelize.query(query, {
+              replacements: {
+                status: filter,
+                office,
+              },
+              type: QueryTypes.SELECT,
+            });
+            break;
+          }
+
+          case "REVENUE": {
+            const query = `
+              SELECT 
+                b.billing_id,
+                b.amount_due,
+                b.amount_paid,
+                DATE_FORMAT(b.created_at, '%Y-%m') as month,
+                p.patient_fname,
+                p.patient_lname
+              FROM billing b
+              JOIN patients p ON b.patient_id = p.patient_id
+              WHERE DATE_FORMAT(b.created_at, '%Y-%m') = :month
+              ${office !== "all" ? "AND b.office_id = :office" : ""}
+            `;
+
+            details = await sequelize.query(query, {
+              replacements: {
+                month: filter,
+                office,
+              },
+              type: QueryTypes.SELECT,
+            });
+            break;
+          }
+        }
         break;
       }
     }
 
-    res.json({ details: details.map((d) => d.toJSON()) });
+    res.json({ details });
   } catch (error) {
     console.error("Error fetching details:", error);
-    res
-      .status(500)
-      .json({ message: "Error fetching details", error: error.message });
+    res.status(500).json({
+      message: "Error fetching details",
+      error: error.message,
+    });
   }
 };
+
 const adminDashboard = {
   populateOVERVIEW,
   populateUSERMANAGEMENT,

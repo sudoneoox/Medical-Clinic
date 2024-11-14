@@ -5,24 +5,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../utils/Select.tsx";
-import { Button } from "../../../utils/Button.tsx";
-import { Table2, PieChartIcon } from "lucide-react";
 
 const FilterBar = ({
   selectedOffice,
-  setSelectedOffice,
   dateRange,
-  setDateRange,
-  selectedRole,
-  setSelectedRole,
-  viewMode,
-  setViewMode,
+  onFilterChange,
   OFFICE_LIST,
   DATE_RANGES,
-  ROLE_LIST,
+  selectedAnalytic,
 }) => (
   <div className="mb-6 flex flex-wrap gap-4">
-    <Select value={selectedOffice} onValueChange={setSelectedOffice}>
+    <Select
+      value={selectedOffice}
+      onValueChange={(value) => onFilterChange({ office: value })}
+    >
       <SelectTrigger className="w-[200px] bg-white">
         <SelectValue placeholder="Select Office" />
       </SelectTrigger>
@@ -41,25 +37,27 @@ const FilterBar = ({
         ))}
       </SelectContent>
     </Select>
-
-    {/* Similar Select components for date and role */}
-
-    <div className="flex gap-2">
-      <Button
-        variant={viewMode === "table" ? "default" : "outline"}
-        size="icon"
-        onClick={() => setViewMode("table")}
+    {selectedAnalytic !== "STAFF" && (
+      <Select
+        value={dateRange}
+        onValueChange={(value) => onFilterChange({ date: value })}
       >
-        <Table2 className="h-4 w-4" />
-      </Button>
-      <Button
-        variant={viewMode === "chart" ? "default" : "outline"}
-        size="icon"
-        onClick={() => setViewMode("chart")}
-      >
-        <PieChartIcon className="h-4 w-4" />
-      </Button>
-    </div>
+        <SelectTrigger className="w-[200px] bg-white">
+          <SelectValue placeholder="Select Time Period" />
+        </SelectTrigger>
+        <SelectContent className="bg-white">
+          {DATE_RANGES.map((range) => (
+            <SelectItem
+              key={range.id}
+              value={range.id}
+              className="bg-white hover:bg-gray-100"
+            >
+              {range.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )}
   </div>
 );
 

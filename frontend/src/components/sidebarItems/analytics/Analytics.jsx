@@ -1,15 +1,10 @@
 import React, { useState, useCallback } from "react";
 import {
-  Building2,
-  Users,
-  Activity,
-  Calendar,
-  UserSquare2,
-  Globe2,
-  DollarSign,
-  TrendingUp,
-  CreditCard,
-} from "lucide-react";
+  analyticOptions,
+  OFFICE_LIST,
+  ROLE_LIST,
+  DATE_RANGES,
+} from "./constants.jsx";
 import api from "../../../api.js";
 
 import AnalyticsCard from "./AnalyticsCard";
@@ -18,8 +13,6 @@ import SubCategoryCards from "./SubCategoryCards";
 import DataVisualization from "./DataVisualization";
 import DetailSheet from "./DetailSheet";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-
 const Analytics = () => {
   // State management
   const [selectedAnalytic, setSelectedAnalytic] = useState(null);
@@ -27,94 +20,13 @@ const Analytics = () => {
   const [selectedOffice, setSelectedOffice] = useState("all");
   const [chartData, setChartData] = useState(null);
   const [detailedData, setDetailedData] = useState(null);
-  const [selectedSlice, setSelectedSlice] = useState(null);
   const [viewMode, setViewMode] = useState("table"); // Default to table view
   const [dateRange, setDateRange] = useState("all");
   const [selectedRole, setSelectedRole] = useState("all");
   const [showDetails, setShowDetails] = useState(false);
-
-  // Configuration constants
-  const analyticOptions = [
-    {
-      id: "DEMOGRAPHICS",
-      title: "User Demographics",
-      icon: <Users className="w-6 h-6 text-blue-500" />,
-      description: "View User age, gender, and ethnicity distribution",
-      subCategories: [
-        {
-          id: "GENDER",
-          title: "Gender Distribution",
-          icon: <UserSquare2 className="w-4 h-4" />,
-        },
-        {
-          id: "AGE",
-          title: "Age Groups",
-          icon: <Calendar className="w-4 h-4" />,
-        },
-        {
-          id: "ETHNICITY",
-          title: "Ethnicity",
-          icon: <Globe2 className="w-4 h-4" />,
-        },
-      ],
-    },
-    {
-      id: "STAFF",
-      title: "Staff Distribution",
-      icon: <Building2 className="w-6 h-6 text-green-500" />,
-      description: "Analyze staff roles and office assignments",
-    },
-    {
-      id: "APPOINTMENTS",
-      title: "Appointment Analytics",
-      icon: <Activity className="w-6 h-6 text-orange-500" />,
-      description: "Track appointment status and distribution",
-    },
-    {
-      id: "BILLING",
-      title: "Billing Analytics",
-      icon: <DollarSign className="w-6 h-6 text-purple-500" />,
-      description: "Track payment status and revenue distribution",
-      subCategories: [
-        {
-          id: "PAYMENT_STATUS",
-          title: "Payment Status",
-          icon: <CreditCard className="w-4 h-4" />,
-        },
-        {
-          id: "REVENUE",
-          title: "Revenue Analysis",
-          icon: <TrendingUp className="w-4 h-4" />,
-        },
-      ],
-    },
-  ];
-
-  const OFFICE_LIST = [
-    { office_id: 1, office_name: "Main Clinic" },
-    { office_id: 2, office_name: "North Branch" },
-    { office_id: 3, office_name: "South Branch" },
-  ];
-
-  const ROLE_LIST = [
-    { user_role: "Admin" },
-    { user_role: "Patient" },
-    { user_role: "Doctor" },
-    { user_role: "Receptionists" },
-    { user_role: "Nurse" },
-  ];
-
-  const DATE_RANGES = [
-    { id: "all", label: "All Time" },
-    { id: "today", label: "Today" },
-    { id: "week", label: "This Week" },
-    { id: "month", label: "This Month" },
-    { id: "year", label: "This Year" },
-  ];
-
-  // Data fetching functions
+  console.log(selectedAnalytic);
   const fetchAnalyticData = useCallback(
-    async (type, subCategory, office) => {
+    async (type, subCategory, office, dateRange, role) => {
       try {
         const response = await api.post("/users/portal/analytics", {
           user_id: localStorage.getItem("userId"),
@@ -124,17 +36,16 @@ const Analytics = () => {
             analyticType: type,
             subCategory: subCategory,
             office: office,
-            dateRange,
-            role: selectedRole,
+            dateRange: dateRange,
+            role: role,
           },
         });
         setChartData(response.data.data);
-        setSelectedSlice(null);
       } catch (error) {
         console.error("Error fetching analytic data:", error);
       }
     },
-    [dateRange, selectedRole],
+    [],
   );
 
   const fetchDetailedData = useCallback(
@@ -194,30 +105,37 @@ const Analytics = () => {
     [selectedAnalytic, selectedOffice, fetchAnalyticData],
   );
 
-  const handlePieClick = useCallback(
-    async (entry, index) => {
-      setSelectedSlice(selectedSlice === index ? null : index);
-      setShowDetails(true);
-      await fetchDetailedData(entry);
-    },
-    [selectedSlice, fetchDetailedData],
-  );
-
   const handleFilterChange = useCallback(
     ({ office, date, role }) => {
-      if (office !== undefined) setSelectedOffice(office);
-      if (date !== undefined) setDateRange(date);
-      if (role !== undefined) setSelectedRole(role);
+      if (office !== undefined) {
+        setSelectedOffice(office);
+      }
+      if (date !== undefined) {
+        setDateRange(date);
+      }
+      if (role !== undefined) {
+        setSelectedRole(role);
+      }
 
+      // Refetch data with new filters
       if (selectedAnalytic) {
         fetchAnalyticData(
           selectedAnalytic,
           selectedSubCategory,
           office ?? selectedOffice,
+          date ?? dateRange,
+          role ?? selectedRole,
         );
       }
     },
-    [selectedAnalytic, selectedSubCategory, fetchAnalyticData],
+    [
+      selectedAnalytic,
+      selectedSubCategory,
+      selectedOffice,
+      dateRange,
+      selectedRole,
+      fetchAnalyticData,
+    ],
   );
 
   return (
@@ -241,19 +159,22 @@ const Analytics = () => {
         </div>
 
         {/* Filters */}
-        {selectedAnalytic && (
-          <FilterBar
-            selectedOffice={selectedOffice}
-            dateRange={dateRange}
-            selectedRole={selectedRole}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            onFilterChange={handleFilterChange}
-            OFFICE_LIST={OFFICE_LIST}
-            DATE_RANGES={DATE_RANGES}
-            ROLE_LIST={ROLE_LIST}
-          />
-        )}
+        {selectedAnalytic !== "DEMOGRAPHICS" &&
+          selectedAnalytic &&
+          selectedAnalytic !== "BILLING" && (
+            <FilterBar
+              selectedOffice={selectedOffice}
+              dateRange={dateRange}
+              selectedRole={selectedRole}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              onFilterChange={handleFilterChange}
+              OFFICE_LIST={OFFICE_LIST}
+              DATE_RANGES={DATE_RANGES}
+              ROLE_LIST={ROLE_LIST}
+              selectedAnalytic={selectedAnalytic}
+            />
+          )}
 
         {/* Sub Categories */}
         {(selectedAnalytic === "DEMOGRAPHICS" ||
@@ -269,10 +190,11 @@ const Analytics = () => {
         {/* Data Display */}
         {chartData && (
           <DataVisualization
-            viewMode={viewMode}
             chartData={chartData}
-            selectedSlice={selectedSlice}
-            handlePieClick={handlePieClick}
+            selectedAnalytic={selectedAnalytic}
+            selectedSubCategory={selectedSubCategory}
+            selectedOffice={selectedOffice}
+            dateRange={dateRange}
           />
         )}
 
@@ -280,7 +202,6 @@ const Analytics = () => {
         <DetailSheet
           isOpen={showDetails}
           onOpenChange={setShowDetails}
-          title={chartData?.[selectedSlice]?.name}
           analyticType={selectedAnalytic}
           detailedData={detailedData}
         />
