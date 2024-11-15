@@ -1,11 +1,7 @@
 import React, { useState, useCallback } from "react";
-import {
-  analyticOptions,
-  OFFICE_LIST,
-  ROLE_LIST,
-  DATE_RANGES,
-} from "./constants.jsx";
 import api from "../../../api.js";
+import { sub } from "date-fns";
+import { analyticOptions, FILTER_TYPES, STATUSES } from "./constants.jsx";
 
 import AnalyticsCard from "./AnalyticsCard";
 import FilterBar from "./FilterBar";
@@ -19,97 +15,123 @@ const Analytics = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [selectedOffice, setSelectedOffice] = useState("all");
   const [chartData, setChartData] = useState(null);
-  const [detailedData, setDetailedData] = useState(null);
-  const [viewMode, setViewMode] = useState("table"); // Default to table view
-  const [dateRange, setDateRange] = useState("all");
+  const [viewMode, setViewMode] = useState("table"); // table or pie chart default is table
   const [selectedRole, setSelectedRole] = useState("all");
   const [showDetails, setShowDetails] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: sub(new Date(), { months: 1 }),
+    endDate: new Date(),
+  });
+  const [filters, setFilters] = useState({
+    [FILTER_TYPES.OFFICE]: "all",
+    [FILTER_TYPES.ROLE]: "all",
+    [FILTER_TYPES.STATUS]: "all",
+    [FILTER_TYPES.DATE_RANGE]: {
+      startDate: sub(new Date(), { months: 1 }),
+      endDate: new Date(),
+    },
+  });
+
+  const getAvailableFilters = (analyticType) => {
+    switch (analyticType) {
+      case "DEMOGRAPHICS":
+        return ["office", "dateRange"];
+      case "STAFF":
+        return ["office"];
+      case "APPOINTMENTS":
+        return ["office", "dateRange"];
+      case "BILLING":
+        return ["office", "dateRange"];
+      default:
+        return [];
+    }
+  };
 
   // initial api request when clicking on a category
-  console.log(selectedAnalytic);
-  const fetchAnalyticData = useCallback(
-    async (type, subCategory, office, dateRange, role) => {
-      try {
-        const response = await api.post("/users/portal/analytics", {
-          user_id: localStorage.getItem("userId"),
-          user_role: "ADMIN",
-          sidebarItem: "ANALYTICS",
-          analyticData: {
-            analyticType: type,
-            subCategory: subCategory,
-            office: office,
-            dateRange: dateRange,
-            role: role,
-          },
-        });
-        setChartData(response.data.data);
-      } catch (error) {
-        console.error("Error fetching analytic data:", error);
-      }
-    },
-    [],
-  );
 
-  // Event handlers
+  const fetchAnalyticData = useCallback(async () => {
+    if (!selectedAnalytic) return;
+
+    try {
+      const response = await api.post("/users/portal/analytics", {
+        user_id: localStorage.getItem("userId"),
+        user_role: "ADMIN",
+        sidebarItem: "ANALYTICS",
+        analyticData: {
+          analyticType: selectedAnalytic,
+          subCategory: selectedSubCategory,
+          office: filters[FILTER_TYPES.OFFICE],
+          dateRange: filters[FILTER_TYPES.DATE_RANGE],
+          role: filters[FILTER_TYPES.ROLE],
+          status: filters[FILTER_TYPES.STATUS],
+        },
+      });
+
+      let filteredData = response.data.data;
+
+      // BUG: Client-side filtering based on date range for relevant analytics
+      if (["APPOINTMENTS", "BILLING"].includes(selectedAnalytic)) {
+        const { startDate, endDate } = filters[FILTER_TYPES.DATE_RANGE];
+        filteredData = filteredData.filter((item) => {
+          const itemDate = new Date(item.name);
+          return itemDate >= startDate && itemDate <= endDate;
+        });
+      }
+
+      // BUG: Client-side filtering based on status
+      if (filters[FILTER_TYPES.STATUS] !== "all") {
+        filteredData = filteredData.filter(
+          (item) => item.status === filters[FILTER_TYPES.STATUS],
+        );
+      }
+
+      // BUG: Client-side filtering based on role
+      if (filters[FILTER_TYPES.ROLE] !== "all") {
+        filteredData = filteredData.filter(
+          (item) => item.role === filters[FILTER_TYPES.ROLE],
+        );
+      }
+
+      setChartData(filteredData);
+    } catch (error) {
+      console.error("Error fetching analytic data:", error);
+    }
+  }, [selectedAnalytic, selectedSubCategory, filters]);
+
+  const handleFilterChange = useCallback(({ office, startDate, endDate }) => {
+    if (office !== undefined) {
+      setSelectedOffice(office);
+    }
+    if (startDate !== undefined && endDate !== undefined) {
+      setDateRange({ startDate, endDate });
+    }
+  }, []);
+
   const handleAnalyticSelect = useCallback(
     (analyticId) => {
       setSelectedAnalytic(analyticId);
       setSelectedSubCategory(null);
+
+      // Reset filters when changing analytics type
       const option = analyticOptions.find((opt) => opt.id === analyticId);
+      const defaultFilters = {
+        [FILTER_TYPES.OFFICE]: "all",
+        [FILTER_TYPES.ROLE]: "all",
+        [FILTER_TYPES.STATUS]: "all",
+        [FILTER_TYPES.DATE_RANGE]: filters[FILTER_TYPES.DATE_RANGE], // Keep current date range
+      };
+      setFilters(defaultFilters);
+
       if (option?.subCategories) {
         setSelectedSubCategory(option.subCategories[0].id);
-        fetchAnalyticData(
-          analyticId,
-          option.subCategories[0].id,
-          selectedOffice,
-        );
-      } else {
-        fetchAnalyticData(analyticId, null, selectedOffice);
       }
     },
-    [selectedOffice, fetchAnalyticData],
+    [filters],
   );
 
-  const handleSubCategorySelect = useCallback(
-    (subCategoryId) => {
-      setSelectedSubCategory(subCategoryId);
-      fetchAnalyticData(selectedAnalytic, subCategoryId, selectedOffice);
-    },
-    [selectedAnalytic, selectedOffice, fetchAnalyticData],
-  );
-
-  const handleFilterChange = useCallback(
-    ({ office, date, role }) => {
-      if (office !== undefined) {
-        setSelectedOffice(office);
-      }
-      if (date !== undefined) {
-        setDateRange(date);
-      }
-      if (role !== undefined) {
-        setSelectedRole(role);
-      }
-
-      // Refetch data with new filters
-      if (selectedAnalytic) {
-        fetchAnalyticData(
-          selectedAnalytic,
-          selectedSubCategory,
-          office ?? selectedOffice,
-          date ?? dateRange,
-          role ?? selectedRole,
-        );
-      }
-    },
-    [
-      selectedAnalytic,
-      selectedSubCategory,
-      selectedOffice,
-      dateRange,
-      selectedRole,
-      fetchAnalyticData,
-    ],
-  );
+  const handleSubCategorySelect = useCallback((subCategoryId) => {
+    setSelectedSubCategory(subCategoryId);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -118,7 +140,6 @@ const Analytics = () => {
         <p className="text-gray-600 mb-6">
           Select a category to view detailed analytics
         </p>
-
         {/* Analytics Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {analyticOptions.map((option) => (
@@ -132,33 +153,29 @@ const Analytics = () => {
         </div>
 
         {/* Filters */}
-        {selectedAnalytic !== "DEMOGRAPHICS" &&
-          selectedAnalytic &&
-          selectedAnalytic !== "BILLING" && (
-            <FilterBar
-              selectedOffice={selectedOffice}
-              dateRange={dateRange}
-              selectedRole={selectedRole}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              onFilterChange={handleFilterChange}
-              OFFICE_LIST={OFFICE_LIST}
-              DATE_RANGES={DATE_RANGES}
-              ROLE_LIST={ROLE_LIST}
-              selectedAnalytic={selectedAnalytic}
-            />
-          )}
-
-        {/* Sub Categories */}
-        {(selectedAnalytic === "DEMOGRAPHICS" ||
-          selectedAnalytic === "BILLING") && (
-          <SubCategoryCards
-            type={selectedAnalytic}
-            analyticOptions={analyticOptions}
-            selectedSubCategory={selectedSubCategory}
-            onSelect={handleSubCategorySelect}
+        {selectedAnalytic && (
+          <FilterBar
+            selectedAnalytic={selectedAnalytic}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            availableFilters={
+              analyticOptions.find((opt) => opt.id === selectedAnalytic)
+                ?.availableFilters || []
+            }
           />
         )}
+
+        {/* Sub Categories */}
+        {selectedAnalytic &&
+          analyticOptions.find((opt) => opt.id === selectedAnalytic)
+            ?.subCategories && (
+            <SubCategoryCards
+              type={selectedAnalytic}
+              analyticOptions={analyticOptions}
+              selectedSubCategory={selectedSubCategory}
+              onSelect={handleSubCategorySelect}
+            />
+          )}
 
         {/* Data Display */}
         {chartData && (
@@ -170,13 +187,11 @@ const Analytics = () => {
             dateRange={dateRange}
           />
         )}
-
         {/* Details Panel */}
         <DetailSheet
           isOpen={showDetails}
           onOpenChange={setShowDetails}
           analyticType={selectedAnalytic}
-          detailedData={detailedData}
         />
       </div>
     </div>
