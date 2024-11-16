@@ -37,7 +37,6 @@ router.post("/login", userControllerFuncs.loginUser);
 router.post("/portal/analytics", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/management", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/settings", dashBoardControllerFuncs.portalRoleSwitcher);
-// TODO: handle delete
 router.post("/portal/management/delete", adminDashboard.deleteUser);
 router.post("/portal/users", dashBoardControllerFuncs.portalRoleSwitcher);
 router.post("/portal/overview", dashBoardControllerFuncs.portalRoleSwitcher);

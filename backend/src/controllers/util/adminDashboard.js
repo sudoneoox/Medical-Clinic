@@ -374,14 +374,24 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
 };
 
 const populateANALYTICS = async (user, admin, analyticData, res) => {
-  const { analyticType, subCategory, office } = analyticData;
+  const { analyticType, subCategory, office, dateRange, role, status } =
+    analyticData;
   try {
     let data;
-    
+
     switch (analyticType) {
       case "DEMOGRAPHICS": {
         switch (subCategory) {
           case "GENDER": {
+            const replacements = {
+              office,
+              ...(dateRange && {
+                startDate: dateRange.startDate,
+                endDate: dateRange.endDate,
+              }),
+              ...(role !== "all" && { role }),
+            };
+
             const demographicStats = await sequelize.query(
               `
           SELECT 
@@ -389,11 +399,14 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             COUNT(d.gender_id) as count
           FROM demographics AS d
           INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+          WHERE 1=1
           ${office !== "all" ? "AND u.office_id = :office" : ""}
+          ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
+          ${role !== "all" ? "AND u.user_role = :role" : ""}
           GROUP BY d.gender_id
         `,
               {
-                replacements: { office },
+                replacements,
                 type: QueryTypes.SELECT,
               },
             );
@@ -415,6 +428,14 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
           }
 
           case "AGE": {
+            const replacements = {
+              office,
+              ...(dateRange && {
+                startDate: dateRange.startDate,
+                endDate: dateRange.endDate,
+              }),
+              ...(role !== "all" && { role }),
+            };
             const ageStats = await sequelize.query(
               `
           SELECT 
@@ -428,7 +449,10 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             COUNT(*) as count
           FROM demographics AS d
           INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+          WHERE 1=1
           ${office !== "all" ? "AND u.office_id = :office" : ""}
+          ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
+          ${role !== "all" ? "AND u.user_role = :role" : ""}
           GROUP BY age_group
           ORDER BY 
             CASE age_group
@@ -440,7 +464,7 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
             END
         `,
               {
-                replacements: { office },
+                replacements,
                 type: QueryTypes.SELECT,
               },
             );
@@ -453,18 +477,29 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
           }
 
           case "ETHNICITY": {
+            const replacements = {
+              office,
+              ...(dateRange && {
+                startDate: dateRange.startDate,
+                endDate: dateRange.endDate,
+              }),
+              ...(role !== "all" && { role }),
+            };
+
             const ethnicityStats = await sequelize.query(
               `
-          SELECT 
-            d.ethnicity_id,
-            COUNT(d.ethnicity_id) as count
-          FROM demographics AS d
-          INNER JOIN users AS u ON d.demographics_id = u.demographics_id
-          ${office !== "all" ? "AND u.office_id = :office" : ""}
-          GROUP BY d.ethnicity_id
-        `,
+              SELECT 
+                d.ethnicity_id,
+                COUNT(d.ethnicity_id) as count
+              FROM demographics AS d
+              INNER JOIN users AS u ON d.demographics_id = u.demographics_id
+              ${office !== "all" ? "AND u.office_id = :office" : ""}
+              ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
+              ${role !== "all" ? "AND u.user_role = :role" : ""}
+              GROUP BY d.ethnicity_id
+              `,
               {
-                replacements: { office },
+                replacements,
                 type: QueryTypes.SELECT,
               },
             );
@@ -487,111 +522,144 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
         break;
       }
       case "STAFF": {
-        const whereClause = office !== "all" ? { office_id: office } : {};
-      
-        const [doctors, nurses, receptionists] = await Promise.all([
-          Doctor.count(whereClause),
-          Nurse.count(whereClause),
-          Receptionist.count(whereClause),
-        ]);
-      
-        // Format the data to include all details for each role
-        data = [
-          { name: "Doctors", value: doctors },
-          { name: "Nurses", value: nurses },
-          { name: "Receptionists", value: receptionists },
-        ];
+        const replacements = {
+          office,
+          ...(dateRange && {
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+        };
+        const query = `
+          SELECT 
+            role,
+            COUNT(*) as count
+          FROM (
+            SELECT 'Doctors' as role, doctor_id as id FROM doctors
+            WHERE 1=1
+            ${office !== "all" ? "AND office_id = :office" : ""}
+            ${dateRange ? "AND created_at BETWEEN :startDate AND :endDate" : ""}
+            UNION ALL
+            SELECT 'Nurses' as role, nurse_id as id FROM nurses
+            WHERE 1=1
+            ${office !== "all" ? "AND office_id = :office" : ""}
+            ${dateRange ? "AND created_at BETWEEN :startDate AND :endDate" : ""}
+            UNION ALL
+            SELECT 'Receptionists' as role, receptionist_id as id FROM receptionists
+            WHERE 1=1
+            ${office !== "all" ? "AND office_id = :office" : ""}
+            ${dateRange ? "AND created_at BETWEEN :startDate AND :endDate" : ""}
+          ) as staff
+          GROUP BY role
+        `;
+
+        const staffStats = await sequelize.query(query, {
+          replacements,
+          type: QueryTypes.SELECT,
+        });
+
+        data = staffStats.map((stat) => ({
+          name: stat.role,
+          value: parseInt(stat.count),
+        }));
         break;
-      }      
+      }
 
       case "APPOINTMENTS": {
-        const whereClause = office !== "all" ? { office_id: office } : {};
+        const replacements = {
+          office,
+          ...(dateRange && {
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+          ...(status !== "all" && { status }),
+        };
 
-        const appointmentStats = await Appointment.findAll({
-          where: whereClause,
-          attributes: [
-            "status",
-            [sequelize.fn("COUNT", sequelize.col("status")), "count"],
-          ],
-          group: ["status"],
-        });
+        const appointmentStats = await sequelize.query(
+          `
+          SELECT 
+            status,
+            COUNT(*) as count
+          FROM appointments
+          WHERE 1=1
+          ${office !== "all" ? "AND office_id = :office" : ""}
+          ${dateRange ? "AND appointment_datetime BETWEEN :startDate AND :endDate" : ""}
+          ${status !== "all" ? "AND status = :status" : ""}
+          GROUP BY status
+          `,
+          {
+            replacements,
+            type: QueryTypes.SELECT,
+          },
+        );
 
         data = appointmentStats.map((stat) => ({
           name: stat.status,
-          value: parseInt(stat.dataValues.count),
+          value: parseInt(stat.count),
         }));
         break;
       }
 
       case "BILLING": {
-        const whereClause = office !== "all" ? { office_id: office } : {};
-
+        const replacements = {
+          office,
+          ...(dateRange && {
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+          }),
+          ...(status !== "all" && { status }),
+        };
         switch (subCategory) {
           case "PAYMENT_STATUS": {
-            const billingStats = await Billing.findAll({
-              where: whereClause,
-              attributes: [
-                "payment_status",
-                [sequelize.fn("COUNT", sequelize.col("billing_id")), "count"],
-                [
-                  sequelize.fn("SUM", sequelize.col("amount_due")),
-                  "total_amount",
-                ],
-              ],
-              group: ["payment_status"],
-            });
+            const billingStats = await sequelize.query(
+              `
+              SELECT 
+                payment_status,
+                COUNT(*) as count,
+                SUM(amount_due) as total_amount
+              FROM billing
+              WHERE 1=1
+              ${office !== "all" ? "AND office_id = :office" : ""}
+              ${dateRange ? "AND created_at BETWEEN :startDate AND :endDate" : ""}
+              ${status !== "all" ? "AND payment_status = :status" : ""}
+              GROUP BY payment_status
+              `,
+              {
+                replacements,
+                type: QueryTypes.SELECT,
+              },
+            );
 
             data = billingStats.map((stat) => ({
               name: stat.payment_status,
-              value: parseInt(stat.dataValues.count),
-              amount: parseFloat(stat.dataValues.total_amount),
+              value: parseInt(stat.count),
+              amount: parseFloat(stat.total_amount),
             }));
             break;
           }
 
           case "REVENUE": {
-            const revenueStats = await Billing.findAll({
-              where: {
-                ...whereClause,
-                payment_status: "PAID",
+            const revenueStats = await sequelize.query(
+              `
+              SELECT 
+                DATE_FORMAT(created_at, '%Y-%m') as month,
+                SUM(amount_paid) as total_revenue
+              FROM billing
+              WHERE payment_status = 'PAID'
+              ${office !== "all" ? "AND office_id = :office" : ""}
+              ${dateRange ? "AND created_at BETWEEN :startDate AND :endDate" : ""}
+              GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+              ORDER BY month DESC
+              LIMIT 12
+              `,
+              {
+                replacements,
+                type: QueryTypes.SELECT,
               },
-              attributes: [
-                [
-                  sequelize.fn(
-                    "DATE_FORMAT",
-                    sequelize.col("created_at"),
-                    "%Y-%m",
-                  ),
-                  "month",
-                ],
-                [
-                  sequelize.fn("SUM", sequelize.col("amount_paid")),
-                  "total_revenue",
-                ],
-              ],
-              group: [
-                sequelize.fn(
-                  "DATE_FORMAT",
-                  sequelize.col("created_at"),
-                  "%Y-%m",
-                ),
-              ],
-              order: [
-                [
-                  sequelize.fn(
-                    "DATE_FORMAT",
-                    sequelize.col("created_at"),
-                    "%Y-%m",
-                  ),
-                  "DESC",
-                ],
-              ],
-              limit: 12,
-            });
+            );
 
             data = revenueStats.map((stat) => ({
-              name: stat.dataValues.month,
-              value: parseFloat(stat.dataValues.total_revenue),
+              name: stat.month,
+              value: parseFloat(stat.total_revenue),
             }));
             break;
           }
@@ -614,30 +682,44 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
 };
 
 const getAnalyticsDetails = async (req, res) => {
-  const { analyticType, subCategory, office, filter } = req.body.analyticData;
-
+  const { analyticType, subCategory, office, filter, dateRange, status, role } =
+    req.body.analyticData;
   try {
     let details;
+    const replacements = {
+      demographicId:
+        analyticType === "DEMOGRAPHICS"
+          ? logic.getDemographicId(subCategory, filter)
+          : null,
+      office,
+      filter,
+      ...(dateRange && {
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      }),
+      ...(status !== "all" && { status }),
+      ...(role !== "all" && { role }),
+    };
     switch (analyticType) {
       case "DEMOGRAPHICS": {
         let baseQuery = `
-    SELECT 
-      u.user_role,
-      CASE 
-        WHEN u.user_role = 'PATIENT' THEN p.patient_fname
-        WHEN u.user_role = 'DOCTOR' THEN doc.doctor_fname
-        WHEN u.user_role = 'NURSE' THEN n.nurse_fname
-        WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_fname
-        WHEN u.user_role = 'ADMIN' THEN a.admin_fname
-      END as first_name,
-      CASE 
-        WHEN u.user_role = 'PATIENT' THEN p.patient_lname
-        WHEN u.user_role = 'DOCTOR' THEN doc.doctor_lname
-        WHEN u.user_role = 'NURSE' THEN n.nurse_lname
-        WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_lname
-        WHEN u.user_role = 'ADMIN' THEN a.admin_lname
-      END as last_name
-  `;
+          SELECT 
+            u.user_role,
+            CASE 
+              WHEN u.user_role = 'PATIENT' THEN p.patient_fname
+              WHEN u.user_role = 'DOCTOR' THEN doc.doctor_fname
+              WHEN u.user_role = 'NURSE' THEN n.nurse_fname
+              WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_fname
+              WHEN u.user_role = 'ADMIN' THEN a.admin_fname
+            END as first_name,
+            CASE 
+              WHEN u.user_role = 'PATIENT' THEN p.patient_lname
+              WHEN u.user_role = 'DOCTOR' THEN doc.doctor_lname
+              WHEN u.user_role = 'NURSE' THEN n.nurse_lname
+              WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_lname
+              WHEN u.user_role = 'ADMIN' THEN a.admin_lname
+            END as last_name
+          `;
 
         // Add specific fields based on subcategory
         if (subCategory === "AGE") {
@@ -649,35 +731,38 @@ const getAnalyticsDetails = async (req, res) => {
         }
 
         baseQuery += `
-    FROM demographics dem
-    INNER JOIN users u ON dem.demographics_id = u.demographics_id
-    LEFT JOIN patients p ON u.user_id = p.user_id
-    LEFT JOIN doctors doc ON u.user_id = doc.user_id
-    LEFT JOIN nurses n ON u.user_id = n.user_id
-    LEFT JOIN receptionists r ON u.user_id = r.user_id
-    LEFT JOIN admins a ON u.user_id = a.user_id
-  `;
+          FROM demographics dem
+          INNER JOIN users u ON dem.demographics_id = u.demographics_id
+          LEFT JOIN patients p ON u.user_id = p.user_id
+          LEFT JOIN doctors doc ON u.user_id = doc.user_id
+          LEFT JOIN nurses n ON u.user_id = n.user_id
+          LEFT JOIN receptionists r ON u.user_id = r.user_id
+          LEFT JOIN admins a ON u.user_id = a.user_id
+          WHERE 1=1
+          ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
+          ${role !== "all" ? "AND u.user_role = :role" : ""}
+          `;
 
         // Add WHERE clause based on subcategory
         if (subCategory === "AGE") {
           baseQuery += `
-      WHERE TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
-        CASE 
-          WHEN '${filter}' = '0-17' THEN 0
-          WHEN '${filter}' = '18-29' THEN 1
-          WHEN '${filter}' = '30-49' THEN 2
-          WHEN '${filter}' = '50-69' THEN 3
-          ELSE 70
-        END
-      AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 
-        CASE 
-          WHEN '${filter}' = '0-17' THEN 17
-          WHEN '${filter}' = '18-29' THEN 29
-          WHEN '${filter}' = '30-49' THEN 49
-          WHEN '${filter}' = '50-69' THEN 69
-          ELSE 150
-        END
-    `;
+          WHERE TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
+            CASE 
+              WHEN '${filter}' = '0-17' THEN 0
+              WHEN '${filter}' = '18-29' THEN 18
+              WHEN '${filter}' = '30-49' THEN 30
+              WHEN '${filter}' = '50-69' THEN 50
+              ELSE 70
+            END
+          AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 
+            CASE 
+              WHEN '${filter}' = '0-17' THEN 17
+              WHEN '${filter}' = '18-29' THEN 29
+              WHEN '${filter}' = '30-49' THEN 49
+              WHEN '${filter}' = '50-69' THEN 69
+              ELSE 150
+            END
+        `;
         } else {
           baseQuery += `WHERE dem.${subCategory.toLowerCase()}_id = :demographicId`;
         }
@@ -687,12 +772,10 @@ const getAnalyticsDetails = async (req, res) => {
         }
 
         details = await sequelize.query(baseQuery, {
-          replacements: {
-            demographicId: logic.getDemographicId(subCategory, filter),
-            office,
-          },
+          replacements,
           type: QueryTypes.SELECT,
         });
+
         break;
       }
       case "STAFF": {
@@ -710,7 +793,8 @@ const getAnalyticsDetails = async (req, res) => {
             FROM doctors d
             LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id
             LEFT JOIN office o ON do.office_id = o.office_id
-            WHERE '${filter}' = 'DOCTORS'
+            WHERE :filter = 'Doctors
+            ${dateRange ? "AND d.created_at BETWEEN :startDate AND :endDate" : ""}
             GROUP BY d.doctor_id
             
             UNION ALL
@@ -727,7 +811,7 @@ const getAnalyticsDetails = async (req, res) => {
             FROM nurses n
             LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id
             LEFT JOIN office o ON no.office_id = o.office_id
-            WHERE '${filter}' = 'NURSES'
+            WHERE :filter = 'Nurses'
             GROUP BY n.nurse_id
             
             UNION ALL
@@ -744,21 +828,16 @@ const getAnalyticsDetails = async (req, res) => {
             FROM receptionists r
             LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id
             LEFT JOIN office o ON ro.office_id = o.office_id
-            WHERE '${filter}' = 'RECEPTIONISTS'
+            WHERE :filter = 'Receptionists'
             GROUP BY r.receptionist_id
           )
           SELECT * FROM StaffOffices
-          ${office !== "all" ? "WHERE offices LIKE CONCAT('%', :officeName, '%')" : ""}
-        `;
-
-        const officeName =
-          office !== "all"
-            ? OFFICE_LIST.find((o) => o.office_id.toString() === office)
-                ?.office_name
-            : null;
+          WHERE 1=1
+          ${dateRange ? "AND r.created_at BETWEEN :startDate AND :endDate" : ""}
+          ORDER BY first_name, last_name`;
 
         details = await sequelize.query(baseQuery, {
-          replacements: { officeName },
+          replacements,
           type: QueryTypes.SELECT,
         });
         break;
@@ -775,19 +854,19 @@ const getAnalyticsDetails = async (req, res) => {
             d.doctor_fname,
             d.doctor_lname,
             a.appointment_datetime
+            a.reason
           FROM appointments a
           JOIN office o ON a.office_id = o.office_id
           JOIN patients p ON a.patient_id = p.patient_id
           JOIN doctors d ON a.doctor_id = d.doctor_id
-          WHERE a.status = :status
+          WHERE a.status = :filter
           ${office !== "all" ? "AND a.office_id = :office" : ""}
+          ${dateRange ? "AND a.appointment_datetime BETWEEN :startDate AND :endDate" : ""}
+          ORDER BY a.appointment_datetime DESC
         `;
 
         details = await sequelize.query(query, {
-          replacements: {
-            status: filter,
-            office,
-          },
+          replacements,
           type: QueryTypes.SELECT,
         });
         break;
@@ -810,15 +889,14 @@ const getAnalyticsDetails = async (req, res) => {
               FROM billing b
               JOIN patients p ON b.patient_id = p.patient_id
               LEFT JOIN receptionists r ON b.handled_by = r.receptionist_id
-              WHERE b.payment_status = :status
+              WHERE b.payment_status = :filter
               ${office !== "all" ? "AND b.office_id = :office" : ""}
+              ${dateRange ? "AND b.created_at BETWEEN :startDate AND :endDate" : ""}
+              ORDER BY b.created_at DESC
             `;
 
             details = await sequelize.query(query, {
-              replacements: {
-                status: filter,
-                office,
-              },
+              replacements,
               type: QueryTypes.SELECT,
             });
             break;
@@ -831,19 +909,21 @@ const getAnalyticsDetails = async (req, res) => {
                 b.amount_due,
                 b.amount_paid,
                 DATE_FORMAT(b.created_at, '%Y-%m') as month,
+                b.created_at,
                 p.patient_fname,
                 p.patient_lname
               FROM billing b
               JOIN patients p ON b.patient_id = p.patient_id
-              WHERE DATE_FORMAT(b.created_at, '%Y-%m') = :month
-              ${office !== "all" ? "AND b.office_id = :office" : ""}
+              WHERE 
+                DATE_FORMAT(b.created_at, '%Y-%m') = :filter
+                AND b.payment_status = 'PAID'
+                ${office !== "all" ? "AND b.office_id = :office" : ""}
+                ${dateRange ? "AND b.created_at BETWEEN :startDate AND :endDate" : ""}
+              ORDER BY b.created_at DESC
             `;
 
             details = await sequelize.query(query, {
-              replacements: {
-                month: filter,
-                office,
-              },
+              replacements,
               type: QueryTypes.SELECT,
             });
             break;
@@ -851,6 +931,8 @@ const getAnalyticsDetails = async (req, res) => {
         }
         break;
       }
+      default:
+        throw new Error("Invallid analytics type");
     }
 
     res.json({ details });

@@ -26,6 +26,15 @@ const FilterBar = ({
   const handleDateSelect = useCallback(
     (range) => {
       if (range?.from) {
+        // if range is cleared, set dateRange to null
+        // i.e. disable calendar
+        onFilterChange({
+          [FILTER_TYPES.DATE_RANGE]: null,
+        });
+        return;
+      }
+      // else handle it normally
+      if (range.from) {
         onFilterChange({
           [FILTER_TYPES.DATE_RANGE]: {
             startDate: range.from,
@@ -43,6 +52,18 @@ const FilterBar = ({
     }
     return STATUSES.APPOINTMENT;
   }, [selectedAnalytic]);
+
+  const getDateButtonText = () => {
+    if (!filters[FILTER_TYPES.DATE_RANGE]) {
+      return <span>Pick a date range</span>;
+    }
+    const { startDate, endDate } = filters[FILTER_TYPES.DATE_RANGE];
+    return (
+      <>
+        {format(startDate, "LLL dd, y")} - {format(endDate, "LLL dd, y")}
+      </>
+    );
+  };
 
   return (
     <div className="mb-6 flex flex-wrap gap-4">
@@ -123,35 +144,40 @@ const FilterBar = ({
               className="w-[300px] justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filters[FILTER_TYPES.DATE_RANGE].startDate ? (
-                <>
-                  {format(
-                    filters[FILTER_TYPES.DATE_RANGE].startDate,
-                    "LLL dd, y",
-                  )}{" "}
-                  -{" "}
-                  {format(
-                    filters[FILTER_TYPES.DATE_RANGE].endDate,
-                    "LLL dd, y",
-                  )}
-                </>
-              ) : (
-                <span>Pick a date range</span>
-              )}
+              {getDateButtonText()}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={filters[FILTER_TYPES.DATE_RANGE].startDate}
-              selected={{
-                from: filters[FILTER_TYPES.DATE_RANGE].startDate,
-                to: filters[FILTER_TYPES.DATE_RANGE].endDate,
-              }}
+              defaultMonth={
+                filters[FILTER_TYPES.DATE_RANGE]?.startDate || new Date()
+              }
+              selected={
+                filters[FILTER_TYPES.DATE_RANGE]
+                  ? {
+                      from: filters[FILTER_TYPES.DATE_RANGE].startDate,
+                      to: filters[FILTER_TYPES.DATE_RANGE].endDate,
+                    }
+                  : undefined
+              }
               onSelect={handleDateSelect}
               numberOfMonths={1}
             />
+            {filters[FILTER_TYPES.DATE_RANGE] && (
+              <div className="p-3 border-t">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    onFilterChange({ [FILTER_TYPES.DATE_RANGE]: null })
+                  }
+                >
+                  Clear Date Range
+                </Button>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
       )}

@@ -32,7 +32,6 @@ export const STATUSES = {
     { id: "NOT PAID", label: "Not Paid" },
     { id: "IN PROGRESS", label: "In Progress" },
     { id: "CANCELLED", label: "Cancelled" },
-    { id: "REFUNDED", label: "Refunded" },
   ],
 };
 
@@ -66,11 +65,7 @@ export const analyticOptions = [
     title: "Staff Distribution",
     icon: <Building2 className="w-6 h-6 text-green-500" />,
     description: "Analyze staff roles and office assignments",
-    availableFilters: [
-      FILTER_TYPES.OFFICE,
-      FILTER_TYPES.ROLE,
-      FILTER_TYPES.SPECIALTY,
-    ],
+    availableFilters: [FILTER_TYPES.OFFICE, FILTER_TYPES.DATE_RANGE],
   },
   {
     id: "APPOINTMENTS",
