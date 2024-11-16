@@ -6,10 +6,12 @@ module.exports = {
   content: [
     "./src/components/*.jsx",
     "./src/routes/*.jsx",
-    "./src/utils/*.jsx",
+    "./src/utils/*.js",
+    "./src/utils/*.tsx",
     "./src/components/UI/*.jsx",
     "./src/components/sidebarItems/*.jsx",
     "./src/components/sidebarItems/**/*.jsx",
+    "./src/components/sidebarItems/**/**/*.jsx",
     "./src/index.jsx",
   ],
   theme: {

@@ -10,12 +10,39 @@ import {
   CreditCard,
 } from "lucide-react";
 
+export const FILTER_TYPES = {
+  OFFICE: "office",
+  DATE_RANGE: "dateRange",
+  ROLE: "role",
+  STATUS: "status",
+};
+
+export const STATUSES = {
+  APPOINTMENT: [
+    { id: "all", label: "All Statuses" },
+    { id: "CONFIRMED", label: "Confirmed" },
+    { id: "CANCELLED", label: "Cancelled" },
+    { id: "COMPLETED", label: "Completed" },
+    { id: "NO SHOW", label: "No Show" },
+    { id: "PENDING", label: "Pending" },
+    { id: "PENDING_DOCTOR_APPROVAL", label: "Pending Doctor Approval" },
+  ],
+  PAYMENT: [
+    { id: "all", label: "All Statuses" },
+    { id: "PAID", label: "Paid" },
+    { id: "NOT PAID", label: "Not Paid" },
+    { id: "IN PROGRESS", label: "In Progress" },
+    { id: "CANCELLED", label: "Cancelled" },
+  ],
+};
+
 export const analyticOptions = [
   {
     id: "DEMOGRAPHICS",
     title: "User Demographics",
     icon: <Users className="w-6 h-6 text-blue-500" />,
     description: "View User age, gender, and ethnicity distribution",
+    availableFilters: [FILTER_TYPES.ROLE, FILTER_TYPES.DATE_RANGE],
     subCategories: [
       {
         id: "GENDER",
@@ -39,18 +66,25 @@ export const analyticOptions = [
     title: "Staff Distribution",
     icon: <Building2 className="w-6 h-6 text-green-500" />,
     description: "Analyze staff roles and office assignments",
+    availableFilters: [FILTER_TYPES.OFFICE, FILTER_TYPES.DATE_RANGE],
   },
   {
     id: "APPOINTMENTS",
     title: "Appointment Analytics",
     icon: <Activity className="w-6 h-6 text-orange-500" />,
     description: "Track appointment status and distribution",
+    availableFilters: [
+      FILTER_TYPES.OFFICE,
+      FILTER_TYPES.DATE_RANGE,
+      FILTER_TYPES.STATUS,
+    ],
   },
   {
     id: "BILLING",
     title: "Billing Analytics",
     icon: <DollarSign className="w-6 h-6 text-purple-500" />,
     description: "Track payment status and revenue distribution",
+    availableFilters: [FILTER_TYPES.DATE_RANGE, FILTER_TYPES.STATUS],
     subCategories: [
       {
         id: "PAYMENT_STATUS",
@@ -73,16 +107,27 @@ export const OFFICE_LIST = [
 ];
 
 export const ROLE_LIST = [
-  { user_role: "Patient" },
-  { user_role: "Doctor" },
-  { user_role: "Receptionists" },
-  { user_role: "Nurse" },
+  { user_role: "PATIENT" },
+  { user_role: "DOCTOR" },
+  { user_role: "RECEPTIONIST" },
+  { user_role: "NURSE" },
+  { user_role: "ADMIN" },
 ];
 
-export const DATE_RANGES = [
-  { id: "all", label: "All Time" },
-  { id: "today", label: "Today" },
-  { id: "week", label: "This Week" },
-  { id: "month", label: "This Month" },
-  { id: "year", label: "This Year" },
+export const SPECIALTIES = [
+  { id: 1, name: " Family Medicine" },
+  { id: 2, name: " Internal Medicine" },
+  { id: 3, name: " Pediatrics" },
+  { id: 4, name: " Obstetrics and Gynecology" },
+  { id: 5, name: " General Surgery" },
+  { id: 6, name: " Psychiatry" },
+  { id: 7, name: " Cardiology" },
+  { id: 8, name: " Dermatology" },
+  { id: 9, name: " Orthopedics" },
+  { id: 10, name: " Neurology" },
+  { id: 11, name: " Oncology" },
+  { id: 12, name: " Emergency Medicine" },
+  { id: 13, name: " Gastroenterology" },
+  { id: 14, name: " Endocrinology" },
+  { id: 15, name: "  Urology" },
 ];
