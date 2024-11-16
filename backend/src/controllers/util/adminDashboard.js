@@ -532,47 +532,55 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
           role: role === "all" ? null : role,
           status: status === "all" ? null : status,
         };
+
         const query = `
           SELECT 
             role,
-            COUNT(*) as count
+            COUNT(DISTINCT id) as count
           FROM (
             SELECT 
               'Doctors' as role, 
               d.doctor_id as id,
-              do.office_id
+              do.office_id,
+              u.account_created_at
             FROM doctors d
+            JOIN users u ON u.user_id = d.user_id
             LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id
             WHERE 1=1
             ${office !== "all" ? "AND do.office_id = :office" : ""}
-            ${dateRange ? "AND d.created_at BETWEEN :startDate AND :endDate" : ""}
+            ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
 
             UNION ALL
 
             SELECT 
               'Nurses' as role, 
               n.nurse_id as id,
-              no.office_id
+              no.office_id,
+              u.account_created_at
             FROM nurses n
+            JOIN users u ON u.user_id = n.user_id
             LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id
             WHERE 1=1
             ${office !== "all" ? "AND no.office_id = :office" : ""}
-            ${dateRange ? "AND n.created_at BETWEEN :startDate AND :endDate" : ""}
+            ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
 
             UNION ALL
 
             SELECT 
               'Receptionists' as role, 
               r.receptionist_id as id,
-              ro.office_id
+              ro.office_id,
+              u.account_created_at
             FROM receptionists r
+            JOIN users u ON u.user_id = r.user_id
             LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id
             WHERE 1=1
             ${office !== "all" ? "AND ro.office_id = :office" : ""}
-            ${dateRange ? "AND r.created_at BETWEEN :startDate AND :endDate" : ""}
+            ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
           ) as staff
           GROUP BY role
         `;
+
         const staffStats = await sequelize.query(query, {
           replacements,
           type: QueryTypes.SELECT,
@@ -670,7 +678,6 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
               ${dateRange ? "AND b.created_at BETWEEN :startDate AND :endDate" : ""}
               GROUP BY DATE_FORMAT(created_at, '%Y-%m')
               ORDER BY month DESC
-              LIMIT 12
               `,
               {
                 replacements,
@@ -792,73 +799,82 @@ const getAnalyticsDetails = async (req, res) => {
       case "STAFF": {
         const staffType = filter.slice(0, -1).toUpperCase();
         const baseQuery = `
+          WITH StaffBase AS (
+            SELECT 
+              d.doctor_id as id,
+              d.doctor_fname as fname,
+              d.doctor_lname as lname,
+              d.doctor_employee_id as employee_id,
+              u.account_created_at,
+              'DOCTOR' as staff_type
+            FROM doctors d
+            JOIN users u ON u.user_id = d.user_id
+            WHERE :staffType = 'DOCTOR'
+
+            UNION ALL
+
+            SELECT 
+              n.nurse_id,
+              n.nurse_fname,
+              n.nurse_lname,
+              n.nurse_employee_id,
+              u.account_created_at,
+              'NURSE'
+            FROM nurses n
+            JOIN users u ON u.user_id = n.user_id
+            WHERE :staffType = 'NURSE'
+
+            UNION ALL
+
+            SELECT 
+              r.receptionist_id,
+              r.receptionist_fname,
+              r.receptionist_lname,
+              r.receptionist_employee_id,
+              u.account_created_at,
+              'RECEPTIONIST'
+            FROM receptionists r
+            JOIN users u ON u.user_id = r.user_id
+            WHERE :staffType = 'RECEPTIONIST'
+          )
           SELECT 
-            :staffType as role,
-            CASE 
-              WHEN :staffType = 'DOCTOR' THEN d.doctor_fname
-              WHEN :staffType = 'NURSE' THEN n.nurse_fname
-              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_fname
-            END as first_name,
-            CASE 
-              WHEN :staffType = 'DOCTOR' THEN d.doctor_lname
-              WHEN :staffType = 'NURSE' THEN n.nurse_lname
-              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_lname
-            END as last_name,
-            CASE 
-              WHEN :staffType = 'DOCTOR' THEN d.doctor_employee_id
-              WHEN :staffType = 'NURSE' THEN n.nurse_employee_id
-              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_employee_id
-            END as employee_id,
+            sb.staff_type as role,
+            sb.fname as first_name,
+            sb.lname as last_name,
+            sb.employee_id,
             GROUP_CONCAT(DISTINCT o.office_name) as offices,
             GROUP_CONCAT(DISTINCT CONCAT(
               CASE 
-                WHEN :staffType = 'DOCTOR' THEN do.day_of_week
-                WHEN :staffType = 'NURSE' THEN no.day_of_week
-                WHEN :staffType = 'RECEPTIONIST' THEN ro.day_of_week
+                WHEN sb.staff_type = 'DOCTOR' THEN do.day_of_week
+                WHEN sb.staff_type = 'NURSE' THEN no.day_of_week
+                WHEN sb.staff_type = 'RECEPTIONIST' THEN ro.day_of_week
               END,
               ': ',
               CASE 
-                WHEN :staffType = 'DOCTOR' THEN TIME_FORMAT(do.shift_start, '%H:%i')
-                WHEN :staffType = 'NURSE' THEN TIME_FORMAT(no.shift_start, '%H:%i')
-                WHEN :staffType = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_start, '%H:%i')
+                WHEN sb.staff_type = 'DOCTOR' THEN TIME_FORMAT(do.shift_start, '%H:%i')
+                WHEN sb.staff_type = 'NURSE' THEN TIME_FORMAT(no.shift_start, '%H:%i')
+                WHEN sb.staff_type = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_start, '%H:%i')
               END,
               '-',
               CASE 
-                WHEN :staffType = 'DOCTOR' THEN TIME_FORMAT(do.shift_end, '%H:%i')
-                WHEN :staffType = 'NURSE' THEN TIME_FORMAT(no.shift_end, '%H:%i')
-                WHEN :staffType = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_end, '%H:%i')
+                WHEN sb.staff_type = 'DOCTOR' THEN TIME_FORMAT(do.shift_end, '%H:%i')
+                WHEN sb.staff_type = 'NURSE' THEN TIME_FORMAT(no.shift_end, '%H:%i')
+                WHEN sb.staff_type = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_end, '%H:%i')
               END
             )) as schedules
-          FROM (
-            SELECT doctor_id as id, doctor_fname, doctor_lname, doctor_employee_id, created_at 
-            FROM doctors WHERE :staffType = 'DOCTOR'
-            UNION ALL
-            SELECT nurse_id, nurse_fname, nurse_lname, nurse_employee_id, created_at 
-            FROM nurses WHERE :staffType = 'NURSE'
-            UNION ALL
-            SELECT receptionist_id, receptionist_fname, receptionist_lname, receptionist_employee_id, created_at 
-            FROM receptionists WHERE :staffType = 'RECEPTIONIST'
-          ) staff
-          LEFT JOIN doctors d ON staff.id = d.doctor_id AND :staffType = 'DOCTOR'
-          LEFT JOIN nurses n ON staff.id = n.nurse_id AND :staffType = 'NURSE'
-          LEFT JOIN receptionists r ON staff.id = r.receptionist_id AND :staffType = 'RECEPTIONIST'
-          LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id AND :staffType = 'DOCTOR'
-          LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id AND :staffType = 'NURSE'
-          LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id AND :staffType = 'RECEPTIONIST'
+          FROM StaffBase sb
+          LEFT JOIN doctor_offices do ON sb.id = do.doctor_id AND sb.staff_type = 'DOCTOR'
+          LEFT JOIN nurse_offices no ON sb.id = no.nurse_id AND sb.staff_type = 'NURSE'
+          LEFT JOIN receptionist_offices ro ON sb.id = ro.receptionist_id AND sb.staff_type = 'RECEPTIONIST'
           LEFT JOIN office o ON 
-            (do.office_id = o.office_id AND :staffType = 'DOCTOR') OR
-            (no.office_id = o.office_id AND :staffType = 'NURSE') OR
-            (ro.office_id = o.office_id AND :staffType = 'RECEPTIONIST')
+            (do.office_id = o.office_id AND sb.staff_type = 'DOCTOR') OR
+            (no.office_id = o.office_id AND sb.staff_type = 'NURSE') OR
+            (ro.office_id = o.office_id AND sb.staff_type = 'RECEPTIONIST')
           WHERE 1=1
           ${office !== "all" ? "AND o.office_id = :office" : ""}
-          ${dateRange ? "AND staff.created_at BETWEEN :startDate AND :endDate" : ""}
-          GROUP BY 
-            CASE 
-              WHEN :staffType = 'DOCTOR' THEN d.doctor_id
-              WHEN :staffType = 'NURSE' THEN n.nurse_id
-              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_id
-            END
-          ORDER BY first_name, last_name
+          ${dateRange ? "AND sb.account_created_at BETWEEN :startDate AND :endDate" : ""}
+          GROUP BY sb.id
+          ORDER BY sb.lname, sb.fname
         `;
 
         const replacements = {
@@ -985,10 +1001,6 @@ const getAnalyticsDetails = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    console.log(
-      " LOOOOOOK HEERE DELETIN USER WITH EMAIL",
-      req.body.targetUserEmail,
-    );
     Users.destroy({
       where: {
         user_email: req.body.targetUserEmail,
