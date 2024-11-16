@@ -15,13 +15,15 @@ const DataVisualization = ({
   chartData,
   selectedAnalytic,
   selectedSubCategory,
-  selectedOffice,
+  filters,
   dateRange,
 }) => {
   const [viewMode, setViewMode] = useState("table");
   const [detailedData, setDetailedData] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
 
+  // when clicking on a role send api request with header
+  // to expand and show the data that made the analytic
   const handleRowClick = async (item, index) => {
     console.log(item);
     console.log(index);
@@ -40,9 +42,11 @@ const DataVisualization = ({
         analyticData: {
           analyticType: selectedAnalytic,
           subCategory: selectedSubCategory,
-          office: selectedOffice,
+          office: filters.office || "all",
           filter: item.name,
-          dateRange: dateRange,
+          dateRange: filters.dateRange || null,
+          status: filters.status || "all",
+          role: filters.role || "all",
         },
       });
 

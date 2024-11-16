@@ -682,27 +682,14 @@ const populateANALYTICS = async (user, admin, analyticData, res) => {
 };
 
 const getAnalyticsDetails = async (req, res) => {
+  console.log("RECEIVED IN details", req.body.analyticData);
   const { analyticType, subCategory, office, filter, dateRange, status, role } =
     req.body.analyticData;
   try {
     let details;
-    const replacements = {
-      demographicId:
-        analyticType === "DEMOGRAPHICS"
-          ? logic.getDemographicId(subCategory, filter)
-          : null,
-      office,
-      filter,
-      ...(dateRange && {
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-      }),
-      ...(status !== "all" && { status }),
-      ...(role !== "all" && { role }),
-    };
     switch (analyticType) {
       case "DEMOGRAPHICS": {
-        let baseQuery = `
+        const baseQuery = `
           SELECT 
             u.user_role,
             CASE 
@@ -719,18 +706,9 @@ const getAnalyticsDetails = async (req, res) => {
               WHEN u.user_role = 'RECEPTIONIST' THEN r.receptionist_lname
               WHEN u.user_role = 'ADMIN' THEN a.admin_lname
             END as last_name
-          `;
-
-        // Add specific fields based on subcategory
-        if (subCategory === "AGE") {
-          baseQuery += ", dem.dob";
-        } else if (subCategory === "GENDER") {
-          baseQuery += ", dem.gender_id";
-        } else if (subCategory === "ETHNICITY") {
-          baseQuery += ", dem.ethnicity_id";
-        }
-
-        baseQuery += `
+            ${subCategory === "AGE" ? ", dem.dob" : ""}
+            ${subCategory === "GENDER" ? ", dem.gender_id" : ""}
+            ${subCategory === "ETHNICITY" ? ", dem.ethnicity_id" : ""}
           FROM demographics dem
           INNER JOIN users u ON dem.demographics_id = u.demographics_id
           LEFT JOIN patients p ON u.user_id = p.user_id
@@ -739,102 +717,122 @@ const getAnalyticsDetails = async (req, res) => {
           LEFT JOIN receptionists r ON u.user_id = r.user_id
           LEFT JOIN admins a ON u.user_id = a.user_id
           WHERE 1=1
-          ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
-          ${role !== "all" ? "AND u.user_role = :role" : ""}
-          `;
-
-        // Add WHERE clause based on subcategory
-        if (subCategory === "AGE") {
-          baseQuery += `
-          WHERE TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
-            CASE 
-              WHEN '${filter}' = '0-17' THEN 0
-              WHEN '${filter}' = '18-29' THEN 18
-              WHEN '${filter}' = '30-49' THEN 30
-              WHEN '${filter}' = '50-69' THEN 50
-              ELSE 70
-            END
-          AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 
-            CASE 
-              WHEN '${filter}' = '0-17' THEN 17
-              WHEN '${filter}' = '18-29' THEN 29
-              WHEN '${filter}' = '30-49' THEN 49
-              WHEN '${filter}' = '50-69' THEN 69
-              ELSE 150
-            END
+          ${office !== "all" ? "AND u.office_id = :office" : ""}
+          ${
+            subCategory === "AGE"
+              ? `AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
+                  CASE 
+                    WHEN :filter = '0-17' THEN 0
+                    WHEN :filter = '18-29' THEN 18
+                    WHEN :filter = '30-49' THEN 30
+                    WHEN :filter = '50-69' THEN 50
+                    ELSE 70
+                  END
+                AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) <= 
+                  CASE 
+                    WHEN :filter = '0-17' THEN 17
+                    WHEN :filter = '18-29' THEN 29
+                    WHEN :filter = '30-49' THEN 49
+                    WHEN :filter = '50-69' THEN 69
+                    ELSE 150
+                  END`
+              : `AND dem.${subCategory.toLowerCase()}_id = (
+                  CASE 
+                    WHEN :filter = 'Male' THEN 1
+                    WHEN :filter = 'Female' THEN 2
+                    WHEN :filter = 'Non-binary' THEN 3
+                    WHEN :filter = 'Prefer not to say' THEN 4
+                    WHEN :filter = 'Hispanic or Latino' THEN 1
+                    WHEN :filter = 'Not Hispanic or Latino' THEN 2
+                    ELSE 3
+                  END
+                )`
+          }
         `;
-        } else {
-          baseQuery += `WHERE dem.${subCategory.toLowerCase()}_id = :demographicId`;
-        }
 
-        if (office !== "all") {
-          baseQuery += " AND u.office_id = :office";
-        }
+        const replacements = {
+          office: office === "all" ? undefined : office,
+          filter,
+        };
 
         details = await sequelize.query(baseQuery, {
           replacements,
           type: QueryTypes.SELECT,
         });
-
         break;
       }
       case "STAFF": {
+        // remove 's' and convert to uppercase
+        const staffType = filter.slice(0, -1).toUpperCase();
         const baseQuery = `
-          WITH StaffOffices AS (
-            SELECT 
-              'DOCTOR' as role,
-              d.doctor_fname as first_name,
-              d.doctor_lname as last_name,
-              d.doctor_employee_id as employee_id,
-              GROUP_CONCAT(DISTINCT o.office_name) as offices,
-              GROUP_CONCAT(DISTINCT CONCAT(do.day_of_week, ': ', 
-                TIME_FORMAT(do.shift_start, '%H:%i'), '-', 
-                TIME_FORMAT(do.shift_end, '%H:%i'))) as schedules
-            FROM doctors d
-            LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id
-            LEFT JOIN office o ON do.office_id = o.office_id
-            WHERE :filter = 'Doctors
-            ${dateRange ? "AND d.created_at BETWEEN :startDate AND :endDate" : ""}
-            GROUP BY d.doctor_id
-            
+          SELECT 
+            :staffType as role,
+            CASE 
+              WHEN :staffType = 'DOCTOR' THEN d.doctor_fname
+              WHEN :staffType = 'NURSE' THEN n.nurse_fname
+              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_fname
+            END as first_name,
+            CASE 
+              WHEN :staffType = 'DOCTOR' THEN d.doctor_lname
+              WHEN :staffType = 'NURSE' THEN n.nurse_lname
+              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_lname
+            END as last_name,
+            CASE 
+              WHEN :staffType = 'DOCTOR' THEN d.doctor_employee_id
+              WHEN :staffType = 'NURSE' THEN n.nurse_employee_id
+              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_employee_id
+            END as employee_id,
+            GROUP_CONCAT(DISTINCT o.office_name) as offices,
+            GROUP_CONCAT(DISTINCT CONCAT(
+              CASE 
+                WHEN :staffType = 'DOCTOR' THEN do.day_of_week
+                WHEN :staffType = 'NURSE' THEN no.day_of_week
+                WHEN :staffType = 'RECEPTIONIST' THEN ro.day_of_week
+              END,
+              ': ',
+              CASE 
+                WHEN :staffType = 'DOCTOR' THEN TIME_FORMAT(do.shift_start, '%H:%i')
+                WHEN :staffType = 'NURSE' THEN TIME_FORMAT(no.shift_start, '%H:%i')
+                WHEN :staffType = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_start, '%H:%i')
+              END,
+              '-',
+              CASE 
+                WHEN :staffType = 'DOCTOR' THEN TIME_FORMAT(do.shift_end, '%H:%i')
+                WHEN :staffType = 'NURSE' THEN TIME_FORMAT(no.shift_end, '%H:%i')
+                WHEN :staffType = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_end, '%H:%i')
+              END
+            )) as schedules
+          FROM (
+            SELECT doctor_id as id, doctor_fname, doctor_lname, doctor_employee_id FROM doctors WHERE :staffType = 'DOCTOR'
             UNION ALL
-            
-            SELECT 
-              'NURSE' as role,
-              n.nurse_fname,
-              n.nurse_lname,
-              n.nurse_employee_id,
-              GROUP_CONCAT(DISTINCT o.office_name),
-              GROUP_CONCAT(DISTINCT CONCAT(no.day_of_week, ': ',
-                TIME_FORMAT(no.shift_start, '%H:%i'), '-',  
-                TIME_FORMAT(no.shift_end, '%H:%i')))
-            FROM nurses n
-            LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id
-            LEFT JOIN office o ON no.office_id = o.office_id
-            WHERE :filter = 'Nurses'
-            GROUP BY n.nurse_id
-            
+            SELECT nurse_id, nurse_fname, nurse_lname, nurse_employee_id FROM nurses WHERE :staffType = 'NURSE'
             UNION ALL
-            
-            SELECT 
-              'RECEPTIONIST' as role,
-              r.receptionist_fname,
-              r.receptionist_lname,
-              r.receptionist_employee_id,
-              GROUP_CONCAT(DISTINCT o.office_name),
-              GROUP_CONCAT(DISTINCT CONCAT(ro.day_of_week, ': ',
-                TIME_FORMAT(ro.shift_start, '%H:%i'), '-',
-                TIME_FORMAT(ro.shift_end, '%H:%i')))
-            FROM receptionists r
-            LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id
-            LEFT JOIN office o ON ro.office_id = o.office_id
-            WHERE :filter = 'Receptionists'
-            GROUP BY r.receptionist_id
-          )
-          SELECT * FROM StaffOffices
-          WHERE 1=1
-          ${dateRange ? "AND r.created_at BETWEEN :startDate AND :endDate" : ""}
-          ORDER BY first_name, last_name`;
+            SELECT receptionist_id, receptionist_fname, receptionist_lname, receptionist_employee_id FROM receptionists WHERE :staffType = 'RECEPTIONIST'
+          ) staff
+          LEFT JOIN doctors d ON staff.id = d.doctor_id AND :staffType = 'DOCTOR'
+          LEFT JOIN nurses n ON staff.id = n.nurse_id AND :staffType = 'NURSE'
+          LEFT JOIN receptionists r ON staff.id = r.receptionist_id AND :staffType = 'RECEPTIONIST'
+          LEFT JOIN doctor_offices do ON d.doctor_id = do.doctor_id AND :staffType = 'DOCTOR'
+          LEFT JOIN nurse_offices no ON n.nurse_id = no.nurse_id AND :staffType = 'NURSE'
+          LEFT JOIN receptionist_offices ro ON r.receptionist_id = ro.receptionist_id AND :staffType = 'RECEPTIONIST'
+          LEFT JOIN office o ON 
+            (do.office_id = o.office_id AND :staffType = 'DOCTOR') OR
+            (no.office_id = o.office_id AND :staffType = 'NURSE') OR
+            (ro.office_id = o.office_id AND :staffType = 'RECEPTIONIST')
+          ${office !== "all" ? "WHERE o.office_id = :office" : ""}
+          GROUP BY 
+            CASE 
+              WHEN :staffType = 'DOCTOR' THEN d.doctor_id
+              WHEN :staffType = 'NURSE' THEN n.nurse_id
+              WHEN :staffType = 'RECEPTIONIST' THEN r.receptionist_id
+            END
+          ORDER BY first_name, last_name
+        `;
+
+        const replacements = {
+          staffType,
+          office: office === "all" ? undefined : office,
+        };
 
         details = await sequelize.query(baseQuery, {
           replacements,
@@ -844,7 +842,7 @@ const getAnalyticsDetails = async (req, res) => {
       }
 
       case "APPOINTMENTS": {
-        const query = `
+        const baseQuery = `
           SELECT 
             a.appointment_id,
             a.status,
@@ -853,82 +851,75 @@ const getAnalyticsDetails = async (req, res) => {
             p.patient_lname,
             d.doctor_fname,
             d.doctor_lname,
-            a.appointment_datetime
+            a.appointment_datetime,
             a.reason
           FROM appointments a
           JOIN office o ON a.office_id = o.office_id
           JOIN patients p ON a.patient_id = p.patient_id
           JOIN doctors d ON a.doctor_id = d.doctor_id
-          WHERE a.status = :filter
+          WHERE a.status = :status
           ${office !== "all" ? "AND a.office_id = :office" : ""}
-          ${dateRange ? "AND a.appointment_datetime BETWEEN :startDate AND :endDate" : ""}
           ORDER BY a.appointment_datetime DESC
         `;
 
-        details = await sequelize.query(query, {
+        const replacements = {
+          status: filter,
+          office: office === "all" ? undefined : office,
+        };
+
+        details = await sequelize.query(baseQuery, {
           replacements,
           type: QueryTypes.SELECT,
         });
         break;
       }
       case "BILLING": {
-        switch (subCategory) {
-          case "PAYMENT_STATUS": {
-            const query = `
-              SELECT 
-                b.billing_id,
-                b.amount_due,
-                b.amount_paid,
-                b.payment_status,
-                b.created_at,
-                p.patient_id,
-                p.patient_fname,
-                p.patient_lname,
-                r.receptionist_fname as handled_by_fname,
-                r.receptionist_lname as handled_by_lname
-              FROM billing b
-              JOIN patients p ON b.patient_id = p.patient_id
-              LEFT JOIN receptionists r ON b.handled_by = r.receptionist_id
-              WHERE b.payment_status = :filter
+        const baseQuery =
+          subCategory === "PAYMENT_STATUS"
+            ? `
+            SELECT 
+              b.billing_id,
+              b.amount_due,
+              b.amount_paid,
+              b.payment_status,
+              b.created_at,
+              p.patient_fname,
+              p.patient_lname,
+              r.receptionist_fname as handled_by_fname,
+              r.receptionist_lname as handled_by_lname
+            FROM billing b
+            JOIN patients p ON b.patient_id = p.patient_id
+            LEFT JOIN receptionists r ON b.handled_by = r.receptionist_id
+            WHERE b.payment_status = :status
+            ${office !== "all" ? "AND b.office_id = :office" : ""}
+            ORDER BY b.created_at DESC
+          `
+            : `
+            SELECT 
+              b.billing_id,
+              b.amount_paid,
+              DATE_FORMAT(b.created_at, '%Y-%m') as month,
+              b.created_at,
+              p.patient_fname,
+              p.patient_lname
+            FROM billing b
+            JOIN patients p ON b.patient_id = p.patient_id
+            WHERE DATE_FORMAT(b.created_at, '%Y-%m') = :month
+              AND b.payment_status = 'PAID'
               ${office !== "all" ? "AND b.office_id = :office" : ""}
-              ${dateRange ? "AND b.created_at BETWEEN :startDate AND :endDate" : ""}
-              ORDER BY b.created_at DESC
-            `;
+            ORDER BY b.created_at DESC
+          `;
 
-            details = await sequelize.query(query, {
-              replacements,
-              type: QueryTypes.SELECT,
-            });
-            break;
-          }
+        const replacements = {
+          status: filter,
+          month: filter,
+          office: office === "all" ? undefined : office,
+        };
 
-          case "REVENUE": {
-            const query = `
-              SELECT 
-                b.billing_id,
-                b.amount_due,
-                b.amount_paid,
-                DATE_FORMAT(b.created_at, '%Y-%m') as month,
-                b.created_at,
-                p.patient_fname,
-                p.patient_lname
-              FROM billing b
-              JOIN patients p ON b.patient_id = p.patient_id
-              WHERE 
-                DATE_FORMAT(b.created_at, '%Y-%m') = :filter
-                AND b.payment_status = 'PAID'
-                ${office !== "all" ? "AND b.office_id = :office" : ""}
-                ${dateRange ? "AND b.created_at BETWEEN :startDate AND :endDate" : ""}
-              ORDER BY b.created_at DESC
-            `;
-
-            details = await sequelize.query(query, {
-              replacements,
-              type: QueryTypes.SELECT,
-            });
-            break;
-          }
-        }
+        details = await sequelize.query(baseQuery, {
+          replacements,
+          type: QueryTypes.SELECT,
+        });
         break;
       }
       default:

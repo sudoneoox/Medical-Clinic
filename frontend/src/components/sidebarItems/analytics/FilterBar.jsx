@@ -163,7 +163,7 @@ const FilterBar = ({
                   : undefined
               }
               onSelect={handleDateSelect}
-              numberOfMonths={1}
+              numberOfMonths={2}
             />
             {filters[FILTER_TYPES.DATE_RANGE] && (
               <div className="p-3 border-t">
