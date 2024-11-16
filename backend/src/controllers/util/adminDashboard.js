@@ -810,9 +810,9 @@ const getAnalyticsDetails = async (req, res) => {
             FROM doctors d
             JOIN users u ON u.user_id = d.user_id
             WHERE :staffType = 'DOCTOR'
-
+            
             UNION ALL
-
+            
             SELECT 
               n.nurse_id,
               n.nurse_fname,
@@ -823,9 +823,9 @@ const getAnalyticsDetails = async (req, res) => {
             FROM nurses n
             JOIN users u ON u.user_id = n.user_id
             WHERE :staffType = 'NURSE'
-
+            
             UNION ALL
-
+            
             SELECT 
               r.receptionist_id,
               r.receptionist_fname,
@@ -838,30 +838,55 @@ const getAnalyticsDetails = async (req, res) => {
             WHERE :staffType = 'RECEPTIONIST'
           )
           SELECT 
-            sb.staff_type as role,
-            sb.fname as first_name,
-            sb.lname as last_name,
-            sb.employee_id,
+            MIN(sb.staff_type) as role,
+            MIN(sb.fname) as first_name,
+            MIN(sb.lname) as last_name,
+            MIN(sb.employee_id) as employee_id,
             GROUP_CONCAT(DISTINCT o.office_name) as offices,
-            GROUP_CONCAT(DISTINCT CONCAT(
-              CASE 
-                WHEN sb.staff_type = 'DOCTOR' THEN do.day_of_week
-                WHEN sb.staff_type = 'NURSE' THEN no.day_of_week
-                WHEN sb.staff_type = 'RECEPTIONIST' THEN ro.day_of_week
-              END,
-              ': ',
-              CASE 
-                WHEN sb.staff_type = 'DOCTOR' THEN TIME_FORMAT(do.shift_start, '%H:%i')
-                WHEN sb.staff_type = 'NURSE' THEN TIME_FORMAT(no.shift_start, '%H:%i')
-                WHEN sb.staff_type = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_start, '%H:%i')
-              END,
-              '-',
-              CASE 
-                WHEN sb.staff_type = 'DOCTOR' THEN TIME_FORMAT(do.shift_end, '%H:%i')
-                WHEN sb.staff_type = 'NURSE' THEN TIME_FORMAT(no.shift_end, '%H:%i')
-                WHEN sb.staff_type = 'RECEPTIONIST' THEN TIME_FORMAT(ro.shift_end, '%H:%i')
-              END
-            )) as schedules
+            GROUP_CONCAT(
+              DISTINCT 
+              CONCAT(
+                COALESCE(
+                  CASE WHEN sb.staff_type = 'DOCTOR' THEN do.day_of_week
+                  WHEN sb.staff_type = 'NURSE' THEN no.day_of_week
+                  WHEN sb.staff_type = 'RECEPTIONIST' THEN ro.day_of_week
+                  END,
+                  ''
+                ),
+                CASE WHEN COALESCE(
+                  do.shift_start,
+                  no.shift_start,
+                  ro.shift_start
+                ) IS NOT NULL THEN
+                  CONCAT(
+                    ': ',
+                    TIME_FORMAT(
+                      COALESCE(
+                        do.shift_start,
+                        no.shift_start,
+                        ro.shift_start
+                      ),
+                      '%H:%i'
+                    ),
+                    '-',
+                    TIME_FORMAT(
+                      COALESCE(
+                        do.shift_end,
+                        no.shift_end,
+                        ro.shift_end
+                      ),
+                      '%H:%i'
+                    )
+                  )
+                ELSE ''
+                END
+              ) ORDER BY 
+                COALESCE(
+                  do.day_of_week,
+                  no.day_of_week,
+                  ro.day_of_week
+                )
+            ) as schedules
           FROM StaffBase sb
           LEFT JOIN doctor_offices do ON sb.id = do.doctor_id AND sb.staff_type = 'DOCTOR'
           LEFT JOIN nurse_offices no ON sb.id = no.nurse_id AND sb.staff_type = 'NURSE'
@@ -874,7 +899,9 @@ const getAnalyticsDetails = async (req, res) => {
           ${office !== "all" ? "AND o.office_id = :office" : ""}
           ${dateRange ? "AND sb.account_created_at BETWEEN :startDate AND :endDate" : ""}
           GROUP BY sb.id
-          ORDER BY sb.lname, sb.fname
+          ORDER BY 
+            MIN(sb.lname),
+            MIN(sb.fname)
         `;
 
         const replacements = {
