@@ -25,6 +25,7 @@ export const STATUSES = {
     { id: "COMPLETED", label: "Completed" },
     { id: "NO SHOW", label: "No Show" },
     { id: "PENDING", label: "Pending" },
+    { id: "PENDING_DOCTOR_APPROVAL", label: "Pending Doctor Approval" },
   ],
   PAYMENT: [
     { id: "all", label: "All Statuses" },
@@ -106,11 +107,11 @@ export const OFFICE_LIST = [
 ];
 
 export const ROLE_LIST = [
-  { user_role: "Patient" },
-  { user_role: "Doctor" },
-  { user_role: "Receptionists" },
-  { user_role: "Nurse" },
-  { user_role: "Admin" },
+  { user_role: "PATIENT" },
+  { user_role: "DOCTOR" },
+  { user_role: "RECEPTIONIST" },
+  { user_role: "NURSE" },
+  { user_role: "ADMIN" },
 ];
 
 export const SPECIALTIES = [

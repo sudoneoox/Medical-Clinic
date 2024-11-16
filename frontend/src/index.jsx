@@ -8,6 +8,7 @@ import Portal from "./routes/Portal.jsx";
 import Registrations from "./routes/Registrations.jsx";
 import api, { API } from "./api.js";
 import "./styles/tailwindbase.css";
+import "react-datepicker/dist/react-datepicker.css";
 
 import {
   createBrowserRouter,

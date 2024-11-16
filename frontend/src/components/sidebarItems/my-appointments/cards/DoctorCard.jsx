@@ -9,6 +9,7 @@ import { groupSlotsByDay, formatTimeSlots } from "../utils/timeFormatters";
 import api from "../../../../api.js";
 
 const DoctorCard = ({ doctor }) => {
+  // state management
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [requestingApproval, setRequestingApproval] = useState(false);
   const [approvalReason, setApprovalReason] = useState("");
@@ -18,7 +19,6 @@ const DoctorCard = ({ doctor }) => {
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [primaryDoctor, setPrimaryDoctor] = useState(null);
   const [isPrimaryDoctor, setIsPrimaryDoctor] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkPrimaryDoctor = async () => {
@@ -33,8 +33,6 @@ const DoctorCard = ({ doctor }) => {
         }
       } catch (error) {
         console.error("Error checking primary doctor:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -259,6 +257,7 @@ const DoctorCard = ({ doctor }) => {
           onConfirm={handleAppointmentSubmit}
         />
       )}
+
       {showApprovalModal && (
         <SpecialistApprovalModal
           open={showApprovalModal}

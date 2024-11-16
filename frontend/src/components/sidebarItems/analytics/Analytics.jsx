@@ -61,31 +61,34 @@ const Analytics = () => {
 
       // WARNING: its doing this in the frontend not backend I honestly think thats fine?
 
-      // Only apply client-side data filtering if the date range is enabled
-      if (
-        filters[FILTER_TYPES.DATE_RANGE] &&
-        ["APPOINTMENTS", "BILLING"].includes(selectedAnalytic)
-      ) {
-        const { startDate, endDate } = filters[FILTER_TYPES.DATE_RANGE];
-        filteredData = filteredData.filter((item) => {
-          const itemDate = new Date(item.name);
-          return itemDate >= startDate && itemDate <= endDate;
-        });
-      }
-
-      //  apply role filter
-      if (filters[FILTER_TYPES.ROLE] !== "all") {
-        filteredData = filteredData.filter(
-          (item) => item.role === filters[FILTER_TYPES.ROLE],
-        );
-      }
-
-      // apply status filter
-      if (filters[FILTER_TYPES.STATUS] !== "all") {
-        filteredData = filteredData.filter(
-          (item) => item.status === filters[FILTER_TYPES.STATUS],
-        );
-      }
+      // BUG: THIS WAS FUCKING CAUSING AN ISSUE WITH NOTHING APPEARING AFTER A FILTER CHANGE >:(
+      // Thought this would be a shortcut and so that we wont have to make filters on row clicks either but this does not work
+      //
+      // // Only apply client-side data filtering if the date range is enabled
+      // if (
+      //   filters[FILTER_TYPES.DATE_RANGE] &&
+      //   ["APPOINTMENTS", "BILLING"].includes(selectedAnalytic)
+      // ) {
+      //   const { startDate, endDate } = filters[FILTER_TYPES.DATE_RANGE];
+      //   filteredData = filteredData.filter((item) => {
+      //     const itemDate = new Date(item.name);
+      //     return itemDate >= startDate && itemDate <= endDate;
+      //   });
+      // }
+      //
+      // //  apply role filter
+      // if (filters[FILTER_TYPES.ROLE] !== "all") {
+      //   filteredData = filteredData.filter(
+      //     (item) => item.role === filters[FILTER_TYPES.ROLE],
+      //   );
+      // }
+      //
+      // // apply status filter
+      // if (filters[FILTER_TYPES.STATUS] !== "all") {
+      //   filteredData = filteredData.filter(
+      //     (item) => item.status === filters[FILTER_TYPES.STATUS],
+      //   );
+      // }
 
       // update chart as well
       setChartData(filteredData);
