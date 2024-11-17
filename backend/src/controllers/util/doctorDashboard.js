@@ -314,7 +314,7 @@ const addMedicalRecord = async (req, res) => {
     });
     return res
       .status(100)
-      .json({ message: "Successfully added medical record" });
+      .json({ message: "Successfully added medical record" , success: true});
   } catch (error) {
     return res
       .status(500)
@@ -349,7 +349,7 @@ const editMedicalRecord = async (req, res) => {
       });
       return res
         .status(200)
-        .json({ message: "Successfully edited medical record" });
+        .json({ message: "Successfully edited medical record" , success: true});
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -380,7 +380,7 @@ const deleteMedicalRecord = async (req, res) => {
       });
       return res
         .status(200)
-        .json({ message: "Successfully deleted medical record" });
+        .json({ message: "Successfully deleted medical record" , success: true});
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -409,7 +409,7 @@ const addPrescription = async (req, res) => {
       frequency: req.body.frequency,
       // pharmacy_details: req.body.pharmacyDetails,
     });
-    return res.status(201).json({ message: "Successfully added prescription" });
+    return res.status(201).json({ message: "Successfully added prescription" , success: true});
   } catch (error) {
     return res
       .status(500)
@@ -439,7 +439,7 @@ const editPrescription = async (req, res) => {
         .status(200)
         .json({ message: "Successfully edited prescription record" });
     } else {
-      return res.status(404).json({ message: "Prescription record not found" });
+      return res.status(404).json({ message: "Prescription record not found" , success: true});
     }
   } catch (error) {
     console.error("Error editing prescription record:", error);
@@ -467,7 +467,7 @@ const deletePrescription = async (req, res) => {
       });
       return res
         .status(200)
-        .json({ message: "Successfully deleted prescription record" });
+        .json({ message: "Successfully deleted prescription record" , success: true});
     } else {
       return res.status(404).json({ message: "Prescription record not found" });
     }
