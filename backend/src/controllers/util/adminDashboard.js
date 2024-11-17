@@ -111,7 +111,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
-                  where: { is_deleted: false },
+                  where: { is_deleted: 0 },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -171,7 +171,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
-                  where: { is_deleted: false },
+                  where: { is_deleted: 0 },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -219,7 +219,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
-                  where: { is_deleted: false },
+                  where: { is_deleted: 0 },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -1037,16 +1037,18 @@ const deleteUser = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (user.user_role === "RECEPTIONIST") {
       // soft delete
       await Users.update(
-        { is_deleted: true },
+        { is_deleted: 1 },
         {
           where: { user_email: req.body.targetUserEmail },
-        }
+        },
       );
       res.json({ success: true, message: "User soft deleted (Receptionist)" });
     } else {
