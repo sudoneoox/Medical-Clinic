@@ -205,6 +205,7 @@ CREATE TABLE IF NOT EXISTS receptionists (
     receptionist_employee_id INTEGER NOT NULL,
     receptionist_fname VARCHAR(50) NOT NULL,
     receptionist_lname VARCHAR(50) NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     user_id INTEGER NOT NULL, -- fk
     UNIQUE(receptionist_id),
     UNIQUE(user_id)
