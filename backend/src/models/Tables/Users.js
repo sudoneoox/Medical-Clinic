@@ -54,8 +54,8 @@ const User = sequelize.define(
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
     },
     is_deleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      type: DataTypes.TINYINT,
+      defaultValue: 0,
       allowNull: false,
     }
   },

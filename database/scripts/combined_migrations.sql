@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
     portal_last_login TIMESTAMP,
+    is_deleted TINYINT NOT NULL DEFAULT 0,
     UNIQUE(user_id),
     UNIQUE(user_email),
     UNIQUE(user_username)
@@ -205,7 +206,6 @@ CREATE TABLE IF NOT EXISTS receptionists (
     receptionist_employee_id INTEGER NOT NULL,
     receptionist_fname VARCHAR(50) NOT NULL,
     receptionist_lname VARCHAR(50) NOT NULL,
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     user_id INTEGER NOT NULL, -- fk
     UNIQUE(receptionist_id),
     UNIQUE(user_id)
