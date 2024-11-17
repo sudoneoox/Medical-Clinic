@@ -50,6 +50,10 @@ router.post(
   "/portal/my-appointments",
   dashBoardControllerFuncs.portalRoleSwitcher,
 );
+router.post(
+  "/portal/deleteAppointments/:appointment_id",
+  patientDashboard.deleteAppointments,
+);
 
 router.post("/portal/patients", dashBoardControllerFuncs.portalRoleSwitcher); // for doc
 

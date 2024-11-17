@@ -181,11 +181,42 @@ const populateMEDICALRECORDS = async (user, patient, res) => {
   }
 };
 
+const deleteAppointments = async (req, res) => {
+  
+  try {
+    const appointmentId = req.params.appointment_id;
+    console.log(appointmentId, "Appointment ID");
+
+    const deleteAppt = await Appointment.findOne({
+      where: {appointment_id: appointmentId},
+    })
+
+    if (deleteAppt) {
+      await deleteAppt.update({
+        status: "CANCELLED",
+      });
+      return res
+        .status(200)
+        .json({ message: "Successfully CANCELLED appointment" , success: true});
+    }
+    return res
+        .status(500)
+        .json({ message: "Appointment Not found" , success: false});
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    return res.status(500).json({
+      message: "Error cancelling appointment",
+      error: error.message,
+    });
+  }
+}
+
 const patientDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
   populateAPPOINTMENTS,
   populateMEDICALRECORDS,
+  deleteAppointments,
 };
 
 export default patientDashboard;
