@@ -111,6 +111,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
+                  where: { is_deleted: false },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -170,6 +171,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
+                  where: { is_deleted: false },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -217,6 +219,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
               include: [
                 {
                   model: Users,
+                  where: { is_deleted: false },
                   attributes: [
                     "user_email",
                     "user_phone",
@@ -1028,17 +1031,35 @@ const getAnalyticsDetails = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    Users.destroy({
-      where: {
-        user_email: req.body.targetUserEmail,
-      },
+    const user = await Users.findOne({
+      where: { user_email: req.body.targetUserEmail },
+      attributes: ["user_role"],
     });
 
-    res.json({ success: true });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.user_role === "RECEPTIONIST") {
+      // soft delete
+      await Users.update(
+        { is_deleted: true },
+        {
+          where: { user_email: req.body.targetUserEmail },
+        }
+      );
+      res.json({ success: true, message: "User soft deleted (Receptionist)" });
+    } else {
+      await Users.destroy({
+        where: { user_email: req.body.targetUserEmail },
+      });
+      res.json({ success: true, message: "User hard deleted" });
+    }
   } catch (error) {
     console.error("ERROR IN DELETING USER", error);
     res.status(500).json({
       success: false,
+      message: "Error occurred while deleting the user",
     });
   }
 };

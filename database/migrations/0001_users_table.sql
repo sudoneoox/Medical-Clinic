@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     ) NOT NULL,
     demographics_id INTEGER NOT NULL,
     portal_last_login TIMESTAMP,
+    is_deleted TINYINT NOT NULL DEFAULT 0,
     UNIQUE(user_id),
     UNIQUE(user_email),
     UNIQUE(user_username)
