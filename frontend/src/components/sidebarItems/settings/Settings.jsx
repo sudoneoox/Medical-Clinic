@@ -63,6 +63,17 @@ const Settings = ({ data }) => {
           text: result.message || "Settings updated successfully",
         });
 
+        if (section === "account") {
+          setFormData((prev) => ({
+            ...prev,
+            account: {
+              username: "",
+              phone: "",
+              email: "",
+            }
+          }));
+        }
+
         // clear password fields if it was a password update
         if (section === "password") {
           setFormData((prev) => ({
