@@ -6,11 +6,13 @@ import Patient from "../models/Tables/Patient.js";
 import Nurse from "../models/Tables/Nurse.js";
 import Receptionist from "../models/Tables/Receptionist.js";
 import Doctor from "../models/Tables/Doctor.js";
+import PatientDoctor from "../models/Tables/PatientDoctor.js";
 import Billing from "../models/Tables/Billing.js";
 import EmployeeNo from "../models/Tables/ValidEmployeeNo.js";
 import Admins from "../models/Tables/Admin.js";
 import User from "../models/Tables/Users.js";
 import jwt from "jsonwebtoken";
+import sequelize from "../config/database.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -105,6 +107,24 @@ const registerUser = async (req, res) => {
           patient_lname: userData.lname,
           emergency_contacts: userData.emergencyContacts,
         });
+
+        // Assign a random doctor as the primary doctor for the patient
+        const randomDoctor = await Doctor.findOne({
+          order: [
+            [sequelize.fn('RAND')] 
+          ],
+          limit: 1,
+        });
+        
+        if (randomDoctor) {
+          await PatientDoctor.create({
+            patient_id: associatedEntity.patient_id,
+            doctor_id: randomDoctor.doctor_id,
+            is_primary: 1,
+          });
+        } else {
+          console.error("No doctors available to assign.");
+        }
         break;
       default:
         throw new Error("Invalid user role");
