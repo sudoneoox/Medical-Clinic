@@ -110,9 +110,7 @@ const registerUser = async (req, res) => {
 
         // Assign a random doctor as the primary doctor for the patient
         const randomDoctor = await Doctor.findOne({
-          order: [
-            [sequelize.fn('RAND')] 
-          ],
+          order: sequelize.random(),
           limit: 1,
         });
         
