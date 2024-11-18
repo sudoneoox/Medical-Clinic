@@ -83,6 +83,21 @@ router.post(
 );
 
 router.post(
+  "/getallergyrecords/:recordId",
+  doctorDashboard.retrieveAllergyRecords,
+);
+
+router.post(
+  "/newallergy",
+  doctorDashboard.addAllergy,
+);
+
+router.post(
+  "/updateallergy/:allergyId",
+  doctorDashboard.editAllergy,
+);
+
+router.post(
   "/portal/submitNewAppointment",
   defaultDashboard.submitNewAppointment,
 );

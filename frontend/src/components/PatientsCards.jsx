@@ -8,9 +8,11 @@ import {
   PillBottle,
   Trash2,
   ArrowLeft,
+  SquareActivity,
 } from "lucide-react";
 import MedicalRecordForm from "./MedicalRecordForm.jsx"; // Import the MedicalRecordForm
 import PrescriptionForm from "./PrescriptionsForm.jsx"; // Import the PrescriptionForm
+import AllergyForm from "./AllergyForm.jsx"; // Import the PrescriptionForm
 
 const PatientList = ({ data = [], userRole }) => {
   const initialView =
@@ -32,6 +34,10 @@ const PatientList = ({ data = [], userRole }) => {
   const [currentRecord, setCurrentRecord] = useState(null);
   const [currentPrescription, setCurrentPrescription] = useState(null);
 
+  const [allergyRecords, setAllergyRecords] = useState([]);
+  const [isAllergyFormOpen, setIsAllergyFormOpen] = useState(false);
+  const [currentAllergy, setCurrentAllergy] = useState(null);
+
   // State for alerts
   const [alert, setAlert] = useState({ visible: false, message: "" });
 
@@ -49,6 +55,29 @@ const PatientList = ({ data = [], userRole }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchAllergyRecords = async (recordId) => {
+    setIsLoading(true);
+    setError(null);
+    console.log(recordId);
+    try {
+      const response = await api.post(
+        `${API.URL}/api/users/getallergyrecords/${recordId}`
+      );
+      setAllergyRecords(response.data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewAllergy = (record) => {
+    setViewHistory([...viewHistory, currentView]); // Store current view before changing
+    fetchAllergyRecords(record.record_id);
+    setCurrentView("ALLERGIES");
+    setCurrentRecord(record);
   };
 
   const handleMedicalRecords = (patient) => {
@@ -82,12 +111,6 @@ const PatientList = ({ data = [], userRole }) => {
     }
   };
 
-  const togglePrescriptionDetails = (prescriptionId) => {
-    setExpandedPrescription(
-      expandedPrescription === prescriptionId ? null : prescriptionId,
-    );
-  };
-
   // Functions to open forms
   const openMedicalRecordForm = (record) => {
     setCurrentRecord(record);
@@ -99,6 +122,12 @@ const PatientList = ({ data = [], userRole }) => {
     setCurrentPrescription(prescription);
     setCurrentView("Prescription Form");
     setIsPrescriptionFormOpen(true);
+  };
+
+  const openAllergyForm = (allergy) => {
+    setCurrentAllergy(allergy);
+    setCurrentView("Allergy Form");
+    setIsAllergyFormOpen(true);
   };
 
   const handleDeleteMedicalRecord = async (record) => {
@@ -409,6 +438,12 @@ const PatientList = ({ data = [], userRole }) => {
                           <PillBottle className="w-5 h-5" />
                         </button>
                         <button
+                          onClick={() => handleViewAllergy(record)}
+                          className="text-black hover:text-gray-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <SquareActivity className="w-5 h-5" />
+                        </button>
+                        <button
                           onClick={() => handleDeleteMedicalRecord(record)}
                           className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
                         >
@@ -528,6 +563,67 @@ const PatientList = ({ data = [], userRole }) => {
         </>
       );
     }
+    if (currentView === "ALLERGIES") {
+      if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          </div>
+        );
+      }
+      return (
+        <>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <div className="flex items-center justify-center">
+                <ArrowLeft onClick={goBack} className="text-black cursor-pointer mr-3" />
+                <h2 className="text-2xl font-bold">Allergies</h2>
+              </div>
+              <button
+                onClick={() => {
+                  openAllergyForm(null);
+                }} // Open form for adding a new allergy
+                className="text-lg font-medium text-black px-3 py-2 rounded-sm hover:bg-gray-100 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 flex justify-between items-center"
+              >
+                <Plus className="inline-block w-4 h-4 mr-1" />
+                <p>Add Allergy</p>
+              </button>
+            </div>
+    
+            {error ? (
+              <p>Error fetching allergies: {error}</p>
+            ) : (
+              <div>
+                {allergyRecords.length === 0 ? (
+                  <p>No allergies found for this patient.</p>
+                ) : (
+                  allergyRecords.map((allergy, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-2">
+                      <div>
+                        <p className="font-medium">{allergy.allergen}</p>
+                        <p className="text-sm text-gray-600">
+                          Reaction: {allergy.reaction}
+                        </p>
+                      </div>
+                      <div className="flex justify-evenly items-center px-3">
+                        <button
+                          onClick={() => {
+                            openAllergyForm(allergy)
+                          }} // Open form for editing the allergy
+                          className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      );
+    }
     if (currentView === "Medical Form" && isMedicalRecordFormOpen) {
       return (
         <MedicalRecordForm
@@ -539,7 +635,7 @@ const PatientList = ({ data = [], userRole }) => {
           }}
           onSave={() => {
             fetchMedicalRecords(selectedPatient.patient_id);
-            setCurrentRecord(null);
+            // setCurrentRecord(null);
             setIsMedicalRecordFormOpen(false);
             setCurrentView("MEDICAL RECORDS");
           }}
@@ -561,6 +657,26 @@ const PatientList = ({ data = [], userRole }) => {
             setIsPrescriptionFormOpen(false);
             setCurrentView("PRESCRIPTIONS");
             handlePrescriptionSave(!!currentPrescription); // Pass true if editing, false if adding
+          }}
+        />
+      );
+    }
+    if (currentView === "Allergy Form" && isAllergyFormOpen) {
+      console.log("Opening", currentRecord);
+      
+      return (
+        <AllergyForm
+          allergy={currentAllergy}
+          recordId={currentRecord.record_id}
+          onClose={() => {
+            setIsAllergyFormOpen(false);
+            setCurrentView("ALLERGIES");
+          }}
+          onSave={() => {
+            fetchAllergyRecords(currentRecord.record_id);
+            setCurrentAllergy(null);
+            setIsAllergyFormOpen(false);
+            setCurrentView("ALLERGIES");
           }}
         />
       );
