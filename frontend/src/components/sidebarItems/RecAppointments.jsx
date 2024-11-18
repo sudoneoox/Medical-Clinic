@@ -145,7 +145,7 @@ const AppointmentsList = ({ data = [] }) => {
             Upcoming appointments of {selectedPatient?.patient_fname} {}
             {selectedPatient?.patient_lname}
           </h2>
-          <p>Add, Delete or View Appointments.</p>
+          <p>Delete or View Appointments.</p>
 
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200">
@@ -196,9 +196,9 @@ const AppointmentsList = ({ data = [] }) => {
                     <td>
                       <button
                         onClick={() => handleCancelClick(record)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-200"
+                        className="text-red-500 font-medium px-4 py-2 hover:text-red-700 hover:underline transition-all duration-200 focus:outline-none"
                       >
-                        Cancel
+                        <span className="text-lg">Cancel</span>
                       </button>
                     </td>
                   </tr>
@@ -208,12 +208,12 @@ const AppointmentsList = ({ data = [] }) => {
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button
+            {/* <button
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
               onClick={() => setAppointmentsFormVisible((prev) => !prev)}
             >
               {isAppointmentsFormVisible ? "Cancel" : "Add an Appointment"}
-            </button>
+            </button> */}
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               onClick={() => {
