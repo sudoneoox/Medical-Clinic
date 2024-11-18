@@ -15,7 +15,8 @@ import PrescriptionForm from "./PrescriptionsForm.jsx"; // Import the Prescripti
 const PatientList = ({ data = [], userRole }) => {
   const initialView =
     userRole === "Patient" ? "MEDICAL RECORDS" : "PATIENT LIST";
-  const patientId = userRole === "Patient" ? data[0].patient_id : null;
+  const patientId =
+    userRole === "Patient" ? localStorage.getItem("userId") : null;
 
   const [currentView, setCurrentView] = useState(initialView);
   const [viewHistory, setViewHistory] = useState([]);
@@ -41,6 +42,7 @@ const PatientList = ({ data = [], userRole }) => {
     try {
       const response = await api.post(
         `${API.URL}/api/users/medicalrecords/${patientId}`,
+        { user_role: localStorage.getItem("userRole") },
       );
 
       setMedicalRecords(response.data);
@@ -154,14 +156,16 @@ const PatientList = ({ data = [], userRole }) => {
   const handlePrescriptionSave = (isEdit) => {
     setAlert({
       visible: true,
-      message: isEdit ? "Prescription updated successfully!" : "Prescription added successfully!",
+      message: isEdit
+        ? "Prescription updated successfully!"
+        : "Prescription added successfully!",
     });
     setTimeout(() => {
       setAlert({ visible: false, message: "" });
     }, 2500);
     setTimeout(() => {
       window.location.reload();
-    }, 3000)
+    }, 3000);
   };
 
   if (currentView === "PATIENT LIST") {
@@ -275,7 +279,8 @@ const PatientList = ({ data = [], userRole }) => {
               <div className="flex items-center justify-center">
                 <ArrowLeft
                   onClick={goBack}
-                  className="text-black cursor-pointer mr-3"/>
+                  className="text-black cursor-pointer mr-3"
+                />
                 <h2 className="text-2xl font-bold">Prescriptions</h2>
               </div>
             </div>
@@ -345,12 +350,16 @@ const PatientList = ({ data = [], userRole }) => {
         );
       }
       return (
-        <>          {alert.visible && (
-          <Alert className="mb-4">
-            <AlertTitle className="font-bold text-xl">Success</AlertTitle>
-            <AlertDescription className="text-lg">{alert.message}</AlertDescription>
-          </Alert>
-        )}
+        <>
+          {" "}
+          {alert.visible && (
+            <Alert className="mb-4">
+              <AlertTitle className="font-bold text-xl">Success</AlertTitle>
+              <AlertDescription className="text-lg">
+                {alert.message}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             <div className="flex justify-between">
               <div className="flex items-center justify-center">
@@ -389,7 +398,7 @@ const PatientList = ({ data = [], userRole }) => {
                       className="flex items-center justify-between border-b pb-2"
                     >
                       <div>
-                        <p className="font-medium">{ record.diagnosis}</p>
+                        <p className="font-medium">{record.diagnosis}</p>
                         <p className="text-sm text-gray-600">
                           Updated Date:{" "}
                           {new Date(record.updated_at).toLocaleString()}
@@ -437,7 +446,9 @@ const PatientList = ({ data = [], userRole }) => {
           {alert.visible && (
             <Alert className="mb-4">
               <AlertTitle className="font-bold text-xl">Success</AlertTitle>
-              <AlertDescription className="text-lg">{alert.message}</AlertDescription>
+              <AlertDescription className="text-lg">
+                {alert.message}
+              </AlertDescription>
             </Alert>
           )}
           <div className="space-y-4">
@@ -506,7 +517,8 @@ const PatientList = ({ data = [], userRole }) => {
                           <div className="mt-2">
                             <h4 className="font-semibold">Pharmacy Details:</h4>
                             <p>
-                              Name: {prescription.pharmacy_details.pharmacy_name}
+                              Name:{" "}
+                              {prescription.pharmacy_details.pharmacy_name}
                             </p>
                             <p>
                               Phone:{" "}

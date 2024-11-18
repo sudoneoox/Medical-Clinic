@@ -262,14 +262,27 @@ const populatePATIENTS = async (user, doctor, res) => {
 
 const retrieveMedicalRecords = async (req, res) => {
   try {
-    const patientid = req.params.patientId;
-    console.log(`Fetching medical records for patient ID: ${patientid}`);
+    // FIX: intermediate step use the patient id which is in fact the user id
+    // to find the patient
+    if (req.body.user_id === "PATIENT") {
+      const userid = req.params.patientId;
+      const patient = await Patient.findOne({ where: { user_id: userid } });
+      const patientid = patient.patient_id;
 
-    const medicalrecords = await MedicalRecord.findAll({
-      where: { patient_id: patientid, is_deleted: 0 },
-    });
+      const medicalrecords = await MedicalRecord.findAll({
+        where: { patient_id: patientid, is_deleted: 0 },
+      });
 
-    return res.json(medicalrecords);
+      return res.json(medicalrecords);
+    } else {
+      const patientid = req.params.patientId;
+
+      const medicalrecords = await MedicalRecord.findAll({
+        where: { patient_id: patientid, is_deleted: 0 },
+      });
+
+      return res.json(medicalrecords);
+    }
   } catch (error) {
     console.error("Error fetching medical data:", error);
     return res
@@ -314,7 +327,7 @@ const addMedicalRecord = async (req, res) => {
     });
     return res
       .status(100)
-      .json({ message: "Successfully added medical record" , success: true});
+      .json({ message: "Successfully added medical record", success: true });
   } catch (error) {
     return res
       .status(500)
@@ -349,7 +362,7 @@ const editMedicalRecord = async (req, res) => {
       });
       return res
         .status(200)
-        .json({ message: "Successfully edited medical record" , success: true});
+        .json({ message: "Successfully edited medical record", success: true });
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -378,9 +391,10 @@ const deleteMedicalRecord = async (req, res) => {
         is_deleted: 1,
         updated_at: new Date(),
       });
-      return res
-        .status(200)
-        .json({ message: "Successfully deleted medical record" , success: true});
+      return res.status(200).json({
+        message: "Successfully deleted medical record",
+        success: true,
+      });
     } else {
       return res.status(404).json({ message: "Medical record not found" });
     }
@@ -409,7 +423,9 @@ const addPrescription = async (req, res) => {
       frequency: req.body.frequency,
       // pharmacy_details: req.body.pharmacyDetails,
     });
-    return res.status(201).json({ message: "Successfully added prescription" , success: true});
+    return res
+      .status(201)
+      .json({ message: "Successfully added prescription", success: true });
   } catch (error) {
     return res
       .status(500)
@@ -439,7 +455,9 @@ const editPrescription = async (req, res) => {
         .status(200)
         .json({ message: "Successfully edited prescription record" });
     } else {
-      return res.status(404).json({ message: "Prescription record not found" , success: true});
+      return res
+        .status(404)
+        .json({ message: "Prescription record not found", success: true });
     }
   } catch (error) {
     console.error("Error editing prescription record:", error);
@@ -465,9 +483,10 @@ const deletePrescription = async (req, res) => {
       await deleteRecord.update({
         is_deleted: 1,
       });
-      return res
-        .status(200)
-        .json({ message: "Successfully deleted prescription record" , success: true});
+      return res.status(200).json({
+        message: "Successfully deleted prescription record",
+        success: true,
+      });
     } else {
       return res.status(404).json({ message: "Prescription record not found" });
     }
