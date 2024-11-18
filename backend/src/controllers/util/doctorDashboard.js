@@ -3,11 +3,20 @@ import Doctor from "../../models/Tables/Doctor.js";
 import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import Prescription from "../../models/Tables/Prescription.js";
+import Allergy from "../../models/Tables/Allergies.js";
 import Patient from "../../models/Tables/Patient.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import { Op } from "@sequelize/core";
 import logic from "./shared/logic.js";
 import User from "../../models/Tables/Users.js";
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
 
 // handle backend logic for todays and upcoming appointments in the backend
 const populateOVERVIEW = async (user, doctor, res) => {
@@ -327,6 +336,25 @@ const retrievePrescriptionRecords = async (req, res) => {
   }
   // start here
 };
+const retrieveAllergyRecords = async (req, res) => {
+  console.log("getting allergy records in doc dashboard", req.params.recordId);
+
+  try {
+    const recordId = req.params.recordId;
+    const allergyrecs = await Allergy.findAll({
+      where: { medical_record_id: recordId },
+    });
+
+    return res.json(allergyrecs);
+  } catch (error) {
+    console.error("Error fetching allergy data:", error);
+    return res.status(500).json({
+      message: "Error fetching allergy data",
+      error: error.message,
+    });
+  }
+  // start here
+};
 
 const addMedicalRecord = async (req, res) => {
   try {
@@ -522,6 +550,62 @@ const deletePrescription = async (req, res) => {
   }
 };
 
+const addAllergy = async (req, res) => {
+  try {
+    const date = new Date();
+    const formattedDate = formatDate(date);
+    const newAllergy = await Allergy.create({
+      medical_record_id: req.body.medical_record_id,
+      allergy_type: req.body.type,
+      allergen: req.body.allergen,
+      severity: req.body.severity,
+      reaction: req.body.reaction,
+      onset_date: formattedDate,
+    });
+    return res.status(201).json({ message: "Successfully added allergy" , success: true});
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error Adding allergy record", error: error.message });
+  }
+};
+
+const editAllergy = async (req, res) => {
+  try {
+    console.log("Entering allergy edit");
+    const date = new Date();
+    const formattedDate = formatDate(date);
+    console.log(formattedDate);
+    
+    const recordId = req.params.allergyId;
+    console.log(recordId, "Record ID");
+    const editAllergyRecord = await Allergy.findByPk(recordId);
+
+    if (editAllergyRecord) {
+      await editAllergyRecord.update({
+        allergy_type: req.body.type,
+        allergen: req.body.allergen,
+        severity: req.body.severity,
+        reaction: req.body.reaction,
+        onset_date: formattedDate,
+      });
+      console.log("Found the record");
+
+      return res
+        .status(200)
+        .json({ message: "Successfully edited allergy record" });
+    } else {
+      return res.status(404).json({ message: "allergy record not found" , success: true});
+    }
+  } catch (error) {
+    console.error("Error editing allergy record:", error);
+    return res.status(500).json({
+      message: "Error editing allergy record",
+      error: error.message,
+    });
+  }
+};
+
 const doctorDashboard = {
   populateOVERVIEW,
   populateCALENDAR,
@@ -535,6 +619,9 @@ const doctorDashboard = {
   addPrescription,
   editPrescription,
   deletePrescription,
+  retrieveAllergyRecords,
+  addAllergy,
+  editAllergy,
 };
 
 export default doctorDashboard;
