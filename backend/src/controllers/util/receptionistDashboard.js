@@ -30,6 +30,10 @@ const populateOVERVIEW = async (user, receptionist, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0},
+        },
       ],
     });
 
@@ -160,12 +164,18 @@ const populatePATIENTRECORDS = async (user, receptionist, res) => {
     console.log("INSIDE receptionist populatePATIENTRECORDS");
 
     const receptionistData = await Receptionist.findOne({
-      where: { receptionist_id: receptionist.receptionist_id },
+      where: { 
+        receptionist_id: receptionist.receptionist_id,
+      },
       include: [
         {
           model: Office,
           attributes: ["office_id"],
           required: true,
+        },
+        {
+          model: User,
+          where: {is_deleted: 0 },
         },
       ],
     });
@@ -183,6 +193,10 @@ const populatePATIENTRECORDS = async (user, receptionist, res) => {
           attributes: ["patient_fname", "patient_lname", "patient_id"],
           required: true,
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
       ],
     });
 
@@ -206,6 +220,12 @@ const retrieveAppointmentsList = async (req, res) => {
     const user_id = req.body.user_id;
     const receptionist_id = await Receptionist.findOne({
       where: { user_id: user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
     console.log(receptionist_id);
     const appointmentsRecords = await Appointment.findAll({
@@ -242,6 +262,12 @@ const retrieveAppointmentsForPatient = async (req, res) => {
       where: {
         user_id: req.body.user_id,
       },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     const appointmentsRecords = await Appointment.findAll({

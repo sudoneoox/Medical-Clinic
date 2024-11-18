@@ -7,6 +7,7 @@ import Patient from "../../models/Tables/Patient.js";
 import DoctorOffices from "../../models/Tables/DoctorOffices.js";
 import { Op } from "@sequelize/core";
 import logic from "./shared/logic.js";
+import User from "../../models/Tables/Users.js";
 
 // handle backend logic for todays and upcoming appointments in the backend
 const populateOVERVIEW = async (user, doctor, res) => {
@@ -34,6 +35,10 @@ const populateOVERVIEW = async (user, doctor, res) => {
               attributes: ["office_name"],
             },
           ],
+        },
+        {
+          model: User,
+          where: { is_deleted: 0 },
         },
       ],
     });
@@ -237,6 +242,10 @@ const populatePATIENTS = async (user, doctor, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        },
       ],
     });
     console.log("Accesed patient populate", patients.doctor_id);
@@ -266,7 +275,15 @@ const retrieveMedicalRecords = async (req, res) => {
     // to find the patient
     if (req.body.user_id === "PATIENT") {
       const userid = req.params.patientId;
-      const patient = await Patient.findOne({ where: { user_id: userid } });
+      const patient = await Patient.findOne({ 
+        where: { user_id: userid },
+        include: [
+          {
+            model: User,
+            where: { is_deleted: 0 },
+          }
+        ],
+      });
       const patientid = patient.patient_id;
 
       const medicalrecords = await MedicalRecord.findAll({
@@ -315,6 +332,12 @@ const addMedicalRecord = async (req, res) => {
   try {
     const doctor = await Doctor.findOne({
       where: { user_id: req.body.user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
     console.log(req.body.patientId, "Patient ID");
     console.log(doctor.doctor_id, "Doctor ID");

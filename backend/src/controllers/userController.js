@@ -110,6 +110,12 @@ const registerUser = async (req, res) => {
 
         // Assign a random doctor as the primary doctor for the patient
         const randomDoctor = await Doctor.findOne({
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
           order: sequelize.random(),
           limit: 1,
         });
@@ -163,7 +169,10 @@ const loginUser = async (req, res) => {
 
     // Find the user by email
     const user = await User.findOne({
-      where: { user_email: email.toLowerCase() },
+      where: { 
+        user_email: email.toLowerCase(),
+        //is_deleted: 0, 
+      },
     });
 
     const validPassword = user.user_password === password ? true : false;
@@ -181,7 +190,13 @@ const loginUser = async (req, res) => {
     switch (user.user_role) {
       case "DOCTOR":
         associatedEntity = await Doctor.findOne({
-          where: { user_id: user.user_id },
+          where: { user_id: user.user_id, },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
         });
         entityFullName =
           associatedEntity.doctor_fname + " " + associatedEntity.doctor_lname;
@@ -189,6 +204,12 @@ const loginUser = async (req, res) => {
       case "NURSE":
         associatedEntity = await Nurse.findOne({
           where: { user_id: user.user_id },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
         });
         entityFullName =
           associatedEntity.nurse_fname + " " + associatedEntity.nurse_lname;
@@ -196,6 +217,12 @@ const loginUser = async (req, res) => {
       case "RECEPTIONIST":
         associatedEntity = await Receptionist.findOne({
           where: { user_id: user.user_id },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
         });
         entityFullName =
           associatedEntity.receptionist_fname +
@@ -205,6 +232,12 @@ const loginUser = async (req, res) => {
       case "PATIENT":
         associatedEntity = await Patient.findOne({
           where: { user_id: user.user_id },
+          include: [
+            {
+              model: User,
+              where: { is_deleted:0 },
+            }
+          ],
         });
         entityFullName =
           associatedEntity.patient_fname + " " + associatedEntity.patient_lname;

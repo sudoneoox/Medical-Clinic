@@ -3,6 +3,7 @@ import Users from "../../models/Tables/Users.js";
 import Doctor from "../../models/Tables/Doctor.js";
 import Patient from "../../models/Tables/Patient.js";
 import Appointment from "../../models/Tables/Appointment.js";
+import AppointmentCancellations from "../../models/Tables/AppointmentCancellations.js";
 import Billing from "../../models/Tables/Billing.js";
 import { Op } from "sequelize";
 import Demographics from "../../models/Tables/Demographics.js";
@@ -271,6 +272,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
           include: [
             {
               model: Users,
+              where: { is_deleted: 0 },
               include: [
                 {
                   model: Demographics,
@@ -296,7 +298,7 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
           ],
         });
 
-        console.log(patients[0].doctors[0].PatientDoctor);
+
         data = patients.map((patient) => {
           const primaryDoctor = patient.doctors?.find(
             (doc) => doc.PatientDoctor.is_primary === 1,
@@ -751,9 +753,8 @@ const getAnalyticsDetails = async (req, res) => {
           ${office !== "all" ? "AND u.office_id = :office" : ""}
           ${role !== "all" ? "AND u.user_role = :role" : ""}
           ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
-          ${
-            subCategory === "AGE"
-              ? `AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
+          ${subCategory === "AGE"
+            ? `AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
                   CASE 
                     WHEN :filter = '0-17' THEN 0
                     WHEN :filter = '18-29' THEN 18
@@ -769,7 +770,7 @@ const getAnalyticsDetails = async (req, res) => {
                     WHEN :filter = '50-69' THEN 69
                     ELSE 150
                   END`
-              : `AND dem.${subCategory.toLowerCase()}_id = (
+            : `AND dem.${subCategory.toLowerCase()}_id = (
                   CASE 
                     WHEN :filter = 'Male' THEN 1
                     WHEN :filter = 'Female' THEN 2
@@ -1042,20 +1043,187 @@ const deleteUser = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    if (user.user_role === "RECEPTIONIST") {
-      // soft delete
+    if (user.user_role === "DOCTOR") {
+      const doctor = await Doctor.findOne({
+        include: [
+          {
+            model: Users,
+            where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
+          }
+        ]
+      });
+
+      if (doctor) {
+        // Reassign primary doctor for patients
+        const patients = await PatientDoctor.findAll({
+          where: { doctor_id: doctor.doctor_id, is_primary: 1 },
+        });
+
+        for (const patientDoctor of patients) {
+          const newDoctor = await Doctor.findOne({
+            where: {
+              doctor_id: { [Op.ne]: doctor.doctor_id },
+              is_deleted: 0,
+            },
+            order: sequelize.random(),
+            limit: 1,
+          });
+
+          if (newDoctor) {
+            await PatientDoctor.update(
+              { is_primary: 0 },
+              {
+                where: { patient_id: patientDoctor.patient_id, is_primary: 1 },
+              },
+            );
+
+            const existingPDPair = await PatientDoctor.findOne({
+              where: { patient_id: patientDoctor.patient_id, doctor_id: newDoctor.doctor_id, is_primary: 0 },
+            });
+
+            if (existingPDPair) {
+              await PatientDoctor.update(
+                { is_primary: 1 },
+                {
+                  where: { patient_id: patientDoctor.patient_id, doctor_id: newDoctor.doctor_id },
+                },
+              );
+            } else {
+              await PatientDoctor.create({
+                patient_id: patientDoctor.patient_id,
+                doctor_id: newDoctor.doctor_id,
+                is_primary: 1,
+              });
+            }
+          } else {
+            console.error(
+              `No replacement doctor available for patient ID: ${patientDoctor.patient_id}`,
+            );
+          }
+        }
+
+        const appointments = await Appointment.findAll({
+          where: { doctor_id: doctor.doctor_id, status: { [Op.ne]: "CANCELLED" } },
+        });
+
+        const currentDate = new Date();
+        for (const appointment of appointments) {
+          // Update appointment status
+          await Appointment.update(
+            { status: "CANCELLED" },
+            {
+              where: { appointment_id: appointment.appointment_id },
+            },
+          );
+
+          await AppointmentCancellations.create({
+            appointment_id: appointment.appointment_id,
+            canceled_reason: "Doctor no longer active",
+            canceled_at: currentDate,
+          });
+        };
+      }
+    }
+
+    if (user.user_role === "NURSE") {
+      const nurse = await Nurse.findOne({
+        include: [
+          {
+            model: Users,
+            where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
+          }
+        ]
+      });
+
+      const appointments = await Appointment.findAll({
+        where: { attending_nurse: nurse.nurse_id },
+      });
+
+      const newNurse = await Nurse.findOne({
+        include: [
+          {
+            model: Users,
+            where: {is_deleted: 0},
+          }
+        ],
+        order: sequelize.random(), 
+        limit: 1,
+      });
+
+      if (newNurse) {
+        for (const appointment of appointments) {
+          await Appointment.update(
+            { attending_nurse: newNurse.nurse_id },
+            {
+              where: { appointment_id: appointment.appointment_id },
+            }
+          );
+        }
+      }
+    }
+
+    if (user.user_role === "PATIENT") {
+      const patient = await Patient.findOne({
+        include: [
+          {
+            model: Users,
+            where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
+          }
+        ]
+      });
+
+      if (patient) {
+        const appointments = await Appointment.findAll({
+          where: { patient_id: patient.patient_id, status: { [Op.ne]: "CANCELLED" } },
+        });
+
+        const currentDate = new Date();
+        for (const appointment of appointments) {
+          // Update appointment status
+          await Appointment.update(
+            { status: "CANCELLED" },
+            {
+              where: { appointment_id: appointment.appointment_id },
+            },
+          );
+
+          await AppointmentCancellations.create({
+            appointment_id: appointment.appointment_id,
+            canceled_reason: "Patient no longer at clinic",
+            canceled_at: currentDate,
+          });
+        };
+
+        const patientBills = await Billing.findAll({
+          where: { patient_id: patient.patient_id, payment_status: { [Op.ne]: "PAID" } },
+        });
+
+        await Billing.update(
+          {
+            amount_paid: sequelize.literal('amount_due'), // Update amount_paid to match amount_due
+            payment_status: "PAID", 
+            updated_at: currentDate,
+          },
+          {
+            where: { patient_id: patient.patient_id, payment_status: { [Op.ne]: "PAID" } },
+          }
+        );
+      }
+    }
+
+    if (user.user_role === "RECEPTIONIST" || user.user_role === "DOCTOR" || user.user_role === "NURSE" || user.user_role === "PATIENT") {
       await Users.update(
         { is_deleted: 1 },
         {
           where: { user_email: req.body.targetUserEmail },
         },
       );
-      res.json({ success: true, message: "User soft deleted (Receptionist)" });
+      res.json({ success: true, message: "User deleted" });
     } else {
       await Users.destroy({
         where: { user_email: req.body.targetUserEmail },
       });
-      res.json({ success: true, message: "User hard deleted" });
+      res.json({ success: true, message: "User deleted" });
     }
   } catch (error) {
     console.error("ERROR IN DELETING USER", error);

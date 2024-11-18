@@ -27,6 +27,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
             where: {
               user_email: data.email,
               user_id: { [Op.ne]: user.user_id }, // Exclude current user
+              is_deleted: 0,
             },
           });
           if (existingEmail) {
@@ -43,6 +44,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
             where: {
               user_username: data.username,
               user_id: { [Op.ne]: user.user_id }, // Exclude current user
+              is_deleted: 0,
             },
           });
           if (existingUsername) {
@@ -265,6 +267,10 @@ const populateMYAPPOINTMENTS = async (
                     ],
                   },
                 },
+                {
+                  model: User,
+                  where: { is_deleted: 0 },
+                }
               ],
               attributes: [
                 "doctor_id",
@@ -434,6 +440,12 @@ const submitNewAppointment = async (req, res) => {
     // Get patient_id from user_id
     const patient = await Patient.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     // Get office_id from office_name
@@ -443,6 +455,10 @@ const submitNewAppointment = async (req, res) => {
 
     // get random nurse from office
     const nurse = await Nurse.findOne({
+      include: {
+        model: User,
+        where: { is_deleted: 0 },
+      },
       order: sequelize.random(),
       limit: 1,
     });
@@ -510,6 +526,12 @@ const requestSpecialistApproval = async (req, res) => {
     // Get patient_id from user_id
     const patient = await Patient.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     // Get office_id from office_name
@@ -567,6 +589,12 @@ const getPrimaryDoctor = async (req, res) => {
     // First get patient_id from user_id
     const patient = await Patient.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!patient) {
@@ -584,6 +612,12 @@ const getPrimaryDoctor = async (req, res) => {
       include: [
         {
           model: Doctor,
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ]
         },
       ],
     });
