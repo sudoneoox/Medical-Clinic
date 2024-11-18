@@ -12,16 +12,41 @@ Once logged in, you'll be able to perform various tasks, such as scheduling appo
   - If not already installed:
     - MySQL: https://dev.mysql.com/downloads/
     - NodeJS: https://nodejs.org/en/download/package-manager
-- Create the database:
-  - Open MySQL Workbench and create a new database schema for the web application.
-  - Import schema found in project folder `database` titled `combined_migrations.sql`.
-- Configure .env file:
-  - DB_PASSWORD=`<your password>`
-  - DB_USER=`root`
-  - DB_PORT=`3306`
-  - DB_HOST=`<localhost>`
-  - DB_NAME=`MEDICAL_CLINIC`
-  - JWT_SECRET=`<your secret token>`
+
+Steps for running the web app
+1. Navigate to the root project directory and run
+```bash
+cd backend && npm i && cd ../frontend && npm i 
+```
+
+2. Setup the database
+This is assuming you have a unix based laptop
+- setup a user with privileged access thought the mysql terminal
+https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
+- create a database that the newly added user has access to
+```bash
+create database medical_clinic;
+use medical_clinic;
+```
+- run our combined migrations sql script that holds our db schema and data
+```bash
+#assuming your in the root project directory
+cd database/scripts 
+
+# make sure you replace these with what you defined whenever you created your database
+mysql -h "$DB_HOST" -u "$DB_USER" --password="$DB_PASSWORD" "$DB_NAME" < combined_migrations.sql
+```
+3. Create a .env file in the root backend directory
+```bash
+# Assuming your in the root project directory
+cd backend && touch .env
+```
+An example .env file so that the backend can connect to your database 
+- DB_PASSWORD=`<your password>`
+- DB_USER=<your database user with privilege to the database>
+- DB_PORT=`3306`
+- DB_HOST=`<localhost>`
+- DB_NAME=<your database name>
 
 ## Project Directory Structure
 ### backend

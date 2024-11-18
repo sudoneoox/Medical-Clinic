@@ -228,7 +228,7 @@ const AppointmentsList = ({ data = [] }) => {
                 setSelectedPatient(null);
               }}
             >
-              Back to Patient Records
+              Back to patient list
             </button>
           </div>
         </div>
