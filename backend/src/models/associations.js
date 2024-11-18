@@ -18,7 +18,6 @@ import AppointmentNotes from "./Tables/AppointmentNotes.js";
 import Specialty from "./Tables/Specialties.js";
 import AppointmentCancellations from "./Tables/AppointmentCancellations.js";
 import Allergies from "./Tables/Allergies.js";
-import AppointmentReminders from "./Tables/AppointmentReminders.js";
 import TestResults from "./Tables/TestResults.js";
 import DoctorOffices from "./Tables/DoctorOffices.js";
 import NurseOffices from "./Tables/NurseOffices.js";
@@ -159,7 +158,6 @@ const initAssociations = () => {
   Appointment.hasOne(AppointmentCancellations, {
     foreignKey: "appointment_id",
   });
-  Appointment.hasMany(AppointmentReminders, { foreignKey: "appointment_id" });
 
   // MedicalRecord associations
   MedicalRecord.belongsTo(Patient, { foreignKey: "patient_id" });
