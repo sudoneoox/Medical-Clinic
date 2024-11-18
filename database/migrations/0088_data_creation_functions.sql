@@ -333,8 +333,7 @@ BEGIN
     RETURN new_record_id;
 END //
 
--- Creates billing record and related notification
--- NOTIFS were not implemented remove
+-- Creates billing record
 CREATE FUNCTION create_billing(
     p_patient_id INT,
     p_appointment_id INT,
@@ -388,31 +387,6 @@ BEGIN
         p_handled_by,
         created_date,
         created_date
-    );
-    
-    -- Create notification for new billing
-    INSERT INTO notifications (
-        sender_id,
-        receiver_id,
-        notification_type,
-        notification_title,
-        notification_content,
-        priority,
-        created_at,
-        metadata
-    ) VALUES (
-        p_handled_by, 
-        (SELECT user_id FROM patients WHERE patient_id = p_patient_id),
-        'BILLING_REMINDER',
-        CONCAT('New billing statement - $', amount),
-        CONCAT('A new billing statement of $', amount, ' has been generated for your recent appointment.'),
-        'MEDIUM',
-        created_date,
-        JSON_OBJECT(
-            'billing_id', LAST_INSERT_ID(),
-            'amount', amount,
-            'due_date', billing_due_date
-        )
     );
     
     SET new_billing_id = LAST_INSERT_ID();
@@ -760,25 +734,6 @@ CROSS JOIN (
                 @recep_id
             );
             
-            -- Create insurance record (70% chance)
-            IF RAND() < 0.7 THEN
-                INSERT INTO insurances (
-                    patient_id,
-                    insurance_info,
-                    is_active
-                ) VALUES (
-                    curr_patient_id,
-                    JSON_OBJECT(
-                        'provider', ELT(FLOOR(1 + RAND() * 5), 'Blue Cross', 'Aetna', 'UnitedHealth', 'Cigna', 'Humana'),
-                        'policy_number', CONCAT('POL-', FLOOR(RAND() * 1000000)),
-                        'coverage_start', DATE_FORMAT(DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 365) DAY), '%Y-%m-%d'),
-                        'coverage_end', DATE_FORMAT(DATE_ADD(CURRENT_DATE, INTERVAL 365 DAY), '%Y-%m-%d'),
-                        'copay', FLOOR(RAND() * 50)
-                    ),
-                    1
-                );
-            END IF;
-            
             -- Create prescription (100% chance)
             IF RAND() < 1.0 THEN
                 INSERT INTO prescription (
@@ -848,7 +803,7 @@ CROSS JOIN (
                     DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 3650) DAY)
                 );
             END IF;
-            
+
             -- Create appointment notes (50% chance)
             IF RAND() < 0.5 THEN
                 INSERT INTO appointment_notes (

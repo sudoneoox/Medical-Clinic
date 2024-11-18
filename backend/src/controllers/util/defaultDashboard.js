@@ -63,14 +63,26 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
         }
 
         // Update user account information
-        await User.update(
-          {
-            user_email: data.email,
-            user_phone: data.phone,
-            user_username: data.username,
-          },
-          { where: { user_id: user.user_id } },
-        );
+        const updateFields = {};
+
+        if (data.email) {
+          updateFields.user_email = data.email;
+        }
+
+        if (data.phone) {
+          updateFields.user_phone = data.phone;
+        }
+
+        if (data.username) {
+          updateFields.user_username = data.username;
+        }
+
+        if (data.email || data.phone || data.username) {
+          await User.update(
+            updateFields, 
+            { where: { user_id: user.user_id } },
+          );
+        }
         break;
 
       case "password":
@@ -78,7 +90,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
 
         // Get current user's password
         const currentUser = await User.findByPk(user.user_id);
-        
+
         // Verify current password matches
         if (currentUser.user_password !== data.currentPassword) {
           return res.status(400).json({

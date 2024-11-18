@@ -110,6 +110,12 @@ router.post(
   "/portal/recappointments/forpatient",
   receptionistDashboard.retrieveAppointmentsForPatient,
 );
+
+router.post(
+  "/receptionist/cancelAppointment",
+  receptionistDashboard.cancelAppointment,
+);
+
 router.post("/billing/:patientId", userControllerFuncs.retreiveBills);
 
 router.post("/submit-payment", userControllerFuncs.submitPayment);

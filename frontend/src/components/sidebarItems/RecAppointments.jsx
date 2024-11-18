@@ -58,19 +58,35 @@ const AppointmentsList = ({ data = [] }) => {
   };
 
   // Handle delete button click to show modal
-  const handleDeleteClick = (record) => {
+  const handleCancelClick = (record) => {
     setRecordToDelete(record);
     setShowConfirmModal(true);
   };
 
   // Confirm deletion
-  const handleConfirmDelete = () => {
+  const handleConfirmCancel = async () => {
     console.log("Record to delete:", recordToDelete);
     // Add delete logic here, e.g., api call to delete appointment
-
-    // Close modal after deletion
-    setShowConfirmModal(false);
-    setRecordToDelete(null);
+    try {
+      await api.post(API.URL + "/api/users/receptionist/cancelAppointment", {
+        appointment_id: recordToDelete.appointment_id,
+        user_id: localStorage.getItem("userId"),
+      });
+  
+      setAppointmentsRecords((prevRecords) =>
+        prevRecords.map((record) =>
+          record.appointment_id === recordToDelete.appointment_id
+            ? { ...record, status: "CANCELLED" }
+            : record
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      // Close modal after deletion
+      setShowConfirmModal(false);
+      setRecordToDelete(null);
+    }
   };
 
   // Close modal without deleting
@@ -147,9 +163,9 @@ const AppointmentsList = ({ data = [] }) => {
                   <th className="py-2 px-4 border-b border-gray-200 text-left">
                     Status
                   </th>
-                  {/* <th className="py-2 px-4 border-b border-gray-200 text-left"> */}
-                  {/*   Actions */}
-                  {/* </th> */}
+                  <th className="py-2 px-4 border-b border-gray-200 text-left">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -168,39 +184,38 @@ const AppointmentsList = ({ data = [] }) => {
                     </td>
                     <td
                       className={`py-2 px-4 border-b border-gray-200 font-bold ${
-                        record.status === "COMPLETED" ||
-                        record.status === "CONFIRMED"
+                        record.status === "COMPLETED" || record.status === "CONFIRMED"
                           ? "text-green-600"
+                          : record.status === "CANCELED"
+                          ? "text-gray-400" 
                           : "text-red-600"
                       }`}
                     >
                       {record.status}
                     </td>
                     <td>
-                      {/* <button */}
-                      {/*   onClick={() => handleDeleteClick(record)} */}
-                      {/*   className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-200" */}
-                      {/* > */}
-                      {/*   Delete */}
-                      {/* </button> */}
+                      <button
+                        onClick={() => handleCancelClick(record)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-200"
+                      >
+                        Cancel
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
           <div className="flex justify-end space-x-4">
-            {/* <button */}
-            {/*   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50" */}
-            {/*   onClick={() => { */}
-            {/*     //setCurrentView("PATIENT_LIST"); */}
-            {/*     //setSelectedPatient(null); */}
-            {/*   }} */}
-            {/* > */}
-            {/*   Add an Appointment. */}
-            {/* </button> */}
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              onClick={() => setAppointmentsFormVisible((prev) => !prev)}
+            >
+              {isAppointmentsFormVisible ? "Cancel" : "Add an Appointment"}
+            </button>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               onClick={() => {
                 setCurrentView("PATIENT_LIST");
                 setSelectedPatient(null);
@@ -225,7 +240,7 @@ const AppointmentsList = ({ data = [] }) => {
                 Back
               </button>
               <button
-                onClick={handleConfirmDelete}
+                onClick={handleConfirmCancel}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
               >
                 Confirm

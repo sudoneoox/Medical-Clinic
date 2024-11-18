@@ -1,4 +1,4 @@
--- nurses and receptionist can modify this when they set up an appointmetn
+-- nurses and receptionist can modify this when they set up an appointment
 CREATE TABLE IF NOT EXISTS appointment_notes (
     note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     appointment_id INTEGER NOT NULL,

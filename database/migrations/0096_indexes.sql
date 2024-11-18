@@ -35,20 +35,12 @@ CREATE INDEX idx_prescription_medication ON prescription(medication_name);
 CREATE INDEX idx_billing_patient ON billing(patient_id);
 CREATE INDEX idx_billing_status ON billing(payment_status);
 
--- Insurances table indexes
-CREATE INDEX idx_insurances_patient ON insurances(patient_id);
-CREATE INDEX idx_insurances_active ON insurances(is_active);
-
 -- Office table indexes
 CREATE INDEX idx_office_name ON office(office_name);
 
 -- Specialist approvals table indexes
 CREATE INDEX idx_specialist_approvals_status ON specialist_approvals(specialist_status);
 CREATE INDEX idx_specialist_approvals_patient ON specialist_approvals(patient_id);
-
--- Appointment reminders table indexes
-CREATE INDEX idx_appointment_reminders_status ON appointment_reminders(reminder_status);
-CREATE INDEX idx_appointment_reminders_scheduled ON appointment_reminders(scheduled_time);
 
 -- Detailed allergies table indexes
 CREATE INDEX idx_detailed_allergies_type ON detailed_allergies(allergy_type);
@@ -68,11 +60,3 @@ CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_c
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
-
-
-
-CREATE INDEX idx_notifications_sender ON notifications(sender_id);
-CREATE INDEX idx_notifications_receiver ON notifications(receiver_id);
-CREATE INDEX idx_notifications_type ON notifications(notification_type);
-CREATE INDEX idx_notifications_created ON notifications(created_at);
-CREATE INDEX idx_notifications_scheduled ON notifications(scheduled_for);

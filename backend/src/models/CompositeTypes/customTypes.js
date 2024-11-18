@@ -37,13 +37,6 @@ class EMERGENCY_CONTACT extends ABSTRACT {
   }
 }
 
-class INSURANCE extends ABSTRACT {
-  static key = "INSURANCE";
-  toSql() {
-    return DataTypes.JSON;
-  }
-}
-
 class MEDICATION extends ABSTRACT {
   static key = "MEDICATION";
   toSql() {
@@ -54,7 +47,6 @@ class MEDICATION extends ABSTRACT {
 // Apply the workaround to all custom types
 DataTypes.ADDRESS = classToInvokable(ADDRESS);
 DataTypes.EMERGENCY_CONTACT = classToInvokable(EMERGENCY_CONTACT);
-DataTypes.INSURANCE = classToInvokable(INSURANCE);
 DataTypes.MEDICATION = classToInvokable(MEDICATION);
 DataTypes.TIMESTAMP = classToInvokable(TIMESTAMP);
 
@@ -86,14 +78,6 @@ DataTypes.SPECIALIST_REQUEST_STATUS = DataTypes.ENUM(
   "PENDING",
   "APPROVED",
   "REJECTED",
-);
-
-DataTypes.NOTIFICATION_TYPE = DataTypes.ENUM(
-  "APPOINTMENT REMINDER",
-  "TEST_RESULT_AVAILABLE",
-  "PRESCRIPTION READY",
-  "BILLING REMINDER",
-  "GENERAL",
 );
 
 export default DataTypes;
