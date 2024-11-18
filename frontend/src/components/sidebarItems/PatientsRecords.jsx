@@ -13,7 +13,16 @@ const PatientRecords = ({ data = [] }) => {
   const [selectedBillingRecord, setSelectedBillingRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredPatients = data.filter(
+  // fix issue where patient shows up multiple times
+  const distinctPatients = Array.from(
+    new Map(
+      data
+        .filter((item) => item)
+        .map((item) => [item.patient_id, item]),
+    ).values(),
+  );
+
+  const filteredPatients = distinctPatients.filter(
     (patient) =>
       patient.patient_fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.patient_lname.toLowerCase().includes(searchTerm.toLowerCase()) ||

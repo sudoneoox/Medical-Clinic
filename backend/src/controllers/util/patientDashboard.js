@@ -4,6 +4,7 @@ import Office from "../../models/Tables/Office.js";
 import MedicalRecord from "../../models/Tables/MedicalRecord.js";
 import Patient from "../../models/Tables/Patient.js";
 import Specialty from "../../models/Tables/Specialties.js";
+import User from "../../models/Tables/Users.js";
 import { Op } from "@sequelize/core";
 
 // TODO: for medical records and appointments order them by date to find the most recent ones and only show the top 3
@@ -39,6 +40,10 @@ const populateOVERVIEW = async (user, patient, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
       ],
     });
 
@@ -57,6 +62,10 @@ const populateOVERVIEW = async (user, patient, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
       ],
     });
 
@@ -101,6 +110,10 @@ const populateCALENDAR = async (user, patient, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
       ],
     });
 
@@ -146,6 +159,10 @@ const populateAPPOINTMENTS = async (user, patient, res) => {
             },
           ],
         },
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
       ],
     });
 

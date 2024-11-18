@@ -21,7 +21,9 @@ const portalRoleSwitcher = async (req, res) => {
       `Received sidebarItem inside portalRoleSwitcher: ${sidebarItem}`,
     );
 
-    const user = await User.findOne({ where: { user_id: user_id } });
+    const user = await User.findOne({ 
+      where: { user_id: user_id, is_deleted: 0 },
+    });
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
@@ -34,7 +36,15 @@ const portalRoleSwitcher = async (req, res) => {
       // NOTE: receptionist seperator
       case "RECEPTIONIST":
         relatedEntity = await Receptionist.findOne({
-          where: { user_id: user_id },
+          where: { 
+            user_id: user_id, 
+          },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0},
+            }
+          ],
         });
         switch (sidebarItem) {
           case "OVERVIEW":
@@ -75,7 +85,15 @@ const portalRoleSwitcher = async (req, res) => {
         }
       // NOTE: nurse seperator
       case "NURSE":
-        relatedEntity = await Nurse.findOne({ where: { user_id: user_id } });
+        relatedEntity = await Nurse.findOne({ 
+          where: { user_id: user_id },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
+        });
         switch (sidebarItem) {
           case "OVERVIEW":
             return await nurseDashboard.populateOVERVIEW(
@@ -117,7 +135,15 @@ const portalRoleSwitcher = async (req, res) => {
         }
       // NOTE: patient seperator
       case "PATIENT":
-        relatedEntity = await Patient.findOne({ where: { user_id: user_id } });
+        relatedEntity = await Patient.findOne({ 
+          where: { user_id: user_id }, 
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ]
+        });
         switch (sidebarItem) {
           case "OVERVIEW":
             return await patientDashboard.populateOVERVIEW(
@@ -159,7 +185,15 @@ const portalRoleSwitcher = async (req, res) => {
         }
       // NOTE: doctor seperator
       case "DOCTOR":
-        relatedEntity = await Doctor.findOne({ where: { user_id: user_id } });
+        relatedEntity = await Doctor.findOne({ 
+          where: { user_id: user_id },
+          include: [
+            {
+              model: User,
+              where: { is_deleted: 0 },
+            }
+          ],
+        });
         switch (sidebarItem) {
           case "OVERVIEW":
             return await doctorDashboard.populateOVERVIEW(

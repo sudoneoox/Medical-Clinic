@@ -1,6 +1,7 @@
 import Nurse from "../../models/Tables/Nurse.js";
 import Doctor from "../../models/Tables/Doctor.js";
 import Patient from "../../models/Tables/Patient.js";
+import User from "../../models/Tables/Users.js";
 import Appointment from "../../models/Tables/Appointment.js";
 import AppointmentNotes from "../../models/Tables/AppointmentNotes.js";
 import Office from "../../models/Tables/Office.js";
@@ -39,7 +40,11 @@ const populateOVERVIEW = async (user, nurse, res) => {
               attributes: ["office_name"],
             },
           ],
-        },
+        },   
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        } 
       ],
     });
 
@@ -167,6 +172,12 @@ const getNurseAppointments = async (req, res) => {
     // First get the nurse ID from the user ID
     const nurse = await Nurse.findOne({
       where: { user_id: req.body.user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -247,6 +258,12 @@ const getNurseAppointmentsBilling = async (req, res) => {
     // get nurse ID from the user ID
     const nurse = await Nurse.findOne({
       where: { user_id: req.body.user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -308,6 +325,12 @@ const createBills = async (req, res) => {
     amountDueDate.setDate(amountDueDate.getDate() + 14);
     const nurse = await Nurse.findOne({
       where: { user_id: req.body.userId },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -318,6 +341,12 @@ const createBills = async (req, res) => {
     }
 
     const receptionist = await Receptionist.findOne({
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
       order: sequelize.random(),
       limit: 1,
     });
@@ -362,6 +391,12 @@ const updateAppointmentStatus = async (req, res) => {
 
     const nurse = await Nurse.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -397,6 +432,12 @@ const addAppointmentNote = async (req, res) => {
 
     const nurse = await Nurse.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -449,6 +490,12 @@ const editAppointmentNote = async (req, res) => {
 
     const nurse = await Nurse.findOne({
       where: { user_id },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     if (!nurse) {
@@ -482,6 +529,12 @@ const editAppointmentNote = async (req, res) => {
 const getNursePatientIds = async (userId) => {
   const nurse = await Nurse.findOne({
     where: { user_id: userId },
+    include: [
+      {
+        model: User,
+        where: { is_deleted: 0 },
+      }
+    ],
   });
 
   if (!nurse) {
@@ -704,6 +757,12 @@ const addNote = async (req, res) => {
   try {
     const nurse = await Nurse.findOne({
       where: { user_id: userId },
+      include: [
+        {
+          model: User,
+          where: { is_deleted: 0 },
+        }
+      ],
     });
 
     // Insert a new note into the MedicalRecordNotes table
