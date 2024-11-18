@@ -35,7 +35,7 @@ const PatientRecords = ({ data = [] }) => {
       );
       setBillingRecords(response.data);
     } catch (err) {
-      setError(err.response.data.message);
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
