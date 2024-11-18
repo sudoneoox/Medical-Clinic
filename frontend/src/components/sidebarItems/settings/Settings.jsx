@@ -85,6 +85,9 @@ const Settings = ({ data }) => {
             },
           }));
         }
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
         throw new Error(result.message || "Failed to update settings");
       }

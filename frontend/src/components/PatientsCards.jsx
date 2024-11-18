@@ -303,22 +303,6 @@ const PatientList = ({ data = [], userRole }) => {
                           <p>Duration: {prescription.duration}</p>
                           <p>Frequency: {prescription.frequency}</p>
                         </div>
-                        <div className="flex justify-evenly items-center px-3">
-                          <button
-                            onClick={() => openPrescriptionForm(prescription)} // Open form for editing the prescription
-                            className="text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out ml-2"
-                          >
-                            <Pencil className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeletePrescriptions(prescription)
-                            }
-                            className="text-red-500 hover:text-red-600 transition duration-200 ease-in-out ml-2"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
                       </div>
                       <div
                         className={`transition-all duration-300 ease-in-out overflow-hidden ${expandedPrescription === prescription.prescription_id ? "max-h-40" : "max-h-0"}`}
