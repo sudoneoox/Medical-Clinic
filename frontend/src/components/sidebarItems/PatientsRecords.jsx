@@ -35,7 +35,7 @@ const PatientRecords = ({ data = [] }) => {
       );
       setBillingRecords(response.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response.data.message);
     } finally {
       setIsLoading(false);
     }
@@ -152,42 +152,52 @@ const PatientRecords = ({ data = [] }) => {
               </tr>
             </thead>
             <tbody>
-              {billingRecords.map((record, index) => (
-                <tr
-                  key={index}
-                  className={`hover:bg-gray-50 ${
-                    record.payment_status === "PAID"
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
-                  }`}
-                  onClick={() => {
-                    if (record.payment_status !== "PAID") {
-                      setSelectedBillingRecord(record);
-                      setPaymentFormVisible(true);
-                    }
-                  }}
-                >
-                  <td className="py-2 px-4 border-b border-gray-200">
-                    {new Date(record.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-200">
-                    {new Date(record.billing_due).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-200">
-                    ${parseFloat(record.amount_due).toFixed(2)}
-                  </td>
-                  <td
-                    className={`py-2 px-4 border-b border-gray-200 font-bold ${
-                      record.payment_status === "PAID"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+              {billingRecords.length > 0 ? (
+                billingRecords.map((record, index) => (
+                  <tr
+                    key={index}
+                    className={`hover:bg-gray-50 ${record.payment_status === "PAID"
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                      }`}
+                    onClick={() => {
+                      if (record.payment_status !== "PAID") {
+                        setSelectedBillingRecord(record);
+                        setPaymentFormVisible(true);
+                      }
+                    }}
                   >
-                    {record.payment_status}
+                    <td className="py-2 px-4 border-b border-gray-200">
+                      {new Date(record.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-200">
+                      {new Date(record.billing_due).toLocaleDateString()}
+                    </td>
+                    <td className="py-2 px-4 border-b border-gray-200">
+                      ${parseFloat(record.amount_due).toFixed(2)}
+                    </td>
+                    <td
+                      className={`py-2 px-4 border-b border-gray-200 font-bold ${record.payment_status === "PAID"
+                          ? "text-green-600"
+                          : "text-red-600"
+                        }`}
+                    >
+                      {record.payment_status}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="py-4 px-4 text-center text-gray-500"
+                  >
+                    No bills exist.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
+
           </table>
         </div>
 
