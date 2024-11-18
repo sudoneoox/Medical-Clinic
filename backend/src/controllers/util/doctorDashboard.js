@@ -267,9 +267,7 @@ const retrieveMedicalRecords = async (req, res) => {
     if (req.body.user_id === "PATIENT") {
       const userid = req.params.patientId;
       const patient = await Patient.findOne({ where: { user_id: userid } });
-      console.log("found patient", patient);
       const patientid = patient.patient_id;
-      console.log(`Fetching medical records for patient ID: ${patientid}`);
 
       const medicalrecords = await MedicalRecord.findAll({
         where: { patient_id: patientid, is_deleted: 0 },
@@ -278,7 +276,6 @@ const retrieveMedicalRecords = async (req, res) => {
       return res.json(medicalrecords);
     } else {
       const patientid = req.params.patientId;
-      console.log(`Fetching medical records for patient ID: ${patientid}`);
 
       const medicalrecords = await MedicalRecord.findAll({
         where: { patient_id: patientid, is_deleted: 0 },
