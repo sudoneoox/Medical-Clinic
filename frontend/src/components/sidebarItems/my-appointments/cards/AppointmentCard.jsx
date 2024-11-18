@@ -10,9 +10,12 @@ const AppointmentCard = ({ appointment, type }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [deleting, setDeleting] = useState(false); // State for delete operation
+
   console.log("=== AppointmentCard Render ===");
   console.log("Appointment data:", appointment);
   console.log("Type:", type);
+
   const handleApprovalAction = async (action) => {
     console.log("=== Starting Approval Action ===");
     console.log("Action:", action);
@@ -22,7 +25,6 @@ const AppointmentCard = ({ appointment, type }) => {
       setLoading(true);
       setError(null);
 
-      // Get doctor_id from the reffered_doctor_id in the appointment data
       const doctorId = appointment.reffered_doctor_id;
       console.log("Using doctor ID:", doctorId);
 
@@ -59,6 +61,34 @@ const AppointmentCard = ({ appointment, type }) => {
       setLoading(false);
     }
   };
+
+  const handleDeleteAppointment = async (appointment_id) => {
+    console.log("=== Starting Delete Appointment ===");
+    console.log("Appointment ID:", appointment_id); // Assuming appointment has an id property
+
+    try {
+      setDeleting(true);
+      setError(null);
+
+      const response = await api.post(`/users/portal/deleteAppointments/${appointment_id}`); // Adjust endpoint as necessary
+
+      console.log("API Response:", response);
+
+      if (response.data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (err) {
+      console.error("Error in handleDeleteAppointment:", err);
+      console.error("Error response:", err.response);
+      setError(err.response?.data?.message || "Error deleting appointment");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const renderSpecialistInfo = () => {
     if (!appointment.doctor?.specialties?.length) return null;
 
@@ -94,7 +124,7 @@ const AppointmentCard = ({ appointment, type }) => {
             <Button
               onClick={() => handleApprovalAction("approve")}
               disabled={loading}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg -green-500 hover:bg-green-600 text-white"
             >
               {loading ? (
                 <span className="flex items-center">
@@ -131,6 +161,7 @@ const AppointmentCard = ({ appointment, type }) => {
     }
     return null;
   };
+
   return (
     <Card className="mb-4">
       <CardContent className="pt-6">
@@ -166,6 +197,22 @@ const AppointmentCard = ({ appointment, type }) => {
             >
               {appointment.status.replace(/_/g, " ")}
             </span>
+            <div className="mt-4">
+              <Button
+                onClick={() => handleDeleteAppointment(appointment.appointment_id)} // Pass a function reference
+                disabled={deleting}
+                className={`flex items-center px-5 py-2 rounded-lg text-white ${deleting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 shadow-md'} transition duration-200 ease-in-out`}
+              >
+                {deleting ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2">⌛</span>
+                    Deleting...
+                  </span>
+                ) : (
+                  <p>Cancel Appointment</p>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
