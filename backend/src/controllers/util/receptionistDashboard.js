@@ -209,7 +209,10 @@ const retrieveAppointmentsList = async (req, res) => {
     });
     console.log(receptionist_id);
     const appointmentsRecords = await Appointment.findAll({
-      where: { booked_by: receptionist_id.receptionist_id },
+      where: {
+        booked_by: receptionist_id.receptionist_id,
+        status: "CONFIRMED",
+      },
 
       include: [
         {
@@ -275,7 +278,9 @@ const cancelAppointment = async (req, res) => {
 
   // Check if the required fields are provided
   if (!appointment_id || !user_id) {
-    return res.status(400).json({ error: "Appointment ID and User ID are required" });
+    return res
+      .status(400)
+      .json({ error: "Appointment ID and User ID are required" });
   }
 
   try {
@@ -284,24 +289,30 @@ const cancelAppointment = async (req, res) => {
       where: {
         appointment_id: appointment_id,
         status: {
-          [Op.not]: ['CANCELLED', 'COMPLETED'] // Make sure the appointment is not already canceled or completed
-        }
-      }
+          [Op.not]: ["CANCELLED", "COMPLETED"], // Make sure the appointment is not already canceled or completed
+        },
+      },
     });
     console.log(appointment);
     if (!appointment) {
-      return res.status(404).json({ error: "Appointment not found or cannot be canceled" });
+      return res
+        .status(404)
+        .json({ error: "Appointment not found or cannot be canceled" });
     }
 
     // Update the appointment status to 'CANCELED'
-    appointment.status = 'CANCELLED';
+    appointment.status = "CANCELLED";
     await appointment.save();
 
     // Return success message
-    return res.status(200).json({ message: "Appointment successfully canceled" });
+    return res
+      .status(200)
+      .json({ message: "Appointment successfully canceled" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "An error occurred while canceling the appointment" });
+    return res
+      .status(500)
+      .json({ error: "An error occurred while canceling the appointment" });
   }
 };
 

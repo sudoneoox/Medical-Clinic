@@ -14,23 +14,30 @@ const AppointmentsList = ({ data = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false); // For delete confirmation modal
   const [recordToDelete, setRecordToDelete] = useState(null); // Track which record to delete
-  const filteredPatients = data.filter(
-    (patient) =>
-      patient.patient.patient_fname
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      patient.patient.patient_lname
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (
-        patient.patient.patient_fname.toLowerCase() +
-        " " +
-        patient.patient.patient_lname.toLowerCase()
-      ).includes(searchTerm.toLowerCase()) ||
-      (patient.patient.patient_id &&
-        patient.patient.patient_id.toString().includes(searchTerm)),
+  // fix issue where patient shows up multiple times
+  const distinctPatients = Array.from(
+    new Map(
+      data
+        .filter((item) => item && item.patient)
+        .map((item) => [item.patient.patient_id, item.patient]),
+    ).values(),
   );
 
+  const filteredPatients = distinctPatients.filter(
+    (patient) =>
+      patient.patient_fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.patient_lname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (
+        patient.patient_fname.toLowerCase() +
+        " " +
+        patient.patient_lname.toLowerCase()
+      ).includes(searchTerm.toLowerCase()) ||
+      (patient.patient_id &&
+        patient.patient_id.toString().includes(searchTerm)),
+  );
+
+  console.log("Original data:", data);
+  console.log("Distinct patients:", distinctPatients);
   // Fetch appointments records
   const fetchAppointmentsRecords = async (patientId) => {
     setIsLoading(true);
@@ -72,13 +79,13 @@ const AppointmentsList = ({ data = [] }) => {
         appointment_id: recordToDelete.appointment_id,
         user_id: localStorage.getItem("userId"),
       });
-  
+
       setAppointmentsRecords((prevRecords) =>
         prevRecords.map((record) =>
           record.appointment_id === recordToDelete.appointment_id
             ? { ...record, status: "CANCELLED" }
-            : record
-        )
+            : record,
+        ),
       );
     } catch (err) {
       setError(err.message);
@@ -121,13 +128,12 @@ const AppointmentsList = ({ data = [] }) => {
               >
                 <div>
                   <p className="font-medium">
-                    {patient.patient.patient_fname}{" "}
-                    {patient.patient.patient_lname}
+                    {patient.patient_fname} {patient.patient_lname}
                   </p>
                 </div>
                 <div>
                   <button
-                    onClick={() => handleViewAppointments(patient.patient)}
+                    onClick={() => handleViewAppointments(patient)}
                     className="bg-blue-500 text-white px-3 py-1 rounded-sm shadow hover:bg-blue-600 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
                   >
                     View Appointments
@@ -184,11 +190,12 @@ const AppointmentsList = ({ data = [] }) => {
                     </td>
                     <td
                       className={`py-2 px-4 border-b border-gray-200 font-bold ${
-                        record.status === "COMPLETED" || record.status === "CONFIRMED"
+                        record.status === "COMPLETED" ||
+                        record.status === "CONFIRMED"
                           ? "text-green-600"
                           : record.status === "CANCELED"
-                          ? "text-gray-400" 
-                          : "text-red-600"
+                            ? "text-gray-400"
+                            : "text-red-600"
                       }`}
                     >
                       {record.status}
@@ -231,7 +238,7 @@ const AppointmentsList = ({ data = [] }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded-lg shadow-lg w-80">
             <h3 className="text-lg font-semibold mb-4">Are you sure?</h3>
-            <p>Do you really want to delete this appointment?</p>
+            <p>Do you really want to cancel this appointment?</p>
             <div className="flex justify-end mt-4 space-x-2">
               <button
                 onClick={handleCloseModal}
