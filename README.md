@@ -43,11 +43,11 @@ mysql -h "$DB_HOST" -u "$DB_USER" --password="$DB_PASSWORD" "$DB_NAME" < combine
 cd backend && touch .env
 ```
 An example .env file so that the backend can connect to your database 
-- DB_PASSWORD=`<your password>`
-- DB_USER=<your database user with privilege to the database>
+- DB_PASSWORD=`<your password for the  created user with db privileges>`
+- DB_USER=`<your database user with privilege to the database>`
 - DB_PORT=`3306`
 - DB_HOST=`<localhost>`
-- DB_NAME=<your database name>
+- DB_NAME=`<your database name>`
 
 4. Assuming you configured your database correctly and got your .env file setup you can now start the project in a local server
 ```bash
