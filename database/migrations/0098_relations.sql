@@ -187,6 +187,21 @@ ADD CONSTRAINT fk_nurse_offices_office
     REFERENCES office(office_id)
     ON DELETE CASCADE;
 
+-- Appointment_notes table relations
+ALTER TABLE appointment_notes
+ADD CONSTRAINT fk_appointment_notes_appointment
+    FOREIGN KEY (appointment_id)
+    REFERENCES appointments(appointment_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_appointment_notes_nurse
+    FOREIGN KEY (created_by_nurse)
+    REFERENCES nurses(nurse_id)
+    ON DELETE SET NULL,
+ADD CONSTRAINT fk_appointment_notes_receptionist
+    FOREIGN KEY (created_by_receptionist)
+    REFERENCES receptionists(receptionist_id)
+    ON DELETE SET NULL;
+
 -- Doctor-Specialties junction table relations
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor

@@ -228,6 +228,16 @@ CREATE TABLE IF NOT EXISTS nurse_offices (
     PRIMARY KEY (nurse_id, office_id, day_of_week)
 );
 ;
+CREATE TABLE IF NOT EXISTS appointment_notes (
+    note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INTEGER NOT NULL,
+    note_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_nurse INTEGER,
+    created_by_receptionist INTEGER,
+    UNIQUE(note_id)
+);
+;
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
     specialty_code TINYINT NOT NULL,
@@ -1053,6 +1063,23 @@ CROSS JOIN (
                     DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 3650) DAY)
                 );
             END IF;
+            IF RAND() < 0.5 THEN
+                INSERT INTO appointment_notes (
+                    appointment_id,
+                    note_text,
+                    created_by_nurse,
+                    created_by_receptionist
+                ) VALUES (
+                    curr_appointment_id,
+                    ELT(FLOOR(1 + RAND() * 3), 
+                        'Patient requested evening appointments in future.',
+                        'Patient prefers Dr. Smith for follow-ups.',
+                        'Patient requires wheelchair access.'
+                    ),
+                    IF(RAND() < 0.5, @nurse_id, NULL),
+                    IF(RAND() >= 0.5, @recep_id, NULL)
+                );
+            END IF;
             SET j = j + 1;
         END WHILE;
         INSERT INTO patient_doctor_junction (
@@ -1432,6 +1459,18 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+DELIMITER //
+CREATE TRIGGER check_appointment_notes_creator
+BEFORE INSERT ON appointment_notes
+FOR EACH ROW
+BEGIN
+    IF NOT ((NEW.created_by_nurse IS NOT NULL AND NEW.created_by_receptionist IS NULL) OR
+            (NEW.created_by_nurse IS NULL AND NEW.created_by_receptionist IS NOT NULL)) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Appointment note must be created by either a nurse or a receptionist, not both or neither';
+    END IF;
+END //
+DELIMITER ;
 ;
 ALTER TABLE users
 ADD CONSTRAINT fk_user_demographics_id
@@ -1585,6 +1624,19 @@ ADD CONSTRAINT fk_nurse_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
+ALTER TABLE appointment_notes
+ADD CONSTRAINT fk_appointment_notes_appointment
+    FOREIGN KEY (appointment_id)
+    REFERENCES appointments(appointment_id)
+    ON DELETE CASCADE,
+ADD CONSTRAINT fk_appointment_notes_nurse
+    FOREIGN KEY (created_by_nurse)
+    REFERENCES nurses(nurse_id)
+    ON DELETE SET NULL,
+ADD CONSTRAINT fk_appointment_notes_receptionist
+    FOREIGN KEY (created_by_receptionist)
+    REFERENCES receptionists(receptionist_id)
+    ON DELETE SET NULL;
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor
     FOREIGN KEY (doctor_id) 

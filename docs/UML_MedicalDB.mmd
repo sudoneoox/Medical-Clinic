@@ -158,6 +158,14 @@ erDiagram
         int doctor_id PK, FK
         int specialtity_code PK, FK
     }
+    APPOINTMENT_NOTES {
+        int note_id PK
+        int appointment_id FK
+        string note_text
+        int created_by_nurse FK
+        int created_by_receptionist FK
+        timestamp created_at
+    }
     APPOINTMENT_CANCELLATIONS {
         int cancellation_id PK
         int appointment_id FK
@@ -199,5 +207,8 @@ erDiagram
     SPECIALTIES_CODE ||--o{ DOCTOR_SPECIALTIES : "belongs to"
     RECEPTIONIST ||--o{ APPOINTMENTS : "books"
     NURSE }o--o{ APPOINTMENTS : "attends"
+    APPOINTMENTS ||--o{ APPOINTMENT_NOTES : "has"
+    NURSE ||--o{ APPOINTMENT_NOTES : "creates"
+    RECEPTIONIST ||--o{ APPOINTMENT_NOTES : "creates"
     APPOINTMENTS ||--o| APPOINTMENT_CANCELLATIONS : "may have"
     RECEPTIONIST ||--o{ BILLING : "handles"
