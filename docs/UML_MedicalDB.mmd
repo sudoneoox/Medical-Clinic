@@ -103,10 +103,6 @@ erDiagram
         int booked_by FK
         int attending_nurse FK
     }
-    APPOINTMENT_REMINDERS {
-        int reminder_id PK
-        int appointment_id FK
-    }
     MEDICAL_RECORDS {
         int record_id PK
         int patient_id FK
@@ -154,12 +150,6 @@ erDiagram
         date updated_at
         int handled_by FK
     }
-    INSURANCES {
-        int insurance_id PK
-        int patient_id FK
-        composite insurance_info
-        bool is_active
-    }
     SPECIALTIES_CODE {
         int specialty_code PK
         string specialty_name
@@ -167,14 +157,6 @@ erDiagram
     DOCTOR_SPECIALTIES {
         int doctor_id PK, FK
         int specialtity_code PK, FK
-    }
-    APPOINTMENT_NOTES {
-        int note_id PK
-        int appointment_id FK
-        string note_text
-        int created_by_nurse FK
-        int created_by_receptionist FK
-        timestamp created_at
     }
     APPOINTMENT_CANCELLATIONS {
         int cancellation_id PK
@@ -202,7 +184,6 @@ erDiagram
     PATIENT }o--o{ APPOINTMENTS : "has"
     DOCTOR }o--o{ APPOINTMENTS : "conducts"
     OFFICE ||--o{ APPOINTMENTS : "hosts"
-    APPOINTMENTS ||--o{ APPOINTMENT_REMINDERS : "has"
     PATIENT ||--o{ MEDICAL_RECORDS : "has"
     DOCTOR ||--o{ MEDICAL_RECORDS : "creates"
     APPOINTMENTS |o--o{ MEDICAL_RECORDS : "results in"
@@ -214,13 +195,9 @@ erDiagram
     DOCTOR ||--o{ SPECIALIST_APPROVALS : "requests/approves"
     PATIENT ||--o{ BILLING : "receives"
     APPOINTMENTS ||--|| BILLING : "generates"
-    PATIENT ||--o{ INSURANCES : "has"
     DOCTOR }o--o{ DOCTOR_SPECIALTIES : "has"
     SPECIALTIES_CODE ||--o{ DOCTOR_SPECIALTIES : "belongs to"
     RECEPTIONIST ||--o{ APPOINTMENTS : "books"
     NURSE }o--o{ APPOINTMENTS : "attends"
-    APPOINTMENTS ||--o{ APPOINTMENT_NOTES : "has"
-    NURSE ||--o{ APPOINTMENT_NOTES : "creates"
-    RECEPTIONIST ||--o{ APPOINTMENT_NOTES : "creates"
     APPOINTMENTS ||--o| APPOINTMENT_CANCELLATIONS : "may have"
     RECEPTIONIST ||--o{ BILLING : "handles"

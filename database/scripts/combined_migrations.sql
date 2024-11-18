@@ -126,14 +126,6 @@ CREATE TABLE IF NOT EXISTS billing (
     UNIQUE(billing_id)
 );
 ;
-CREATE TABLE IF NOT EXISTS insurances (
-    insurance_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    patient_id INTEGER NOT NULL,
-    insurance_info JSON,
-    is_active TINYINT DEFAULT (1),
-    UNIQUE(insurance_id)
-);
-;
 CREATE TABLE IF NOT EXISTS medical_records (
     record_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -236,16 +228,6 @@ CREATE TABLE IF NOT EXISTS nurse_offices (
     PRIMARY KEY (nurse_id, office_id, day_of_week)
 );
 ;
-CREATE TABLE IF NOT EXISTS appointment_notes (
-    note_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    appointment_id INTEGER NOT NULL,
-    note_text TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by_nurse INTEGER,
-    created_by_receptionist INTEGER,
-    UNIQUE(note_id)
-);
-;
 CREATE TABLE IF NOT EXISTS doctor_specialties (
     doctor_id INTEGER NOT NULL,
     specialty_code TINYINT NOT NULL,
@@ -286,14 +268,6 @@ CREATE TABLE IF NOT EXISTS test_results (
     test_performed_by INTEGER NOT NULL,
     medical_record_id INTEGER NOT NULL,
     UNIQUE(test_results_id)
-);
-;
-CREATE TABLE IF NOT EXISTS appointment_reminders (
-    reminder_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    appointment_id INTEGER NOT NULL,
-    reminder_status ENUM('Pending', 'Sent', 'Failed') NOT NULL,
-    scheduled_time TIMESTAMP NOT NULL,
-    sent_time TIMESTAMP NOT NULL
 );
 ;
 CREATE TABLE IF NOT EXISTS detailed_allergies (
@@ -344,34 +318,6 @@ CREATE TABLE IF NOT EXISTS admins (
     last_access TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE(admin_id),
     UNIQUE(admin_employee_id)
-);
-;
-CREATE TABLE IF NOT EXISTS notifications (
-    notification_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    sender_id INTEGER NOT NULL,
-    receiver_id INTEGER NOT NULL,
-    notification_type ENUM(
-        'APPOINTMENT_REMINDER',
-        'TEST_RESULTS',
-        'PRESCRIPTION_READY',
-        'BILLING_REMINDER',
-        'MESSAGE',
-        'EMERGENCY_ALERT',
-        'SCHEDULE_CHANGE',
-        'INSURANCE_UPDATE',
-        'DOCUMENT_READY',
-        'GENERAL'
-    ) NOT NULL,
-    notification_title VARCHAR(100) NOT NULL,
-    notification_content TEXT NOT NULL,
-    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM',
-    is_read TINYINT DEFAULT 0,
-    read_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    scheduled_for TIMESTAMP NULL,
-    expires_at TIMESTAMP NULL,
-    metadata JSON,
-    UNIQUE(notification_id)
 );
 ;
 CREATE TABLE IF NOT EXISTS time_slots (
@@ -781,29 +727,6 @@ BEGIN
         created_date,
         created_date
     );
-    INSERT INTO notifications (
-        sender_id,
-        receiver_id,
-        notification_type,
-        notification_title,
-        notification_content,
-        priority,
-        created_at,
-        metadata
-    ) VALUES (
-        p_handled_by, 
-        (SELECT user_id FROM patients WHERE patient_id = p_patient_id),
-        'BILLING_REMINDER',
-        CONCAT('New billing statement - $', amount),
-        CONCAT('A new billing statement of $', amount, ' has been generated for your recent appointment.'),
-        'MEDIUM',
-        created_date,
-        JSON_OBJECT(
-            'billing_id', LAST_INSERT_ID(),
-            'amount', amount,
-            'due_date', billing_due_date
-        )
-    );
     SET new_billing_id = LAST_INSERT_ID();
     RETURN new_billing_id;
 END //
@@ -1066,23 +989,6 @@ CROSS JOIN (
                 curr_appointment_id,
                 @recep_id
             );
-            IF RAND() < 0.7 THEN
-                INSERT INTO insurances (
-                    patient_id,
-                    insurance_info,
-                    is_active
-                ) VALUES (
-                    curr_patient_id,
-                    JSON_OBJECT(
-                        'provider', ELT(FLOOR(1 + RAND() * 5), 'Blue Cross', 'Aetna', 'UnitedHealth', 'Cigna', 'Humana'),
-                        'policy_number', CONCAT('POL-', FLOOR(RAND() * 1000000)),
-                        'coverage_start', DATE_FORMAT(DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 365) DAY), '%Y-%m-%d'),
-                        'coverage_end', DATE_FORMAT(DATE_ADD(CURRENT_DATE, INTERVAL 365 DAY), '%Y-%m-%d'),
-                        'copay', FLOOR(RAND() * 50)
-                    ),
-                    1
-                );
-            END IF;
             IF RAND() < 1.0 THEN
                 INSERT INTO prescription (
                     medical_record_id,
@@ -1145,23 +1051,6 @@ CROSS JOIN (
                     ELT(FLOOR(1 + RAND() * 3), 'Rash', 'Difficulty breathing', 'Swelling'),
                     ELT(FLOOR(1 + RAND() * 3), 'MILD', 'MODERATE', 'SEVERE'),
                     DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 3650) DAY)
-                );
-            END IF;
-            IF RAND() < 0.5 THEN
-                INSERT INTO appointment_notes (
-                    appointment_id,
-                    note_text,
-                    created_by_nurse,
-                    created_by_receptionist
-                ) VALUES (
-                    curr_appointment_id,
-                    ELT(FLOOR(1 + RAND() * 3), 
-                        'Patient requested evening appointments in future.',
-                        'Patient prefers Dr. Smith for follow-ups.',
-                        'Patient requires wheelchair access.'
-                    ),
-                    IF(RAND() < 0.5, @nurse_id, NULL),
-                    IF(RAND() >= 0.5, @recep_id, NULL)
                 );
             END IF;
             SET j = j + 1;
@@ -1499,13 +1388,9 @@ CREATE INDEX idx_medical_records_date ON medical_records(created_at);
 CREATE INDEX idx_prescription_medication ON prescription(medication_name);
 CREATE INDEX idx_billing_patient ON billing(patient_id);
 CREATE INDEX idx_billing_status ON billing(payment_status);
-CREATE INDEX idx_insurances_patient ON insurances(patient_id);
-CREATE INDEX idx_insurances_active ON insurances(is_active);
 CREATE INDEX idx_office_name ON office(office_name);
 CREATE INDEX idx_specialist_approvals_status ON specialist_approvals(specialist_status);
 CREATE INDEX idx_specialist_approvals_patient ON specialist_approvals(patient_id);
-CREATE INDEX idx_appointment_reminders_status ON appointment_reminders(reminder_status);
-CREATE INDEX idx_appointment_reminders_scheduled ON appointment_reminders(scheduled_time);
 CREATE INDEX idx_detailed_allergies_type ON detailed_allergies(allergy_type);
 CREATE INDEX idx_detailed_allergies_allergen ON detailed_allergies(allergen);
 CREATE INDEX idx_test_results_type ON test_results(test_type);
@@ -1517,11 +1402,6 @@ CREATE INDEX idx_doctor_specialties ON doctor_specialties(doctor_id, specialty_c
 CREATE INDEX idx_doctor_offices ON doctor_offices(doctor_id, office_id);
 CREATE INDEX idx_nurse_offices ON nurse_offices(nurse_id, office_id);
 CREATE INDEX idx_receptionist_offices ON receptionist_offices(receptionist_id, office_id);
-CREATE INDEX idx_notifications_sender ON notifications(sender_id);
-CREATE INDEX idx_notifications_receiver ON notifications(receiver_id);
-CREATE INDEX idx_notifications_type ON notifications(notification_type);
-CREATE INDEX idx_notifications_created ON notifications(created_at);
-CREATE INDEX idx_notifications_scheduled ON notifications(scheduled_for);
 ;
 ALTER TABLE appointments
 ADD CONSTRAINT chk_appointment_duration 
@@ -1549,18 +1429,6 @@ BEGIN
     IF NEW.appointment_datetime <= NOW() THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Appointment must be scheduled for a future date and time';
-    END IF;
-END //
-DELIMITER ;
-DELIMITER //
-CREATE TRIGGER check_appointment_notes_creator
-BEFORE INSERT ON appointment_notes
-FOR EACH ROW
-BEGIN
-    IF NOT ((NEW.created_by_nurse IS NOT NULL AND NEW.created_by_receptionist IS NULL) OR
-            (NEW.created_by_nurse IS NULL AND NEW.created_by_receptionist IS NOT NULL)) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Appointment note must be created by either a nurse or a receptionist, not both or neither';
     END IF;
 END //
 DELIMITER ;
@@ -1627,11 +1495,6 @@ ADD CONSTRAINT fk_appointment_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-ALTER TABLE appointment_reminders
-ADD CONSTRAINT fk_appointment_reminder_appointment_id
-    FOREIGN KEY(appointment_id)
-    REFERENCES appointments(appointment_id)
-    ON DELETE CASCADE;
 ALTER TABLE billing
 ADD CONSTRAINT fk_billing_patient 
     FOREIGN KEY (patient_id) 
@@ -1644,11 +1507,6 @@ ADD CONSTRAINT fk_billing_appointment
 ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
     REFERENCES receptionists(receptionist_id);
-ALTER TABLE insurances
-ADD CONSTRAINT fk_insurance_patient
-    FOREIGN KEY (patient_id) 
-    REFERENCES patients(patient_id)
-    ON DELETE CASCADE;
 ALTER TABLE medical_records
 ADD CONSTRAINT fk_medical_record_patient 
     FOREIGN KEY (patient_id) 
@@ -1727,19 +1585,6 @@ ADD CONSTRAINT fk_nurse_offices_office
     FOREIGN KEY (office_id)
     REFERENCES office(office_id)
     ON DELETE CASCADE;
-ALTER TABLE appointment_notes
-ADD CONSTRAINT fk_appointment_notes_appointment
-    FOREIGN KEY (appointment_id)
-    REFERENCES appointments(appointment_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_appointment_notes_nurse
-    FOREIGN KEY (created_by_nurse)
-    REFERENCES nurses(nurse_id)
-    ON DELETE SET NULL,
-ADD CONSTRAINT fk_appointment_notes_receptionist
-    FOREIGN KEY (created_by_receptionist)
-    REFERENCES receptionists(receptionist_id)
-    ON DELETE SET NULL;
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor
     FOREIGN KEY (doctor_id) 
@@ -1786,15 +1631,6 @@ ADD CONSTRAINT fk_admin_user
 ADD CONSTRAINT fk_valid_employee_no_admin
     FOREIGN KEY (admin_employee_id)
     REFERENCES valid_employees(employee_no)
-    ON DELETE CASCADE;
-ALTER TABLE notifications
-ADD CONSTRAINT fk_notification_sender
-    FOREIGN KEY (sender_id) 
-    REFERENCES users(user_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_notification_receiver
-    FOREIGN KEY (receiver_id) 
-    REFERENCES users(user_id)
     ON DELETE CASCADE;
 ALTER TABLE doctor_availability
 ADD CONSTRAINT fk_doctor_availibility_doctor

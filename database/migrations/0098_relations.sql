@@ -73,14 +73,6 @@ ADD CONSTRAINT fk_appointment_office
     ON DELETE CASCADE;
 
 
--- Appointmnent Reminder relations
-ALTER TABLE appointment_reminders
-ADD CONSTRAINT fk_appointment_reminder_appointment_id
-    FOREIGN KEY(appointment_id)
-    REFERENCES appointments(appointment_id)
-    ON DELETE CASCADE;
-
-
 -- Billing table relations
 ALTER TABLE billing
 ADD CONSTRAINT fk_billing_patient 
@@ -94,13 +86,6 @@ ADD CONSTRAINT fk_billing_appointment
 ADD CONSTRAINT fk_billing_handled_by
     FOREIGN KEY (handled_by)
     REFERENCES receptionists(receptionist_id);
-
--- Insurances table relations
-ALTER TABLE insurances
-ADD CONSTRAINT fk_insurance_patient
-    FOREIGN KEY (patient_id) 
-    REFERENCES patients(patient_id)
-    ON DELETE CASCADE;
 
 -- Medical records table relations
 ALTER TABLE medical_records
@@ -202,21 +187,6 @@ ADD CONSTRAINT fk_nurse_offices_office
     REFERENCES office(office_id)
     ON DELETE CASCADE;
 
--- Appointment_notes table relations
-ALTER TABLE appointment_notes
-ADD CONSTRAINT fk_appointment_notes_appointment
-    FOREIGN KEY (appointment_id)
-    REFERENCES appointments(appointment_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_appointment_notes_nurse
-    FOREIGN KEY (created_by_nurse)
-    REFERENCES nurses(nurse_id)
-    ON DELETE SET NULL,
-ADD CONSTRAINT fk_appointment_notes_receptionist
-    FOREIGN KEY (created_by_receptionist)
-    REFERENCES receptionists(receptionist_id)
-    ON DELETE SET NULL;
-
 -- Doctor-Specialties junction table relations
 ALTER TABLE doctor_specialties
 ADD CONSTRAINT fk_doctor_specialties_doctor
@@ -277,19 +247,6 @@ ADD CONSTRAINT fk_valid_employee_no_admin
     FOREIGN KEY (admin_employee_id)
     REFERENCES valid_employees(employee_no)
     ON DELETE CASCADE;
-
-
--- notifs
-ALTER TABLE notifications
-ADD CONSTRAINT fk_notification_sender
-    FOREIGN KEY (sender_id) 
-    REFERENCES users(user_id)
-    ON DELETE CASCADE,
-ADD CONSTRAINT fk_notification_receiver
-    FOREIGN KEY (receiver_id) 
-    REFERENCES users(user_id)
-    ON DELETE CASCADE;
-
 
 ALTER TABLE doctor_availability
 ADD CONSTRAINT fk_doctor_availibility_doctor
