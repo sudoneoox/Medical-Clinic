@@ -262,12 +262,6 @@ const retreiveBills = async (req, res) => {
       where: { patient_id: patientId },
     });
 
-    if (billingRecords.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No billing records found for this patient." });
-    }
-
     return res.json(billingRecords);
   } catch (error) {
     console.error("Error fetching billing data:", error);
