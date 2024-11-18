@@ -42,6 +42,18 @@ BEGIN
 END //
 DELIMITER ;
 
-
+-- notes only created by nurse or receptionist 
+DELIMITER //
+CREATE TRIGGER check_appointment_notes_creator
+BEFORE INSERT ON appointment_notes
+FOR EACH ROW
+BEGIN
+    IF NOT ((NEW.created_by_nurse IS NOT NULL AND NEW.created_by_receptionist IS NULL) OR
+            (NEW.created_by_nurse IS NULL AND NEW.created_by_receptionist IS NOT NULL)) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Appointment note must be created by either a nurse or a receptionist, not both or neither';
+    END IF;
+END //
+DELIMITER ;
 
 

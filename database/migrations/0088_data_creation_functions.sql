@@ -803,6 +803,25 @@ CROSS JOIN (
                     DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 3650) DAY)
                 );
             END IF;
+
+            -- Create appointment notes (50% chance)
+            IF RAND() < 0.5 THEN
+                INSERT INTO appointment_notes (
+                    appointment_id,
+                    note_text,
+                    created_by_nurse,
+                    created_by_receptionist
+                ) VALUES (
+                    curr_appointment_id,
+                    ELT(FLOOR(1 + RAND() * 3), 
+                        'Patient requested evening appointments in future.',
+                        'Patient prefers Dr. Smith for follow-ups.',
+                        'Patient requires wheelchair access.'
+                    ),
+                    IF(RAND() < 0.5, @nurse_id, NULL),
+                    IF(RAND() >= 0.5, @recep_id, NULL)
+                );
+            END IF;
             
             SET j = j + 1;
         END WHILE;
