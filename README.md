@@ -21,12 +21,13 @@ cd backend && npm i && cd ../frontend && npm i
 
 2. Setup the database
 This is assuming you have a unix based laptop
-- setup a user with privileged access thought the mysql terminal
+- setup a user with privileged access through the mysql terminal
 https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
 - create a database that the newly added user has access to
 ```bash
-create database medical_clinic;
-use medical_clinic;
+#in the mysql terminal
+create database $DB_NAME;
+use $DB_NAME;
 ```
 - run our combined migrations sql script that holds our db schema and data
 ```bash
@@ -47,6 +48,15 @@ An example .env file so that the backend can connect to your database
 - DB_PORT=`3306`
 - DB_HOST=`<localhost>`
 - DB_NAME=<your database name>
+
+4. Assuming you configured your database correctly and got your .env file setup you can now start the project in a local server
+```bash
+# start the backend server
+cd backend && npm start
+
+# start the frontend server
+cd frontend && npm start
+```
 
 ## Project Directory Structure
 ### backend
