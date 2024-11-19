@@ -253,10 +253,13 @@ const loginUser = async (req, res) => {
         break;
     }
 
-    if (associatedEntity.user.is_deleted === 1) {
-      return res.status(400).json({
-        message: "Account is deleted please contact admin",
-      });
+    // admin cannot be deleted ?
+    if (user.user_role !== "ADMIN") {
+      if (associatedEntity.user.is_deleted === 1) {
+        return res.status(400).json({
+          message: "Account is deleted please contact admin",
+        });
+      }
     }
 
     const token = jwt.sign(
