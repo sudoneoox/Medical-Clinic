@@ -38,4 +38,15 @@ frontend/.gitignore
 backend/.git
 backend/.gitignore
 
+
+# security reasons and unneeded
 azuredeploy.json
+scripts/azure/connectdb.sh
+scripts/azure/deployUpdate.fish
+scripts/azure/redeploy.fish
+scripts/azure/syncContainers.sh
+scripts/azure/.env
+scripts/startBackend.sh
+scripts/startFrontend.sh
+
+
