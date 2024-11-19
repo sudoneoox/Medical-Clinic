@@ -1201,27 +1201,10 @@ const deleteUser = async (req, res) => {
             payment_status: { [Op.ne]: "PAID" },
           },
         });
-<<<<<<< HEAD
         
         if (patientBills.length > 0) {
           return res.status(404).json({ success: false, message: "Patient has unpaid bills and cannot be removed." });
         }
-=======
-
-        await Billing.update(
-          {
-            amount_paid: sequelize.literal("amount_due"), // Update amount_paid to match amount_due
-            payment_status: "PAID",
-            updated_at: currentDate,
-          },
-          {
-            where: {
-              patient_id: patient.patient_id,
-              payment_status: { [Op.ne]: "PAID" },
-            },
-          },
-        );
->>>>>>> 1b20c5b1de23fe173e27ed381c544e9d330405dd
       }
     }
 
