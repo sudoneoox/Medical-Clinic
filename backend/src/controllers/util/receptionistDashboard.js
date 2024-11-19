@@ -342,6 +342,17 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+const getPatients = async (req,res) => {
+  try {
+    const patients = await Patient.findAll({
+      attributes: ["patient_id","patient_fname","patient_lname"],
+    });
+    return res.json(patients)
+  } catch (error) {
+    
+  }
+}
+
 const receptionistDashboard = {
   populateOVERVIEW,
   populateAPPOINTMENTS,
@@ -350,6 +361,7 @@ const receptionistDashboard = {
   retrieveAppointmentsForPatient,
   retrieveAppointmentsList,
   cancelAppointment,
+  getPatients,
 };
 
 export default receptionistDashboard;

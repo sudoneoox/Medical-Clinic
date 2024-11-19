@@ -14,6 +14,7 @@ import NurseOffices from "../../models/Tables/NurseOffices.js";
 import { Op } from "@sequelize/core";
 import TimeSlots from "../../models/Tables/TimeSlots.js";
 import sequelize from "../../config/database.js";
+import Receptionist from "../../models/Tables/Receptionist.js";
 
 const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
   const { section, data } = settingsData;
@@ -300,6 +301,125 @@ const populateMYAPPOINTMENTS = async (
         }
         break;
       }
+      case "RECEPTIONIST": {
+        switch (appointmentType) {
+          // case "CURRENT": {
+          //   // Fixed Doctor association includes
+          //   data = await Appointment.findAll({
+          //     where: {
+          //       patient_id: relatedEntity.patient_id,
+          //       status: "CONFIRMED",
+          //       appointment_datetime: {
+          //         [Op.gt]: new Date(),
+          //       },
+          //     },
+          //     include: [
+          //       {
+          //         model: Doctor,
+          //         include: [
+          //           {
+          //             model: Specialty,
+          //             through: DoctorSpecialties,
+          //           },
+          //         ],
+          //       },
+          //       {
+          //         model: Office,
+          //         attributes: ["office_name", "office_address"],
+          //       },
+          //     ],
+          //     order: [["appointment_datetime", "ASC"]],
+          //   });
+          //   break;
+          // }
+          // case "PENDING": {
+          //   data = await Appointment.findAll({
+          //     where: {
+          //       patient_id: relatedEntity.patient_id,
+          //       status: "PENDING_DOCTOR_APPROVAL",
+          //     },
+          //     include: [
+          //       {
+          //         model: Doctor,
+          //         include: [
+          //           {
+          //             model: Specialty,
+          //             through: DoctorSpecialties,
+          //           },
+          //         ],
+          //       },
+          //       {
+          //         model: Office,
+          //         attributes: ["office_name", "office_address"],
+          //       },
+          //     ],
+          //     order: [["created_at", "DESC"]],
+          //   });
+          //   break;
+          // }
+          case "AVAILABLE_DOCTORS": {
+            data = await Doctor.findAll({
+              include: [
+                {
+                  model: Specialty,
+                  through: DoctorSpecialties,
+                  attributes: ["specialty_name", "specialty_code"],
+                },
+                {
+                  model: Office,
+                  through: DoctorOffices,
+                  attributes: ["office_name", "office_address"],
+                },
+                {
+                  model: DoctorAvailibility,
+                  include: [
+                    {
+                      model: TimeSlots,
+                      attributes: ["start_time", "end_time"],
+                    },
+                  ],
+                  where: {
+                    is_available: 1,
+                    // if date is null, its a weekly occuring slot,
+                    [Op.or]: [
+                      { specific_date: null },
+                      { specific_date: { [Op.gte]: new Date() } },
+                    ],
+                  },
+                },
+                {
+                  model: User,
+                  where: { is_deleted: 0 },
+                }
+              ],
+              attributes: [
+                "doctor_id",
+                "doctor_fname",
+                "doctor_lname",
+                [
+                  sequelize.literal(`(
+                  SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'day', day_of_week,
+                            'office_name', office_name,
+                            'office_address', office_address,
+                            'time_slots', time_slots
+                        )
+                    )
+                    FROM doctor_available_slots
+                    WHERE doctor_id = Doctor.doctor_id
+                )`),
+                  "availability",
+                ],
+              ],
+            });
+            break;
+          }
+          default:
+            throw new Error("Invalid appointment type for patient");
+        }
+        break;
+      }
       case "DOCTOR": {
         switch (appointmentType) {
           case "UPCOMING": {
@@ -434,23 +554,46 @@ const populateMYAPPOINTMENTS = async (
 };
 
 const submitNewAppointment = async (req, res) => {
-  const { user_id, doctor_id, office_name, appointment_datetime } = req.body;
-
+  // const { user_id, doctor_id, office_name, appointment_datetime } = req.body;
+  const user_id = req.body.user_id;
+  const doctor_id = req.body.doctor_id;
+  const office_name = req.body.office_name;
+  const appointment_datetime = req.body.appointment_datetime;
+  const userRole = req.body.user_role;
+  let patientId;
+  let recepId;
   try {
     // Get patient_id from user_id
-    const patient = await Patient.findOne({
-      where: { user_id },
-      include: [
-        {
-          model: User,
-          where: { is_deleted: 0 },
-        }
-      ],
-    });
+    if(userRole === "RECEPTIONIST"){
+      patientId = req.body.patientId;
+      const receptionist = await Receptionist.findOne({
+        where: { user_id: user_id },
+        include: [
+          {
+            model: User,
+            where: { is_deleted: 0 },
+          }
+        ],
+      });
+      recepId = receptionist.receptionist_id;
+    } else{      
+      const patient = await Patient.findOne({
+        where: { user_id: user_id },
+        include: [
+          {
+            model: User,
+            where: { is_deleted: 0 },
+          }
+        ],
+      });
+      if(patient){
+        patientId = patient.patient_id;
+      }
+    }
 
     // Get office_id from office_name
     const office = await Office.findOne({
-      where: { office_name },
+      where: { office_name: office_name },
     });
 
     // get random nurse from office
@@ -472,16 +615,32 @@ const submitNewAppointment = async (req, res) => {
       .replace("T", " ");
 
     // Create the appointment
-    const appointment = await Appointment.create({
-      patient_id: patient.patient_id,
-      doctor_id,
-      office_id: office.office_id,
-      appointment_datetime: formattedDateTime,
-      duration: "00:30:00", // Default 30 min duration
-      status: "CONFIRMED",
-      reason: req.body.reason || "Regular checkup",
-      attending_nurse: nurse.nurse_id,
-    });
+    let appointment;
+    if(userRole === "RECEPTIONIST"){
+      appointment = await Appointment.create({
+        patient_id: patientId,
+        doctor_id,
+        office_id: office.office_id,
+        appointment_datetime: formattedDateTime,
+        duration: "00:30:00", // Default 30 min duration
+        status: "CONFIRMED",
+        reason: req.body.reason || "Regular checkup",
+        attending_nurse: nurse.nurse_id,
+        booked_by: recepId,
+      });
+
+    } else{
+      appointment = await Appointment.create({
+        patient_id: patientId,
+        doctor_id,
+        office_id: office.office_id,
+        appointment_datetime: formattedDateTime,
+        duration: "00:30:00", // Default 30 min duration
+        status: "CONFIRMED",
+        reason: req.body.reason || "Regular checkup",
+        attending_nurse: nurse.nurse_id,
+      });
+    }
 
     res.json({
       success: true,
@@ -522,33 +681,53 @@ const requestSpecialistApproval = async (req, res) => {
     appointment_datetime,
     office_name,
   } = req.body;
+  const userRole = req.body.userRole;
+  let patientId;
   try {
     // Get patient_id from user_id
-    const patient = await Patient.findOne({
-      where: { user_id },
-      include: [
-        {
-          model: User,
-          where: { is_deleted: 0 },
-        }
-      ],
-    });
+    if(userRole === "RECEPTIONIST"){
+      patientId = req.body.patientId;
+    } else{      
+      const patient = await Patient.findOne({
+        where: { user_id },
+        include: [
+          {
+            model: User,
+            where: { is_deleted: 0 },
+          }
+        ],
+      });
+      if(patient){
+        patientId = patient.patient_id;
+      }
+    }
 
     // Get office_id from office_name
     const office = await Office.findOne({
       where: { office_name },
     });
 
+    const nurse = await Nurse.findOne({
+      include: {
+        model: User,
+        where: { is_deleted: 0 },
+      },
+      order: sequelize.random(),
+      limit: 1,
+    });
+
     // create a pending appointment
     const appointment = await Appointment.create(
       {
-        patient_id: patient.patient_id,
+        patient_id: patientId,
         doctor_id: specialist_id,
         office_id: office.office_id,
         appointment_datetime,
         duration: "00:30:00", // Default 30 min duration
         status: "PENDING_DOCTOR_APPROVAL",
         reason: reason,
+        booked_by: user_id,
+        attending_nurse: nurse.nurse_id,
       },
       {
         hooks: false,
@@ -559,7 +738,7 @@ const requestSpecialistApproval = async (req, res) => {
     console.log("PRIMARY DOCTOR IN SPECIALIST APPROVAL", primary_doctor_id);
     const approvalRequest = await SpecialistApproval.create({
       appointment_id: appointment.appointment_id,
-      patient_id: patient.patient_id,
+      patient_id: patientId,
       specialist_id: specialist_id,
       reffered_doctor_id: primary_doctor_id,
       reason: reason,
@@ -584,29 +763,37 @@ const requestSpecialistApproval = async (req, res) => {
 
 const getPrimaryDoctor = async (req, res) => {
   try {
-    const { user_id } = req.body;
-
+    const user_id = req.body.user_id;
+    const userRole = req.body.userRole;
+    let patientId;
     // First get patient_id from user_id
-    const patient = await Patient.findOne({
-      where: { user_id },
-      include: [
-        {
-          model: User,
-          where: { is_deleted: 0 },
-        }
-      ],
-    });
 
-    if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: "Patient not found",
+    if(userRole === "RECEPTIONIST"){
+      patientId = req.body.patientId;
+    } else {
+      const patient = await Patient.findOne({
+        where: { user_id },
+        include: [
+          {
+            model: User,
+            where: { is_deleted: 0 },
+          }
+        ],
       });
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: "Patient not found",
+        });
+      }
+      patientId = patient.patient_id;
     }
+
+
 
     let doctorRelation = await PatientDoctor.findOne({
       where: {
-        patient_id: patient.patient_id, // Use patient_id instead of user_id
+        patient_id: patientId, // Use patient_id instead of user_id
         is_primary: 1,
       },
       include: [

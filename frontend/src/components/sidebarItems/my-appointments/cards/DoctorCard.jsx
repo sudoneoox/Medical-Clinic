@@ -8,7 +8,7 @@ import SpecialistApprovalModal from "../modals/SpecialistApprovalModal";
 import { groupSlotsByDay, formatTimeSlots } from "../utils/timeFormatters";
 import api from "../../../../api.js";
 
-const DoctorCard = ({ doctor }) => {
+const DoctorCard = ({ doctor , patientId}) => {
   // state management
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [requestingApproval, setRequestingApproval] = useState(false);
@@ -19,13 +19,29 @@ const DoctorCard = ({ doctor }) => {
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [primaryDoctor, setPrimaryDoctor] = useState(null);
   const [isPrimaryDoctor, setIsPrimaryDoctor] = useState(false);
+  const userRole = localStorage.getItem("userRole");
 
   useEffect(() => {
     const checkPrimaryDoctor = async () => {
+      let response; // Declare response outside of the try block
       try {
-        const response = await api.post("/users/portal/getPrimaryDoctor", {
-          user_id: localStorage.getItem("userId"),
-        });
+        if (userRole === "RECEPTIONIST") {
+          console.log("Entering receptionist");
+    
+          response = await api.post("/users/portal/getPrimaryDoctor", {
+            user_id: localStorage.getItem("userId"),
+            userRole,
+            patientId,
+          });
+          console.log(response);
+        } else {
+          response = await api.post("/users/portal/getPrimaryDoctor", {
+            user_id: localStorage.getItem("userId"),
+            userRole,
+          });
+        }
+    
+        // Now response is defined in this scope
         if (response?.data?.data?.doctor) {
           setIsPrimaryDoctor(
             response.data.data.doctor.doctor_id === doctor.doctor_id,
@@ -43,10 +59,22 @@ const DoctorCard = ({ doctor }) => {
   //need to chagne up doctor how theyre fetching their approval
   //this sucks need to clean up and also the way i implemented it is so messy but were on short time
   const fetchPrimaryDoctor = async () => {
+    let response; 
     try {
-      const response = await api.post("/users/portal/getPrimaryDoctor", {
-        user_id: localStorage.getItem("userId"),
-      });
+      if (userRole === "RECEPTIONIST") {
+        console.log("Entering receptionist");
+        response = await api.post("/users/portal/getPrimaryDoctor", {
+          user_id: localStorage.getItem("userId"),
+          userRole,
+          patientId,
+        });
+        console.log(response);
+      } else {
+        response = await api.post("/users/portal/getPrimaryDoctor", {
+          user_id: localStorage.getItem("userId"),
+          userRole,
+        });
+      }
       console.log("PRIMARY DOCTOR FOUND ", response.data.data.doctor);
       if (response?.data?.data?.doctor) {
         setPrimaryDoctor(response.data.data);
@@ -60,6 +88,23 @@ const DoctorCard = ({ doctor }) => {
     } catch (error) {
       console.error("Error fetching primary doctor:", error);
     }
+    // try {
+    //   const response = await api.post("/users/portal/getPrimaryDoctor", {
+    //     user_id: localStorage.getItem("userId"),
+    //   });
+    //   console.log("PRIMARY DOCTOR FOUND ", response.data.data.doctor);
+    //   if (response?.data?.data?.doctor) {
+    //     setPrimaryDoctor(response.data.data);
+    //     localStorage.setItem(
+    //       "primaryDoctor",
+    //       response.data.data.doctor.doctor_id,
+    //     );
+    //     return response.data.data.doctor;
+    //   }
+    //   return null;
+    // } catch (error) {
+    //   console.error("Error fetching primary doctor:", error);
+    // }
   };
   const handleApprovalRequest = async () => {
     if (!approvalReason.trim() || !selectedDateTime) {
@@ -69,22 +114,59 @@ const DoctorCard = ({ doctor }) => {
     if (!primaryDoctor) {
       setBookingError("Unable to find primary doctor information");
     }
+    let response;
     try {
       setRequestingApproval(true);
-      const response = await api.post(
-        "/users/portal/requestSpecialistApproval",
-        {
-          user_id: localStorage.getItem("userId"),
-          specialist_id: doctor.doctor_id,
-          primary_doctor_id: localStorage.getItem("primaryDoctor"),
-          reason: approvalReason,
-          appointment_datetime: selectedDateTime
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " "),
-          office_name: selectedOffice,
-        },
-      );
+      if (userRole === "RECEPTIONIST") {
+        console.log(localStorage.getItem("primaryDoctor"));
+        
+        response = await api.post(
+          "/users/portal/requestSpecialistApproval",
+          {
+            user_id: localStorage.getItem("userId"),
+            specialist_id: doctor.doctor_id,
+            primary_doctor_id: localStorage.getItem("primaryDoctor"),
+            reason: approvalReason,
+            appointment_datetime: selectedDateTime
+              .toISOString()
+              .slice(0, 19)
+              .replace("T", " "),
+            office_name: selectedOffice,
+            userRole,
+            patientId,
+          },
+        );
+      } else {
+        response = await api.post(
+          "/users/portal/requestSpecialistApproval",
+          {
+            user_id: localStorage.getItem("userId"),
+            specialist_id: doctor.doctor_id,
+            primary_doctor_id: localStorage.getItem("primaryDoctor"),
+            reason: approvalReason,
+            appointment_datetime: selectedDateTime
+              .toISOString()
+              .slice(0, 19)
+              .replace("T", " "),
+            office_name: selectedOffice,
+            userRole,
+          },
+        );
+      }
+      // response = await api.post(
+      //   "/users/portal/requestSpecialistApproval",
+      //   {
+      //     user_id: localStorage.getItem("userId"),
+      //     specialist_id: doctor.doctor_id,
+      //     primary_doctor_id: localStorage.getItem("primaryDoctor"),
+      //     reason: approvalReason,
+      //     appointment_datetime: selectedDateTime
+      //       .toISOString()
+      //       .slice(0, 19)
+      //       .replace("T", " "),
+      //     office_name: selectedOffice,
+      //   },
+      // );
 
       if (response.data.success) {
         setShowApprovalModal(false);
@@ -104,6 +186,7 @@ const DoctorCard = ({ doctor }) => {
     setShowDatePicker(true);
   };
   const handleAppointmentSubmit = async () => {
+    let response;
     if (!selectedDateTime || !selectedOffice) {
       return;
     }
@@ -114,13 +197,26 @@ const DoctorCard = ({ doctor }) => {
         .toISOString()
         .slice(0, 19)
         .replace("T", " ");
-      const response = await api.post("/users/portal/submitNewAppointment", {
-        user_id: localStorage.getItem("userId"),
-        user_role: localStorage.getItem("userRole"),
-        doctor_id: doctor.doctor_id,
-        office_name: selectedOffice,
-        appointment_datetime: formattedDateTime,
-      });
+      if (userRole === "RECEPTIONIST") {
+        console.log(patientId);
+        
+        response = await api.post("/users/portal/submitNewAppointment", {
+          user_id: localStorage.getItem("userId"),
+          user_role: localStorage.getItem("userRole"),
+          doctor_id: doctor.doctor_id,
+          office_name: selectedOffice,
+          appointment_datetime: formattedDateTime,
+          patientId,
+        });
+      } else {
+        response = await api.post("/users/portal/submitNewAppointment", {
+          user_id: localStorage.getItem("userId"),
+          user_role: localStorage.getItem("userRole"),
+          doctor_id: doctor.doctor_id,
+          office_name: selectedOffice,
+          appointment_datetime: formattedDateTime,
+        });
+      }
 
       if (response.data.success) {
         console.log("Attending Nurse", response.data.attending_nurse);
