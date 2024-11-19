@@ -14,7 +14,6 @@ import Specialty from "../../models/Tables/Specialties.js";
 import Office from "../../models/Tables/Office.js";
 import sequelize from "../../config/database.js";
 import EmployeeNo from "../../models/Tables/ValidEmployeeNo.js";
-import logic from "./shared/logic.js";
 import { QueryTypes } from "@sequelize/core";
 
 const populateOVERVIEW = async (user, admin, res) => {
@@ -55,23 +54,6 @@ const populateOVERVIEW = async (user, admin, res) => {
       }),
     ]);
 
-    // TODO:
-    // sample alerst if we have time implement this later added feature if not just simply delete
-    const systemAlerts = [
-      {
-        message: "5 appointments pending specialist approval",
-        priority: "MEDIUM",
-      },
-      {
-        message: "System backup completed successfully",
-        priority: "LOW",
-      },
-      {
-        message: "3 billing records require immediate attention",
-        priority: "HIGH",
-      },
-    ].filter((_, index) => index < 3); // Only show top 3 alerts
-
     return res.json({
       adminInfo: {
         name: `${admin.admin_fname} ${admin.admin_lname}`,
@@ -88,7 +70,6 @@ const populateOVERVIEW = async (user, admin, res) => {
         completedVisits,
         pendingBills,
       },
-      systemAlerts,
     });
   } catch (error) {
     console.error("Error in populateOVERVIEWForAdmin:", error);
@@ -297,7 +278,6 @@ const populateUSERMANAGEMENT = async (user, admin, managementData, res) => {
             "emergency_contacts",
           ],
         });
-
 
         data = patients.map((patient) => {
           const primaryDoctor = patient.doctors?.find(
@@ -753,8 +733,9 @@ const getAnalyticsDetails = async (req, res) => {
           ${office !== "all" ? "AND u.office_id = :office" : ""}
           ${role !== "all" ? "AND u.user_role = :role" : ""}
           ${dateRange ? "AND u.account_created_at BETWEEN :startDate AND :endDate" : ""}
-          ${subCategory === "AGE"
-            ? `AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
+          ${
+            subCategory === "AGE"
+              ? `AND TIMESTAMPDIFF(YEAR, dem.dob, CURDATE()) >= 
                   CASE 
                     WHEN :filter = '0-17' THEN 0
                     WHEN :filter = '18-29' THEN 18
@@ -770,7 +751,7 @@ const getAnalyticsDetails = async (req, res) => {
                     WHEN :filter = '50-69' THEN 69
                     ELSE 150
                   END`
-            : `AND dem.${subCategory.toLowerCase()}_id = (
+              : `AND dem.${subCategory.toLowerCase()}_id = (
                   CASE 
                     WHEN :filter = 'Male' THEN 1
                     WHEN :filter = 'Female' THEN 2
@@ -1049,8 +1030,8 @@ const deleteUser = async (req, res) => {
           {
             model: Users,
             where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
-          }
-        ]
+          },
+        ],
       });
 
       if (doctor) {
@@ -1063,8 +1044,14 @@ const deleteUser = async (req, res) => {
           const newDoctor = await Doctor.findOne({
             where: {
               doctor_id: { [Op.ne]: doctor.doctor_id },
-              is_deleted: 0,
             },
+            include: [
+              {
+                model: Users,
+                where: { is_deleted: 0 },
+              },
+            ],
+
             order: sequelize.random(),
             limit: 1,
           });
@@ -1078,14 +1065,21 @@ const deleteUser = async (req, res) => {
             );
 
             const existingPDPair = await PatientDoctor.findOne({
-              where: { patient_id: patientDoctor.patient_id, doctor_id: newDoctor.doctor_id, is_primary: 0 },
+              where: {
+                patient_id: patientDoctor.patient_id,
+                doctor_id: newDoctor.doctor_id,
+                is_primary: 0,
+              },
             });
 
             if (existingPDPair) {
               await PatientDoctor.update(
                 { is_primary: 1 },
                 {
-                  where: { patient_id: patientDoctor.patient_id, doctor_id: newDoctor.doctor_id },
+                  where: {
+                    patient_id: patientDoctor.patient_id,
+                    doctor_id: newDoctor.doctor_id,
+                  },
                 },
               );
             } else {
@@ -1103,7 +1097,10 @@ const deleteUser = async (req, res) => {
         }
 
         const appointments = await Appointment.findAll({
-          where: { doctor_id: doctor.doctor_id, status: { [Op.ne]: "CANCELLED" } },
+          where: {
+            doctor_id: doctor.doctor_id,
+            status: { [Op.ne]: "CANCELLED" },
+          },
         });
 
         const currentDate = new Date();
@@ -1121,7 +1118,7 @@ const deleteUser = async (req, res) => {
             canceled_reason: "Doctor no longer active",
             canceled_at: currentDate,
           });
-        };
+        }
       }
     }
 
@@ -1131,8 +1128,8 @@ const deleteUser = async (req, res) => {
           {
             model: Users,
             where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
-          }
-        ]
+          },
+        ],
       });
 
       const appointments = await Appointment.findAll({
@@ -1143,10 +1140,10 @@ const deleteUser = async (req, res) => {
         include: [
           {
             model: Users,
-            where: {is_deleted: 0},
-          }
+            where: { is_deleted: 0 },
+          },
         ],
-        order: sequelize.random(), 
+        order: sequelize.random(),
         limit: 1,
       });
 
@@ -1156,7 +1153,7 @@ const deleteUser = async (req, res) => {
             { attending_nurse: newNurse.nurse_id },
             {
               where: { appointment_id: appointment.appointment_id },
-            }
+            },
           );
         }
       }
@@ -1168,13 +1165,16 @@ const deleteUser = async (req, res) => {
           {
             model: Users,
             where: { user_email: req.body.targetUserEmail, is_deleted: 0 },
-          }
-        ]
+          },
+        ],
       });
 
       if (patient) {
         const appointments = await Appointment.findAll({
-          where: { patient_id: patient.patient_id, status: { [Op.ne]: "CANCELLED" } },
+          where: {
+            patient_id: patient.patient_id,
+            status: { [Op.ne]: "CANCELLED" },
+          },
         });
 
         const currentDate = new Date();
@@ -1192,26 +1192,37 @@ const deleteUser = async (req, res) => {
             canceled_reason: "Patient no longer at clinic",
             canceled_at: currentDate,
           });
-        };
+        }
 
         const patientBills = await Billing.findAll({
-          where: { patient_id: patient.patient_id, payment_status: { [Op.ne]: "PAID" } },
+          where: {
+            patient_id: patient.patient_id,
+            payment_status: { [Op.ne]: "PAID" },
+          },
         });
 
         await Billing.update(
           {
-            amount_paid: sequelize.literal('amount_due'), // Update amount_paid to match amount_due
-            payment_status: "PAID", 
+            amount_paid: sequelize.literal("amount_due"), // Update amount_paid to match amount_due
+            payment_status: "PAID",
             updated_at: currentDate,
           },
           {
-            where: { patient_id: patient.patient_id, payment_status: { [Op.ne]: "PAID" } },
-          }
+            where: {
+              patient_id: patient.patient_id,
+              payment_status: { [Op.ne]: "PAID" },
+            },
+          },
         );
       }
     }
 
-    if (user.user_role === "RECEPTIONIST" || user.user_role === "DOCTOR" || user.user_role === "NURSE" || user.user_role === "PATIENT") {
+    if (
+      user.user_role === "RECEPTIONIST" ||
+      user.user_role === "DOCTOR" ||
+      user.user_role === "NURSE" ||
+      user.user_role === "PATIENT"
+    ) {
       await Users.update(
         { is_deleted: 1 },
         {
