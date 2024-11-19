@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "../../../api.js";
-import { Alert, AlertTitle } from "../../../utils/Alerts.tsx";
+import { Alert, AlertTitle, AlertDescription } from "../../../utils/Alerts.tsx";
+
 import AddEmployeeForm from "./AddEmployeeForm";
 import SubCategoryCard from "./SubCategoryCards";
 import UsersCard from "./UserCards";
@@ -15,6 +16,7 @@ const UserManagement = ({ data }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
+  const [alert, setAlert] = useState({ visible: false, message: "" });
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -51,6 +53,14 @@ const UserManagement = ({ data }) => {
         }, 5000);
       } catch (error) {
         console.error("Error deleting user:", error);
+        setAlert({
+          visible: true,
+          message:
+            error.response?.data?.message || "Failed to delete the user. Please try again.",
+        });
+        setTimeout(() => {
+          setAlert({ visible: false, message: "" });
+        }, 4000);
       }
     }
   };
@@ -114,6 +124,12 @@ const UserManagement = ({ data }) => {
 
   return (
     <div className="space-y-6">
+      {alert.visible && (
+        <Alert className="mb-4">
+          <AlertTitle className="font-bold text-xl">Error</AlertTitle>
+          <AlertDescription className="text-lg text-red-500 text-center">{alert.message}</AlertDescription>
+        </Alert>
+      )}
       {editingUser && (
         <EditUserForm
           user={editingUser}
