@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
   ClipboardCheck,
   UserPlus,
   AlertCircle,
-  Check,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../../../utils/Alerts.tsx";
 import CategoryCard from "./cards/CategoryCard";
@@ -13,7 +12,7 @@ import DoctorCard from "./cards/DoctorCard";
 import AppointmentCard from "./cards/AppointmentCard";
 import api from "../../../api.js";
 
-const MyAppointments = () => {
+const MyAppointments = ({ patientId, onGoBack }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,10 +56,18 @@ const MyAppointments = () => {
           },
         ];
 
+  // Automatically select "AVAILABLE_DOCTORS" for receptionists
+  useEffect(() => {
+    if (userRole === "RECEPTIONIST") {
+      handleCategorySelect("AVAILABLE_DOCTORS");
+    }
+  }, [userRole]); // Run this effect when userRole changes
+
   const fetchData = async (appointmentType) => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Fetching data",appointmentType);
 
       const response = await api.post("/users/portal/my-appointments", {
         user_id: localStorage.getItem("userId"),
@@ -84,70 +91,128 @@ const MyAppointments = () => {
     fetchData(categoryId);
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-4">
-          {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
-            ? "Pending Specialist Approvals"
-            : "Appointments"}
-        </h2>
-        <p className="text-gray-600 mb-6">
-          {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
-            ? "Review and manage specialist appointment requests"
-            : userRole === "PATIENT"
-              ? "View and manage your appointments"
-              : "Manage your appointments and approval requests"}
-        </p>
+  if (userRole !== "RECEPTIONIST") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">
+            {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
+              ? "Pending Specialist Approvals"
+              : "Appointments"}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {userRole === "DOCTOR" && selectedCategory === "PENDING_APPROVALS"
+              ? "Review and manage specialist appointment requests"
+              : userRole === "PATIENT"
+                ? "View and manage your appointments"
+                : "Manage your appointments and approval requests"}
+          </p>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
-          {categoryOptions.map((option) => (
-            <CategoryCard
-              key={option.id}
-              {...option}
-              isSelected={selectedCategory === option.id}
-              onClick={() => handleCategorySelect(option.id)}
-            />
-          ))}
+          <div className="grid md:grid-cols-3 gap-4 mb-6">
+            {categoryOptions.map((option) => (
+              <CategoryCard
+                key={option.id}
+                {...option}
+                isSelected={selectedCategory === option.id}
+                onClick={() => handleCategorySelect(option.id)}
+              />
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : data ? (
+            <div className="space-y-4">
+              {data.length > 0 ? (
+                data.map((item) =>
+                  selectedCategory === "AVAILABLE_DOCTORS" ? (
+                    <DoctorCard key={item.doctor_id} doctor={item} />
+                  ) : (
+                    <AppointmentCard
+                      key={item.appointment_id || item.approval_id}
+                      appointment={item}
+                      type={userRole.toLowerCase()}
+                    />
+                  ),
+                )
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  No {selectedCategory?.toLowerCase().replace("_", " ")} found
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              Select a category to view appointments
+            </div>
+          )}
         </div>
-
-        {loading ? (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-          </div>
-        ) : error ? (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : data ? (
-          <div className="space-y-4">
-            {data.length > 0 ? (
-              data.map((item) =>
-                selectedCategory === "AVAILABLE_DOCTORS" ? (
-                  <DoctorCard key={item.doctor_id} doctor={item} />
-                ) : (
-                  <AppointmentCard
-                    key={item.appointment_id || item.approval_id}
-                    appointment={item}
-                    type={userRole.toLowerCase()}
-                  />
-                ),
-              )
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                No {selectedCategory?.toLowerCase().replace("_", " ")} found
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-8">
-            Select a category to view appointments
-          </div>
-        )}
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">
+            Book Appointments
+          </h2>
+
+          {/* <div className="grid md:grid-cols-3 gap-4 mb-6">
+            {categoryOptions.map((option) => (
+              <CategoryCard
+                key={option.id}
+                {...option}
+                isSelected={selectedCategory === option.id}
+                onClick={() => handleCategorySelect(option.id)}
+              />
+            ))}
+          </div> */}
+
+          {loading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : data ? (
+            <div className="space-y-4">
+              {data.length > 0 ? (
+                data.map((item) =>
+                  selectedCategory === "AVAILABLE_DOCTORS" ? (
+                    <DoctorCard key={item.doctor_id} doctor={item} patientId = {patientId}/>
+                  ) : (
+                    <AppointmentCard
+                      key={item.appointment_id || item.approval_id}
+                      appointment={item}
+                      type={userRole.toLowerCase()}
+                    />
+                  ),
+                )
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  No {selectedCategory?.toLowerCase().replace("_", " ")} found
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              Select a category to view appointments
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 };
 
 export default MyAppointments;

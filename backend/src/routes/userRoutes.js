@@ -119,7 +119,7 @@ router.post(
 
 router.post("/records", dashBoardControllerFuncs.portalRoleSwitcher); // for patient records
 router.post("/appointments", dashBoardControllerFuncs.portalRoleSwitcher);
-router.post("");
+router.post("/getpatients", receptionistDashboard.getPatients);
 
 router.post(
   "/portal/recappointments/forpatient",

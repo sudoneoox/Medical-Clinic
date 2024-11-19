@@ -78,6 +78,13 @@ const portalRoleSwitcher = async (req, res) => {
               { section: req.body.section, data: req.body.data },
               res,
             );
+          case "MY-APPOINTMENTS":
+            return await defaultDashboard.populateMYAPPOINTMENTS(
+              user,
+              relatedEntity,
+              req.body.appointmentData,
+              res,
+            );
           default:
             return res.status(401).json({
               message: `Invalid sidebarItem found in portalRoleSwitcher for receptionist ${sidebarItem}`,

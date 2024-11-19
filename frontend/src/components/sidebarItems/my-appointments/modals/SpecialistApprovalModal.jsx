@@ -26,7 +26,7 @@ const SpecialistApprovalModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed inset-0 z-50 flex items-center justify-center">
+      <DialogContent className="fixed z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg w-full max-w-md mx-auto p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Specialist Approval Required</DialogTitle>
