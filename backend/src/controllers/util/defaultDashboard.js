@@ -81,10 +81,7 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
         }
 
         if (data.email || data.phone || data.username) {
-          await User.update(
-            updateFields, 
-            { where: { user_id: user.user_id } },
-          );
+          await User.update(updateFields, { where: { user_id: user.user_id } });
         }
         break;
 
@@ -271,7 +268,7 @@ const populateMYAPPOINTMENTS = async (
                 {
                   model: User,
                   where: { is_deleted: 0 },
-                }
+                },
               ],
               attributes: [
                 "doctor_id",
@@ -390,7 +387,7 @@ const populateMYAPPOINTMENTS = async (
                 {
                   model: User,
                   where: { is_deleted: 0 },
-                }
+                },
               ],
               attributes: [
                 "doctor_id",
@@ -564,7 +561,7 @@ const submitNewAppointment = async (req, res) => {
   let recepId;
   try {
     // Get patient_id from user_id
-    if(userRole === "RECEPTIONIST"){
+    if (userRole === "RECEPTIONIST") {
       patientId = req.body.patientId;
       const receptionist = await Receptionist.findOne({
         where: { user_id: user_id },
@@ -572,21 +569,21 @@ const submitNewAppointment = async (req, res) => {
           {
             model: User,
             where: { is_deleted: 0 },
-          }
+          },
         ],
       });
       recepId = receptionist.receptionist_id;
-    } else{      
+    } else {
       const patient = await Patient.findOne({
         where: { user_id: user_id },
         include: [
           {
             model: User,
             where: { is_deleted: 0 },
-          }
+          },
         ],
       });
-      if(patient){
+      if (patient) {
         patientId = patient.patient_id;
       }
     }
@@ -616,7 +613,7 @@ const submitNewAppointment = async (req, res) => {
 
     // Create the appointment
     let appointment;
-    if(userRole === "RECEPTIONIST"){
+    if (userRole === "RECEPTIONIST") {
       appointment = await Appointment.create({
         patient_id: patientId,
         doctor_id,
@@ -628,8 +625,7 @@ const submitNewAppointment = async (req, res) => {
         attending_nurse: nurse.nurse_id,
         booked_by: recepId,
       });
-
-    } else{
+    } else {
       appointment = await Appointment.create({
         patient_id: patientId,
         doctor_id,
@@ -673,7 +669,7 @@ const submitNewAppointment = async (req, res) => {
 };
 
 const requestSpecialistApproval = async (req, res) => {
-  const {
+  let {
     user_id,
     specialist_id,
     primary_doctor_id,
@@ -685,21 +681,26 @@ const requestSpecialistApproval = async (req, res) => {
   let patientId;
   try {
     // Get patient_id from user_id
-    if(userRole === "RECEPTIONIST"){
+    let receptionist;
+    if (userRole === "RECEPTIONIST") {
       patientId = req.body.patientId;
-    } else{      
+      receptionist = await Receptionist.findOne({
+        where: { user_id: user_id },
+      });
+    } else {
       const patient = await Patient.findOne({
         where: { user_id },
         include: [
           {
             model: User,
             where: { is_deleted: 0 },
-          }
+          },
         ],
       });
-      if(patient){
+      if (patient) {
         patientId = patient.patient_id;
       }
+      user_id = null;
     }
 
     // Get office_id from office_name
@@ -726,14 +727,16 @@ const requestSpecialistApproval = async (req, res) => {
         duration: "00:30:00", // Default 30 min duration
         status: "PENDING_DOCTOR_APPROVAL",
         reason: reason,
-        booked_by: user_id,
         attending_nurse: nurse.nurse_id,
       },
       {
         hooks: false,
       },
     );
-
+    if (userRole === "RECEPTIONIST") {
+      appointment.booked_by = receptionist.receptionist_id;
+      appointment.save();
+    }
     // Create the specialist approval request
     console.log("PRIMARY DOCTOR IN SPECIALIST APPROVAL", primary_doctor_id);
     const approvalRequest = await SpecialistApproval.create({
@@ -768,7 +771,7 @@ const getPrimaryDoctor = async (req, res) => {
     let patientId;
     // First get patient_id from user_id
 
-    if(userRole === "RECEPTIONIST"){
+    if (userRole === "RECEPTIONIST") {
       patientId = req.body.patientId;
     } else {
       const patient = await Patient.findOne({
@@ -777,7 +780,7 @@ const getPrimaryDoctor = async (req, res) => {
           {
             model: User,
             where: { is_deleted: 0 },
-          }
+          },
         ],
       });
       if (!patient) {
@@ -788,8 +791,6 @@ const getPrimaryDoctor = async (req, res) => {
       }
       patientId = patient.patient_id;
     }
-
-
 
     let doctorRelation = await PatientDoctor.findOne({
       where: {
@@ -803,8 +804,8 @@ const getPrimaryDoctor = async (req, res) => {
             {
               model: User,
               where: { is_deleted: 0 },
-            }
-          ]
+            },
+          ],
         },
       ],
     });
