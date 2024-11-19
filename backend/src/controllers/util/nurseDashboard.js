@@ -40,11 +40,11 @@ const populateOVERVIEW = async (user, nurse, res) => {
               attributes: ["office_name"],
             },
           ],
-        },   
+        },
         {
           model: User,
           where: { is_deleted: 0 },
-        } 
+        },
       ],
     });
 
@@ -176,7 +176,7 @@ const getNurseAppointments = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -262,7 +262,7 @@ const getNurseAppointmentsBilling = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -329,7 +329,7 @@ const createBills = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -345,7 +345,7 @@ const createBills = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
       order: sequelize.random(),
       limit: 1,
@@ -395,7 +395,7 @@ const updateAppointmentStatus = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -436,7 +436,7 @@ const addAppointmentNote = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -494,7 +494,7 @@ const editAppointmentNote = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 
@@ -533,7 +533,7 @@ const getNursePatientIds = async (userId) => {
       {
         model: User,
         where: { is_deleted: 0 },
-      }
+      },
     ],
   });
 
@@ -761,7 +761,7 @@ const addNote = async (req, res) => {
         {
           model: User,
           where: { is_deleted: 0 },
-        }
+        },
       ],
     });
 

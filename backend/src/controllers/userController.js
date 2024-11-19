@@ -114,12 +114,12 @@ const registerUser = async (req, res) => {
             {
               model: User,
               where: { is_deleted: 0 },
-            }
+            },
           ],
           order: sequelize.random(),
           limit: 1,
         });
-        
+
         if (randomDoctor) {
           await PatientDoctor.create({
             patient_id: associatedEntity.patient_id,
@@ -169,9 +169,8 @@ const loginUser = async (req, res) => {
 
     // Find the user by email
     const user = await User.findOne({
-      where: { 
+      where: {
         user_email: email.toLowerCase(),
-        //is_deleted: 0, 
       },
     });
 
@@ -190,12 +189,12 @@ const loginUser = async (req, res) => {
     switch (user.user_role) {
       case "DOCTOR":
         associatedEntity = await Doctor.findOne({
-          where: { user_id: user.user_id, },
+          where: { user_id: user.user_id },
           include: [
             {
               model: User,
-              where: { is_deleted: 0 },
-            }
+              attributes: ["is_deleted"],
+            },
           ],
         });
         entityFullName =
@@ -207,8 +206,8 @@ const loginUser = async (req, res) => {
           include: [
             {
               model: User,
-              where: { is_deleted: 0 },
-            }
+              attributes: ["is_deleted"],
+            },
           ],
         });
         entityFullName =
@@ -220,8 +219,8 @@ const loginUser = async (req, res) => {
           include: [
             {
               model: User,
-              where: { is_deleted: 0 },
-            }
+              attributes: ["is_deleted"],
+            },
           ],
         });
         entityFullName =
@@ -235,8 +234,8 @@ const loginUser = async (req, res) => {
           include: [
             {
               model: User,
-              where: { is_deleted:0 },
-            }
+              attributes: ["is_deleted"],
+            },
           ],
         });
         entityFullName =
@@ -252,6 +251,15 @@ const loginUser = async (req, res) => {
       default:
         console.error("USER ROLE NOT FOUND in loginUSER");
         break;
+    }
+
+    // admin cannot be deleted ?
+    if (user.user_role !== "ADMIN") {
+      if (associatedEntity.user.is_deleted === 1) {
+        return res.status(400).json({
+          message: "Account is deleted please contact admin",
+        });
+      }
     }
 
     const token = jwt.sign(

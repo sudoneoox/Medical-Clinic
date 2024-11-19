@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../../../api.js";
+import { Alert, AlertTitle, AlertDescription } from "../../../utils/Alerts.tsx";
 
 import AddEmployeeForm from "./AddEmployeeForm";
 import SubCategoryCard from "./SubCategoryCards";
@@ -15,6 +16,9 @@ const UserManagement = ({ data }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
+  const [alert, setAlert] = useState({ visible: false, message: "" });
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleEdit = async (user) => {
     setEditingUser(user);
@@ -39,11 +43,24 @@ const UserManagement = ({ data }) => {
           targetUserEmail: user.email,
           managementType: selectedAnalytic,
         });
-        // Refresh data after deletion
-        console.log("got from deleting user", res);
         fetchUserData(selectedAnalytic, selectedSubCategory);
+        // success popup
+        setSuccessMessage(`Successfully removed ${user.name} from the system`);
+        setShowSuccess(true);
+        // remove after 5 sec
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 5000);
       } catch (error) {
         console.error("Error deleting user:", error);
+        setAlert({
+          visible: true,
+          message:
+            error.response?.data?.message || "Failed to delete the user. Please try again.",
+        });
+        setTimeout(() => {
+          setAlert({ visible: false, message: "" });
+        }, 4000);
       }
     }
   };
@@ -107,6 +124,12 @@ const UserManagement = ({ data }) => {
 
   return (
     <div className="space-y-6">
+      {alert.visible && (
+        <Alert className="mb-4">
+          <AlertTitle className="font-bold text-xl">Error</AlertTitle>
+          <AlertDescription className="text-lg text-red-500 text-center">{alert.message}</AlertDescription>
+        </Alert>
+      )}
       {editingUser && (
         <EditUserForm
           user={editingUser}
@@ -115,6 +138,13 @@ const UserManagement = ({ data }) => {
           onUpdate={handleUpdateUser}
         />
       )}
+
+      {showSuccess && (
+        <Alert className="mb-4">
+          <AlertTitle>{successMessage}</AlertTitle>
+        </Alert>
+      )}
+
       <div>
         <h2 className="text-2xl font-bold mb-4">User Management</h2>
         <p className="text-gray-600 mb-6">Manage system users and employees</p>
