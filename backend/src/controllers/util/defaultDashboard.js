@@ -79,7 +79,14 @@ const updateSETTINGS = async (user, relatedEntity, settingsData, res) => {
           updateFields.user_username = data.username;
         }
 
-        if (data.email || data.phone || data.username) {
+        if (data.email == '' && data.phone == '' && data.username == '') {
+          return res.json({
+            success: false,
+            message: "Update fields are empty. Failed to update.",
+          });
+        }
+
+        if (data.email != '' || data.phone != '' || data.username != '') {
           await User.update(
             updateFields, 
             { where: { user_id: user.user_id } },
