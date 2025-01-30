@@ -1,5 +1,5 @@
 ## WSYK Clinic
-Hosted Web Link: http://4.156.152.174/
+COSC 3380 Database Systems Class Project
 
 The app will prompt you to create a new account when you click "Book Appointment" to try to schedule an appointment. There are five different user roles: patients, doctors, receptionists, nurses, and administrators. Each role has access to different dashboards to accomplish specific tasks associated with their role.
 
